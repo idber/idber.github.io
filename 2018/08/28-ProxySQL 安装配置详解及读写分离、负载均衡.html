@@ -1,0 +1,1618 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>ProxySQL 安装配置详解及读写分离、负载均衡 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="前言在MySQL的高可用集群环境中，中间件是不可缺少的一部分，它提供了读写分离、负载均衡等各种功能，满足集群的横向、纵向的可扩展。由于官方并没有在这方面推出好的产品，更多的是第三方的产品。如：  ProxySQL #Percona MaxScale #MariaDB Atlas #360开源 OneProxy #平民软件楼方鑫 MyCat #社区推广 KingShard #原Atlas作者离职后">
+<meta name="keywords" content="MySQL,读写分离">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ProxySQL 安装配置详解及读写分离、负载均衡">
+<meta property="og:url" content="http://idber.github.io/2018/08/28-ProxySQL 安装配置详解及读写分离、负载均衡.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="前言在MySQL的高可用集群环境中，中间件是不可缺少的一部分，它提供了读写分离、负载均衡等各种功能，满足集群的横向、纵向的可扩展。由于官方并没有在这方面推出好的产品，更多的是第三方的产品。如：  ProxySQL #Percona MaxScale #MariaDB Atlas #360开源 OneProxy #平民软件楼方鑫 MyCat #社区推广 KingShard #原Atlas作者离职后">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.932Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ProxySQL 安装配置详解及读写分离、负载均衡">
+<meta name="twitter:description" content="前言在MySQL的高可用集群环境中，中间件是不可缺少的一部分，它提供了读写分离、负载均衡等各种功能，满足集群的横向、纵向的可扩展。由于官方并没有在这方面推出好的产品，更多的是第三方的产品。如：  ProxySQL #Percona MaxScale #MariaDB Atlas #360开源 OneProxy #平民软件楼方鑫 MyCat #社区推广 KingShard #原Atlas作者离职后">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/08/28-ProxySQL 安装配置详解及读写分离、负载均衡.html" title="ProxySQL 安装配置详解及读写分离、负载均衡" itemprop="url">ProxySQL 安装配置详解及读写分离、负载均衡</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2018-08-27T22:01:56.000Z" itemprop="datePublished"> Published 2018-08-28</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#准备"><span class="toc-number">2.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装配置详解"><span class="toc-number">3.</span> <span class="toc-text">安装配置详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#安装"><span class="toc-number">3.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动"><span class="toc-number">3.2.</span> <span class="toc-text">启动</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#内置对象介绍"><span class="toc-number">4.</span> <span class="toc-text">内置对象介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#登录"><span class="toc-number">4.1.</span> <span class="toc-text">登录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内置库"><span class="toc-number">4.2.</span> <span class="toc-text">内置库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#main库"><span class="toc-number">4.2.1.</span> <span class="toc-text">main库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#runtime-表"><span class="toc-number">4.2.1.1.</span> <span class="toc-text">runtime_表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-servers表"><span class="toc-number">4.2.1.2.</span> <span class="toc-text">mysql_servers表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-users表"><span class="toc-number">4.2.1.3.</span> <span class="toc-text">mysql_users表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-query-rules查询规则表"><span class="toc-number">4.2.1.4.</span> <span class="toc-text">mysql_query_rules查询规则表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#scheduler调度表"><span class="toc-number">4.2.1.5.</span> <span class="toc-text">scheduler调度表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#disk库"><span class="toc-number">4.2.2.</span> <span class="toc-text">disk库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stats库"><span class="toc-number">4.2.3.</span> <span class="toc-text">stats库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-commands-counters表"><span class="toc-number">4.2.3.1.</span> <span class="toc-text">stats_mysql_commands_counters表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-connection-pool表"><span class="toc-number">4.2.3.2.</span> <span class="toc-text">stats_mysql_connection_pool表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-global表"><span class="toc-number">4.2.3.3.</span> <span class="toc-text">stats_mysql_global表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-processlist表"><span class="toc-number">4.2.3.4.</span> <span class="toc-text">stats_mysql_processlist表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-query-digest表"><span class="toc-number">4.2.3.5.</span> <span class="toc-text">stats_mysql_query_digest表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-query-rules表"><span class="toc-number">4.2.3.6.</span> <span class="toc-text">stats_mysql_query_rules表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-server-connect-mysql-server-connect-log表"><span class="toc-number">4.2.3.7.</span> <span class="toc-text">mysql_server_connect/mysql_server_connect_log表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-server-ping-mysql-server-ping-log表"><span class="toc-number">4.2.3.8.</span> <span class="toc-text">mysql_server_ping/mysql_server_ping_log表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-server-replication-lag-log表"><span class="toc-number">4.2.3.9.</span> <span class="toc-text">mysql_server_replication_lag_log表</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内置参数"><span class="toc-number">4.3.</span> <span class="toc-text">内置参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ProxySQL多层配置设计"><span class="toc-number">4.4.</span> <span class="toc-text">ProxySQL多层配置设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ProxySQL设计模型介绍"><span class="toc-number">4.4.1.</span> <span class="toc-text">ProxySQL设计模型介绍</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ProxySQL读写分离示例"><span class="toc-number">5.</span> <span class="toc-text">ProxySQL读写分离示例</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#准备-1"><span class="toc-number">5.1.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装配置"><span class="toc-number">5.2.</span> <span class="toc-text">安装配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#示例目标"><span class="toc-number">5.3.</span> <span class="toc-text">示例目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加后端DB服务"><span class="toc-number">5.4.</span> <span class="toc-text">添加后端DB服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加访问用户"><span class="toc-number">5.5.</span> <span class="toc-text">添加访问用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加复制关系"><span class="toc-number">5.6.</span> <span class="toc-text">添加复制关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改全局变量"><span class="toc-number">5.7.</span> <span class="toc-text">修改全局变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#路由规则"><span class="toc-number">5.8.</span> <span class="toc-text">路由规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#常用查询"><span class="toc-number">5.9.</span> <span class="toc-text">常用查询</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ProxySQL监控"><span class="toc-number">6.</span> <span class="toc-text">ProxySQL监控</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#PMM-Client安装"><span class="toc-number">6.1.</span> <span class="toc-text">PMM Client安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PMM-Client配置"><span class="toc-number">6.2.</span> <span class="toc-text">PMM Client配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在MySQL的高可用集群环境中，中间件是不可缺少的一部分，它提供了读写分离、负载均衡等各种功能，满足集群的横向、纵向的可扩展。由于官方并没有在这方面推出好的产品，更多的是第三方的产品。如：</p>
+<ul>
+<li>ProxySQL #Percona</li>
+<li>MaxScale #MariaDB</li>
+<li>Atlas #360开源</li>
+<li>OneProxy #平民软件楼方鑫</li>
+<li>MyCat #社区推广</li>
+<li>KingShard #原Atlas作者离职后使用go开发</li>
+<li>TDDL #阿里巴巴开源</li>
+<li>Cobar #阿里巴巴开源</li>
+<li>DBProxy #美团在360Atlas上修改后开源</li>
+<li>Fabric #官方产品</li>
+<li>DRDS #阿里云分库分表产品</li>
+<li>本次以测试ProxySQL为例，逐步了解ProxySQL的使用方式。</li>
+</ul>
+<h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><p>环境：<br>ProxySQL: 1.4.1<br>Master: 192.168.56.101<br>Slave: 192.168.56.102</p>
+<h1 id="安装配置详解"><a href="#安装配置详解" class="headerlink" title="安装配置详解"></a>安装配置详解</h1><p>官网：<a href="http://www.proxysql.com/" target="_blank" rel="noopener">http://www.proxysql.com/</a><br>Percona地址：<a href="https://www.percona.com/downloads/proxysql/" target="_blank" rel="noopener">https://www.percona.com/downloads/proxysql/</a><br>Github地址：<a href="https://github.com/sysown/proxysql/" target="_blank" rel="noopener">https://github.com/sysown/proxysql/</a><br>本文通过作者编译好的rpm安装，也可通过编译安装的方式安装，本文省略</p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>下载proxysql可以有三种途径,分别为官网、Percona网站和Github网站<br>本文从github上下载最新稳定版本，这里选择centos67对应的rpm包<br>下载：wget -c -O proxysql-1.4.1-1-centos67.x86_64.rpm <a href="https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos67.x86_64.rpm" target="_blank" rel="noopener">https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos67.x86_64.rpm</a></p>
+<pre><code>[root@mysql test]# yum localinstall -y proxysql-1.4.1-1-centos67.x86_64.rpm
+Loaded plugins: security
+docker-main-repo                                                                                                                                 | 2.9 kB     00:00     
+Setting up Install Process
+Resolving Dependencies
+There are unfinished transactions remaining. You might consider running yum-complete-transaction first to finish them.
+--&gt; Running transaction check
+---&gt; Package proxysql.x86_64 0:1.4.1-1 will be installed
+--&gt; Finished Dependency Resolution
+Dependencies Resolved
+========================================================================================================================================================================
+ Package                           Arch                            Version                             Repository                                                  Size
+========================================================================================================================================================================
+Installing:
+ proxysql                          x86_64                          1.4.1-1                             /proxysql-1.4.1-1-centos67.x86_64                           19 M
+Transaction Summary
+========================================================================================================================================================================
+Install       1 Package(s)
+Total size: 19 M
+Installed size: 19 M
+Downloading Packages:
+Running rpm_check_debug
+Running Transaction Test
+Transaction Test Succeeded
+Running Transaction
+  Installing : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
+  Verifying  : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
+Installed:
+  proxysql.x86_64 0:1.4.1-1                                                                                                                                             
+Complete!
+</code></pre><p>ProxySQL默认配置文件为/etc/proxysql.cnf,只在第一次启动的时候有用,后续的所有配置都是通过对SQLite数据库的操作,并且不会更新到proxysql中,而是存储在/var/lib/proxysql/proxysql.db中</p>
+<pre><code>[root@mysql_slave test]#  proxysql --version    #查看版本
+ProxySQL version 1.4.1-45-gab4e6ee, codename Truls
+[root@mysql_slave test]# rpm -ql proxysql   #查看安装的具体内容
+/etc/init.d/proxysql                    #启动脚本
+/etc/proxysql.cnf                       #默认配置文件
+/usr/bin/proxysql                       #执行文件
+/usr/share/proxysql/tools/proxysql_galera_checker.sh    #ProxySQL调度程序检查pxc_maint_mode参数状态,持续检测各个节点的状态
+/usr/share/proxysql/tools/proxysql_galera_writer.pl #ProxySQL指定一个节点直接将流量写入galera
+[root@mysql_slave test]#
+</code></pre><h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>启动之后才会生成存储目录/var/lib/proxysql</p>
+<pre><code>[root@mysql_slave test]# /etc/init.d/proxysql start
+Starting ProxySQL: DONE!
+[root@mysql_slave test]# ll /var/lib/proxysql/
+总用量 108
+-rw------- 1 root root 98304 8月  29 15:37 proxysql.db
+-rw------- 1 root root  4306 8月  29 16:25 proxysql.log
+-rw-r--r-- 1 root root     5 8月  29 16:25 proxysql.pid
+[root@mysql_slave test]#
+</code></pre><h1 id="内置对象介绍"><a href="#内置对象介绍" class="headerlink" title="内置对象介绍"></a>内置对象介绍</h1><h2 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h2><p>启动了6032和6033两个端口,默认管理端口是6032,客户端服务端口是6033,默认的用户名密码都是 admin,通过mysql的客户端可以登录</p>
+<pre><code>[root@mysql_slave test]# netstat -tunlp|grep proxysql
+tcp        0      0 0.0.0.0:6032                0.0.0.0:*                   LISTEN      5181/proxysql       
+tcp        0      0 0.0.0.0:6033                0.0.0.0:*                   LISTEN      5181/proxysql       
+[root@mysql_slave test]# mysql -uadmin -padmin -h127.0.0.1 -P6032
+Warning: Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 1
+Server version: 5.5.30 (ProxySQL Admin Module)
+Copyright (c) 2009-2017 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2017, Oracle and/or its affiliates. All rights reserved.
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+Type &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the current input statement.
+MySQL [(none)] 16:28:32 &gt; show databases;
++-----+---------+-------------------------------+
+| seq | name    | file                          |
++-----+---------+-------------------------------+
+| 0   | main    |                               |
+| 2   | disk    | /var/lib/proxysql/proxysql.db |
+| 3   | stats   |                               |
+| 4   | monitor |                               |
++-----+---------+-------------------------------+
+4 rows in set (0.00 sec)
+MySQL [(none)] 16:28:41 &gt;
+</code></pre><h2 id="内置库"><a href="#内置库" class="headerlink" title="内置库"></a>内置库</h2><p>main：默认数据库名,用于存放后端db实例、用户认证、路由规则等信息。表名以runtime开头的表示proxysql当前运行的配置内容，不能通过dml语句修改。只能修改对应的不以runtime开头的（在内存）里的表，然后LOAD使其生效，SAVE使其存到硬盘以供下次重启加载。<br>disk：是持久化到硬盘的配置，sqlite数据文件。<br>stats：是proxysql运行抓取的统计信息，包括到后端各命令的执行次数、流量、processlist、查询各类汇总、执行时间等。<br>monitor：库存储monitor模块收集的信息，主要是对后端db的健康、延迟检查。</p>
+<h3 id="main库"><a href="#main库" class="headerlink" title="main库"></a>main库</h3><h4 id="runtime-表"><a href="#runtime-表" class="headerlink" title="runtime_表"></a>runtime_表</h4><pre><code>MySQL [main] 17:19:10 &gt; use main
+Database changed
+MySQL [main] 17:22:15 &gt; show tables;
++--------------------------------------------+
+| tables                                     |
++--------------------------------------------+
+| global_variables                           |
+| mysql_collations                           |
+| mysql_group_replication_hostgroups         |
+| mysql_query_rules                          |
+| mysql_replication_hostgroups               |
+| mysql_servers                              |
+| mysql_users                                |
+| proxysql_servers                           |
+| runtime_global_variables                   |
+| runtime_mysql_group_replication_hostgroups |
+| runtime_mysql_query_rules                  |
+| runtime_mysql_replication_hostgroups       |
+| runtime_mysql_servers                      |
+| runtime_mysql_users                        |
+| runtime_proxysql_servers                   |
+| runtime_scheduler                          |
+| scheduler                                  |
++--------------------------------------------+
+17 rows in set (0.00 sec)
+MySQL [main] 17:22:16 &gt;
+</code></pre><p>其中，runtime_开关的表如下：</p>
+<pre><code>runtime_global_variables：global_variables的运行时版本
+runtime_mysql_group_replication_hostgroups：mysql_group_replication_hostgroups的运行时版本
+runtime_mysql_query_rules：mysql_query_rules的运行时版本
+runtime_mysql_replication_hostgroups：mysql_replication_hostsgroups的运行时版本
+runtime_mysql_servers：mysql_servers的运行时版本
+runtime_mysql_users：mysql_users的运行时版本
+runtime_scheduler：scheduler调度程序的运行时版本
+
+global_variables表
+</code></pre><p>内置参数表，参考下文</p>
+<h4 id="mysql-servers表"><a href="#mysql-servers表" class="headerlink" title="mysql_servers表"></a>mysql_servers表</h4><pre><code>MySQL [main] 17:22:16 &gt; show create table mysql_servers\G
+*************************** 1. row ***************************
+       table: mysql_servers
+Create Table: CREATE TABLE mysql_servers (
+    hostgroup_id INT NOT NULL DEFAULT 0,
+    hostname VARCHAR NOT NULL,
+    port INT NOT NULL DEFAULT 3306,
+    status VARCHAR CHECK (UPPER(status) IN (&apos;ONLINE&apos;,&apos;SHUNNED&apos;,&apos;OFFLINE_SOFT&apos;, &apos;OFFLINE_HARD&apos;)) NOT NULL DEFAULT &apos;ONLINE&apos;,
+    weight INT CHECK (weight &gt;= 0) NOT NULL DEFAULT 1,
+    compression INT CHECK (compression &gt;=0 AND compression &lt;= 102400) NOT NULL DEFAULT 0,
+    max_connections INT CHECK (max_connections &gt;=0) NOT NULL DEFAULT 1000,
+    max_replication_lag INT CHECK (max_replication_lag &gt;= 0 AND max_replication_lag &lt;= 126144000) NOT NULL DEFAULT 0,
+    use_ssl INT CHECK (use_ssl IN(0,1)) NOT NULL DEFAULT 0,
+    max_latency_ms INT UNSIGNED CHECK (max_latency_ms&gt;=0) NOT NULL DEFAULT 0,
+    comment VARCHAR NOT NULL DEFAULT &apos;&apos;,
+    PRIMARY KEY (hostgroup_id, hostname, port) )
+1 row in set (0.00 sec)
+MySQL [main] 17:34:05 &gt;
+hostgroup_id：ProxySQL通过hostgroup的形式组织后端db实例,一个hostgroup代表同属于一个角色。
+表的主键是(hostgroup_id, hostname, port),以hostname:port在多个hostgroup中存在。
+一个hostgroup可以有多个实例，即是多个从库，可能通过weight分配权重。
+hostgroup_id 0是一个特殊的hostgroup，路由查询的时候，没有匹配到规则则默认选择hostgroup 0。
+
+status：
+ONLINE：当前后端实例状态正常。
+SHUNNED：临时被剔除，可能因为后端too many connection error，或者超过了max_replication_lag。
+OFFLINE_SOFT：软离线状态，不再接受新的连接，但已建立的连接会等待活跃事务完成。
+OFFLINE_HARD：硬离线状态，不再接受新的连接，已建立的连接或被强制中断，当后端实例宕机或网络不可达，会出现。
+max_connections：允许连接到该后端实例的最大连接数，不要大于MySQL的max_connections。
+如果后端实例hostname:port在多个hostgroup里，以较大者为准，而不是各自独立允许的最大连接数。
+max_replication_lag：允许的最大延迟，主库不受影响，默认为0，如果&gt;0，monitor模块监控主从延迟大于阈值时，会临时把它的状态变更为SHUNNED。
+max_latency_ms：mysql_ping响应时间，大于这个阈值会把它从连接池剔除，即使是ONLINE。
+comment：备注，不建设为空。
+</code></pre><p>其他的字段，可通过字面意思理解。</p>
+<h4 id="mysql-users表"><a href="#mysql-users表" class="headerlink" title="mysql_users表"></a>mysql_users表</h4><pre><code>MySQL [main] 09:13:02 &gt; show create table mysql_users\G
+*************************** 1. row ***************************
+       table: mysql_users
+Create Table: CREATE TABLE mysql_users (
+    username VARCHAR NOT NULL,
+    password VARCHAR,
+    active INT CHECK (active IN (0,1)) NOT NULL DEFAULT 1,
+    use_ssl INT CHECK (use_ssl IN (0,1)) NOT NULL DEFAULT 0,
+    default_hostgroup INT NOT NULL DEFAULT 0,
+    default_schema VARCHAR,
+    schema_locked INT CHECK (schema_locked IN (0,1)) NOT NULL DEFAULT 0,
+    transaction_persistent INT CHECK (transaction_persistent IN (0,1)) NOT NULL DEFAULT 1,
+    fast_forward INT CHECK (fast_forward IN (0,1)) NOT NULL DEFAULT 0,
+    backend INT CHECK (backend IN (0,1)) NOT NULL DEFAULT 1,
+    frontend INT CHECK (frontend IN (0,1)) NOT NULL DEFAULT 1,
+    max_connections INT CHECK (max_connections &gt;=0) NOT NULL DEFAULT 10000,
+    PRIMARY KEY (username, backend),
+    UNIQUE (username, frontend))
+1 row in set (0.00 sec)
+MySQL [main] 09:13:08 &gt;
+</code></pre><p>username,password：连接到后端MySQL或ProxySQL实例的凭证,参考密码管理。<br>密码可插入明文，也可通过PASSWORD()插入密文，proxysql以*开头判断插入是否是密文。<br>但是runtime_mysql_users里统一是密文，所以明文插入，再SAVE MYSQL USERS TO MEM，此时看到的也是HASH密文。</p>
+<p>active：是否生效该用户，active=0的用户将在数据库中被跟踪，但不会加载到内存中的数据结构中。<br>default_hostgroup：这个用户的请求没有匹配到规则时，默认发到hostgroup，默认0。<br>default_schema：这个用户连接时没有指定schema时，默认使用的schema。<br>默认为NULL，实际上受变量mysql-default_schema的影响，默认为information_schema。<br>transaction_persistent： 如果设置为1，连接上ProxySQL的会话后，如果在一个hostgroup上开启了事务，那么后续的sql都继续维持在这个hostgroup上，不论是否会匹配上其它路由规则，直到事务结束。<br>frontend：如果设置为1，则用户名、密码对ProxySQL进行身份验证。<br>backend：如果设置为1，则用户名、密码根据任何主机组向mysqld服务器进行身份验证。<br>注意，目前所有用户都需要将“前端”和“后端“都设置为1，未来版本的ProxySQL将分离前端和后端之间的crendentials。以这种方式，前端将永远不会知道直接连接到后端的凭据，强制所有通过ProxySQL的连接并增加系统的安全性。</p>
+<p>mysql_replication_hostgroups表</p>
+<pre><code>MySQL [main] 10:18:15 &gt; show create table mysql_replication_hostgroups\G
+*************************** 1. row ***************************
+       table: mysql_replication_hostgroups
+Create Table: CREATE TABLE mysql_replication_hostgroups (
+    writer_hostgroup INT CHECK (writer_hostgroup&gt;=0) NOT NULL PRIMARY KEY,
+    reader_hostgroup INT NOT NULL CHECK (reader_hostgroup&lt;&gt;writer_hostgroup AND reader_hostgroup&gt;0),
+    comment VARCHAR,
+    UNIQUE (reader_hostgroup))
+1 row in set (0.00 sec)
+MySQL [main] 10:18:22 &gt;
+</code></pre><p>定义hostgroup的主从关系。ProxySQL monitor模块会监控hostgroup后端所有servers的read_only变量，如果发现从库的read_only变为0、主库变为1，则认为角色互换了，自动改写mysql_servers表里面hostgroup关系，达到failover效果。</p>
+<h4 id="mysql-query-rules查询规则表"><a href="#mysql-query-rules查询规则表" class="headerlink" title="mysql_query_rules查询规则表"></a>mysql_query_rules查询规则表</h4><pre><code>MySQL [main] 10:25:22 &gt; show create table mysql_query_rules\G           
+*************************** 1. row ***************************
+       table: mysql_query_rules
+Create Table: CREATE TABLE mysql_query_rules (
+    rule_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    active INT CHECK (active IN (0,1)) NOT NULL DEFAULT 0,
+    username VARCHAR,
+    schemaname VARCHAR,
+    flagIN INT NOT NULL DEFAULT 0,
+    client_addr VARCHAR,
+    proxy_addr VARCHAR,
+    proxy_port INT,
+    digest VARCHAR,
+    match_digest VARCHAR,
+    match_pattern VARCHAR,
+    negate_match_pattern INT CHECK (negate_match_pattern IN (0,1)) NOT NULL DEFAULT 0,
+    re_modifiers VARCHAR DEFAULT &apos;CASELESS&apos;,
+    flagOUT INT,
+    replace_pattern VARCHAR,
+    destination_hostgroup INT DEFAULT NULL,
+    cache_ttl INT CHECK(cache_ttl &gt; 0),
+    reconnect INT CHECK (reconnect IN (0,1)) DEFAULT NULL,
+    timeout INT UNSIGNED,
+    retries INT CHECK (retries&gt;=0 AND retries &lt;=1000),
+    delay INT UNSIGNED,
+    next_query_flagIN INT UNSIGNED,
+    mirror_flagOUT INT UNSIGNED,
+    mirror_hostgroup INT UNSIGNED,
+    error_msg VARCHAR,
+    OK_msg VARCHAR,
+    sticky_conn INT CHECK (sticky_conn IN (0,1)),
+    multiplex INT CHECK (multiplex IN (0,1,2)),
+    log INT CHECK (log IN (0,1)),
+    apply INT CHECK(apply IN (0,1)) NOT NULL DEFAULT 0,
+    comment VARCHAR)
+1 row in set (0.00 sec)
+MySQL [main] 10:25:34 &gt;
+</code></pre><p>rule_id：表主键，自增，规则处理是以rule_id为顺序进行。</p>
+<p>active：只有active=1时的规则才会参与匹配。<br>username：过滤匹配用户名的条件，如果是非空值，则仅当连接使用正确的用户名时，查询才匹配。<br>schemaname：匹配schemaname的过滤条件，如果是非空值，则仅当连接schemaname用作默认模式时，查询才匹配。<br>flagIN,flagOUT,apply：用来定义路由链chains of rules<br>首先会检查flagIN=0的规则，以rule_id的顺序；如果没有匹配上，则走这个用户的default_hostgroup。<br>当匹配一条规则后，会检查flagOUT。<br>如果不为NULL，并且flagIN!=flagOUT，则进入以flagIN为上一个flagOUT值的新规则链。<br>如果不为NULL，并且flagIN=flagOUT，则应用这条规则。<br>如果为NULL，或者apply=1，则结束，应用这条规则。<br>如果最终没有匹配到，则找到这个用户的default_hostgroup。<br>client_addr：匹配客户端来源IP。<br>proxy_addr,proxy_port：匹配本地proxysql的ip、端口。<br>digest：精确匹配的查询。<br>match_digest：正则匹配查询。query,digest是指对查询去掉具体值后进行”模糊化“后的查询，类似pt-query-digest的效果。<br>match_pattern：正则匹配查询。<br>以上都是匹配查询的规则，1.4版本可以通过变量mysql-query_processor_regex设置，支持RE2和PCRE，1.4版本开始默认为PCRE。<br>negate_match_pattern：反向匹配，相当于对match_digest/match_pattern的匹配取反。<br>re_modifiers：修改正则匹配的参数，比如默认的：忽略大小写CASELESS、禁用GLOBAL。<br>下面是匹配后的行为：<br>replace_pattern：查询重写，默认为空。<br>destination_hostgroup：路由查询到这个hostgroup，当然如果用户显式start transaction且transaction_persistent=1,那么即使匹配到了，也依然按照事务里第一条sql的路由规则去走的。<br>cache_ttl：查询结果缓存的毫秒数。<br>timeout：这一类查询执行的的最大时间(毫秒),超时则自动kill。<br>这是对后端DB的保护机制，相当于阿里云RDS的loose_max_statement_time变量的功能，但不同的是，阿里云这个变量的时间时不包括DML操作出现InnoDB行锁等待的时间，而ProxySQL的这个timeout是计算从发送sql到等待响应的时间。默认mysql-default_query_timeout是10h。<br>retries：语句在执行失败时，重试次数。默认由mysql-query_retries_on_failure变量指定，为1。建议不要重试，有风险。<br>delay：查询延迟执行，这是ProxySQL提供的限流机制，会让其它的查询优先执行。<br>默认值mysql-default_query_delay为0。<br>mirror_flagOUT,mirror_hostgroup：与镜像相关的设置。<br>error_msg：默认为NULL，如果指定了则这个查询直接被block掉，将error_msg返回给客户端。<br>multiplex：连接是否利用，请参考文章。<br>log：是否记录查询日志，可以看到log是否记录的对象是根据规则。<br>要开启日志记录，需要设置变量mysql-eventslog_filename来指定文件名，然后这个log标记为1。但是目前proxysql记录的日志是二进制格式，需要特定的工具才能读取：eventslog_reader_sample。这个工具在源码目录 tools下面。</p>
+<h4 id="scheduler调度表"><a href="#scheduler调度表" class="headerlink" title="scheduler调度表"></a>scheduler调度表</h4><pre><code>MySQL [main] 10:27:52 &gt; show create table scheduler\G
+*************************** 1. row ***************************
+       table: scheduler
+Create Table: CREATE TABLE scheduler (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    active INT CHECK (active IN (0,1)) NOT NULL DEFAULT 1,
+    interval_ms INTEGER CHECK (interval_ms&gt;=100 AND interval_ms&lt;=100000000) NOT NULL,
+    filename VARCHAR NOT NULL,
+    arg1 VARCHAR,
+    arg2 VARCHAR,
+    arg3 VARCHAR,
+    arg4 VARCHAR,
+    arg5 VARCHAR,
+    comment VARCHAR NOT NULL DEFAULT &apos;&apos;)
+1 row in set (0.00 sec)
+MySQL [main] 11:09:59 &gt;
+</code></pre><p>id：调度程序作业的唯一标识符。</p>
+<p>active：如果设置为1，则作业处于活动状态。<br>interval_ms：工作的开始频率(以毫秒为单位)，最小interval_ms为100毫秒。<br>filename：可执行文件的完整路径。<br>arg1-arg5：传递作业的参数。最多5个。<br>comment：注释。<br>参考文档</p>
+<h3 id="disk库"><a href="#disk库" class="headerlink" title="disk库"></a>disk库</h3><pre><code>MySQL [main] 15:12:14 &gt; show tables from disk;
++------------------------------------+
+| tables                             |
++------------------------------------+
+| global_variables                   |
+| mysql_collations                   |
+| mysql_group_replication_hostgroups |
+| mysql_query_rules                  |
+| mysql_replication_hostgroups       |
+| mysql_servers                      |
+| mysql_users                        |
+| proxysql_servers                   |
+| scheduler                          |
++------------------------------------+
+9 rows in set (0.00 sec)
+MySQL [main] 15:12:26 &gt;
+</code></pre><p>具体的表介绍和main库一致。</p>
+<h3 id="stats库"><a href="#stats库" class="headerlink" title="stats库"></a>stats库</h3><pre><code>MySQL [main] 15:12:26 &gt; show tables from stats;
++-----------------------------------+
+| tables                            |
++-----------------------------------+
+| global_variables                  |
+| stats_memory_metrics              |
+| stats_mysql_commands_counters     |
+| stats_mysql_connection_pool       |
+| stats_mysql_connection_pool_reset |
+| stats_mysql_global                |
+| stats_mysql_processlist           |
+| stats_mysql_query_digest          |
+| stats_mysql_query_digest_reset    |
+| stats_mysql_query_rules           |
+| stats_mysql_users                 |
+| stats_proxysql_servers_metrics    |
+| stats_proxysql_servers_status     |
++-----------------------------------+
+13 rows in set (0.00 sec)
+MySQL [main] 15:13:53 &gt;
+</code></pre><h4 id="stats-mysql-commands-counters表"><a href="#stats-mysql-commands-counters表" class="headerlink" title="stats_mysql_commands_counters表"></a>stats_mysql_commands_counters表</h4><pre><code>MySQL [stats] 15:15:36 &gt; show create table stats.stats_mysql_commands_counters\G
+*************************** 1. row ***************************
+       table: stats_mysql_commands_counters
+Create Table: CREATE TABLE stats_mysql_commands_counters (
+    Command VARCHAR NOT NULL PRIMARY KEY,
+    Total_Time_us INT NOT NULL,
+    Total_cnt INT NOT NULL,
+    cnt_100us INT NOT NULL,
+    cnt_500us INT NOT NULL,
+    cnt_1ms INT NOT NULL,
+    cnt_5ms INT NOT NULL,
+    cnt_10ms INT NOT NULL,
+    cnt_50ms INT NOT NULL,
+    cnt_100ms INT NOT NULL,
+    cnt_500ms INT NOT NULL,
+    cnt_1s INT NOT NULL,
+    cnt_5s INT NOT NULL,
+    cnt_10s INT NOT NULL,
+    cnt_INFs)
+1 row in set (0.00 sec)
+MySQL [stats] 15:15:58 &gt;
+</code></pre><p>command：已执行的SQL命令的类型，如FLUSH、INSERT、KILL、SELECT FOR UPDATE等。<br>Total_Time_us：执行该类型命令的总时间(以毫秒为单位)。<br>Total_cnt：执行该类型的命令的总数。<br>cnt_100us-cnt_INFs：在指定的时间限制内执行的给定类型的命令总数和前一个命令的总数。</p>
+<h4 id="stats-mysql-connection-pool表"><a href="#stats-mysql-connection-pool表" class="headerlink" title="stats_mysql_connection_pool表"></a>stats_mysql_connection_pool表</h4><pre><code>MySQL [stats] 15:15:58 &gt; show create table stats.stats_mysql_connection_pool \G 
+*************************** 1. row ***************************
+       table: stats_mysql_connection_pool
+Create Table: CREATE TABLE stats_mysql_connection_pool (
+    hostgroup INT,
+    srv_host VARCHAR,
+    srv_port INT,
+    status VARCHAR,
+    ConnUsed INT,
+    ConnFree INT,
+    ConnOK INT,
+    ConnERR INT,
+    Queries INT,
+    Bytes_data_sent INT,
+    Bytes_data_recv INT,
+    Latency_us INT)
+1 row in set (0.00 sec)
+MySQL [stats] 15:20:08 &gt;
+</code></pre><p>hostgroup：后端服务器所属的主机组，单个后端服务器可以属于多个主机组。</p>
+<p>srv_host,srv_port：mysqld后端服务器正在侦听连接的TCP端点的IP和Port。<br>status：后端服务器的状态。可以有ONLINE，SHUNNED，OFFLINE_SOFT，OFFLINE_HARD。<br>ConnUsed：ProxySQL当前使用多少个连接来向后端服务器发送查询。<br>ConnFree：目前有多少个连接是空闲。<br>ConnOK：成功建立了多少个连接。<br>ConnERR：没有成功建立多少个连接。<br>Queries：路由到此特定后端服务器的查询数。<br>Bytes_data_sent：发送到后端的数据量。<br>Bytes_data_recv：从后端接收的数据量。<br>Latency_ms：从Monitor报告的当前ping以毫秒为单位的延迟时间。</p>
+<h4 id="stats-mysql-global表"><a href="#stats-mysql-global表" class="headerlink" title="stats_mysql_global表"></a>stats_mysql_global表</h4><pre><code>MySQL [stats] 15:20:08 &gt; show create table stats.stats_mysql_global\G          
+*************************** 1. row ***************************
+       table: stats_mysql_global
+Create Table: CREATE TABLE stats_mysql_global (
+    Variable_Name VARCHAR NOT NULL PRIMARY KEY,
+    Variable_Value VARCHAR NOT NULL)
+1 row in set (0.00 sec)
+MySQL [stats] 15:22:35 &gt;
+Variable_Name：代表与MySQL相关的代理级别的全局统计
+如Client_Connections_aborted：由于无效凭据或max_connections而导致的前端连接数已达到；
+如Client_Connections_connected：当前连接的前端连接数。
+如Client_Connections_created：到目前为止创建的前端连接数。等等。
+
+Variable_Value：统计所对应的值。
+</code></pre><h4 id="stats-mysql-processlist表"><a href="#stats-mysql-processlist表" class="headerlink" title="stats_mysql_processlist表"></a>stats_mysql_processlist表</h4><pre><code>MySQL [stats] 15:24:11 &gt; show create table stats.stats_mysql_processlist\G
+*************************** 1. row ***************************
+       table: stats_mysql_processlist
+Create Table: CREATE TABLE stats_mysql_processlist (
+    ThreadID INT NOT NULL,
+    SessionID INTEGER PRIMARY KEY,
+    user VARCHAR,
+    db VARCHAR,
+    cli_host VARCHAR,
+    cli_port INT,
+    hostgroup INT,
+    l_srv_host VARCHAR,
+    l_srv_port INT,
+    srv_host VARCHAR,
+    srv_port INT,
+    command VARCHAR,
+    time_ms INT NOT NULL,
+    info VARCHAR)
+1 row in set (0.00 sec)
+MySQL [stats] 15:26:43 &gt;
+</code></pre><p>ThreadID：ProxySQL线程的内部ID。</p>
+<p>SessionID：ProxySQL会话ID，通过这个ID可以进行kill操作。<br>user：与MySQL客户端连接到ProxySQL的用户。<br>db：当前选择的数据库。<br>cli_host,cli_port：连接ProxySQL的IP和TCP端口。<br>hostgroup：当前主机组。如果正在处理查询，则是查询已被路由或将要路由的主机组，或默认主机组。可以通过这个查看该SQL到底是到哪个HG里。<br>l_srv_host,l_srv_port：ProxySQL的IP和TCP端口。<br>srv_host,srv_port：后端MySQL服务器的IP和端口。<br>command：正在执行的MySQL查询的类型。<br>time_ms：命令执行的时间(以毫秒为单位)。<br>info：正在执行的SQL。</p>
+<h4 id="stats-mysql-query-digest表"><a href="#stats-mysql-query-digest表" class="headerlink" title="stats_mysql_query_digest表"></a>stats_mysql_query_digest表</h4><pre><code>MySQL [stats] 15:26:43 &gt; show create table stats.stats_mysql_query_digest\G
+*************************** 1. row ***************************
+       table: stats_mysql_query_digest
+Create Table: CREATE TABLE stats_mysql_query_digest (
+    hostgroup INT,
+    schemaname VARCHAR NOT NULL,
+    username VARCHAR NOT NULL,
+    digest VARCHAR NOT NULL,
+    digest_text VARCHAR NOT NULL,
+    count_star INTEGER NOT NULL,
+    first_seen INTEGER NOT NULL,
+    last_seen INTEGER NOT NULL,
+    sum_time INTEGER NOT NULL,
+    min_time INTEGER NOT NULL,
+    max_time INTEGER NOT NULL,
+    PRIMARY KEY(hostgroup, schemaname, username, digest))
+1 row in set (0.00 sec)
+MySQL [stats] 15:29:27 &gt;
+</code></pre><p>hostgroup：发送查询的主机组。值-1表示查询查询缓存。</p>
+<p>schemaname：查询的数据库。<br>user：连接ProxySQL的用户名。<br>digest：一个十六进制散列，表示其参数剥离的SQL。<br>digest_text：参数剥离的实际SQL文本<br>count_star：执行查询的总次数（参数的值不同）。<br>first_seen：unix时间戳，是通过代理路由查询的第一时刻。<br>last_seen：unix时间戳，当查询通过代理路由时的最后一刻（到目前为止）。<br>sum_time：执行此类查询的总时间（以微秒为单位）。<br>这对于确定应用程序工作负载中花费的最多时间在哪里是非常有用的，并为改进的地方提供了一个良好的起点。<br>min_time,max_time - 执行此类查询时期望的持续时间范围。<br>min_time是到目前为止所看到的最小执行时间，而max_time表示最大执行时间，以微秒为单位。</p>
+<h4 id="stats-mysql-query-rules表"><a href="#stats-mysql-query-rules表" class="headerlink" title="stats_mysql_query_rules表"></a>stats_mysql_query_rules表</h4><pre><code>MySQL [stats] 15:29:27 &gt; show create table stats.stats_mysql_query_rules\G 
+*************************** 1. row ***************************
+       table: stats_mysql_query_rules
+Create Table: CREATE TABLE stats_mysql_query_rules (
+    rule_id INTEGER PRIMARY KEY,
+    hits INT NOT NULL)
+1 row in set (0.00 sec)
+MySQL [stats] 15:31:57 &gt;
+</code></pre><p>rule_id：路由规则的ID与main.mysql_query_rules的id对应。</p>
+<p>hits：此路由规则的匹配总数。 如果当前传入的查询符合规则，则会记录一次命中。<br>monitor库</p>
+<p>对后端MySQL的健康检查，由变量mysql-monitor_enabled来确定是否开启Monitor模块。</p>
+<pre><code>MySQL [stats] 15:35:32 &gt; show tables from monitor;                               
++------------------------------------+
+| tables                             |
++------------------------------------+
+| mysql_server_connect               |
+| mysql_server_connect_log           |
+| mysql_server_group_replication_log |
+| mysql_server_ping                  |
+| mysql_server_ping_log              |
+| mysql_server_read_only_log         |
+| mysql_server_replication_lag_log   |
++------------------------------------+
+7 rows in set (0.00 sec)
+MySQL [stats] 15:35:52 &gt;
+</code></pre><h4 id="mysql-server-connect-mysql-server-connect-log表"><a href="#mysql-server-connect-mysql-server-connect-log表" class="headerlink" title="mysql_server_connect/mysql_server_connect_log表"></a>mysql_server_connect/mysql_server_connect_log表</h4><pre><code>MySQL [stats] 15:37:39 &gt; show create table monitor.mysql_server_connect\G  
+*************************** 1. row ***************************
+       table: mysql_server_connect
+Create Table: CREATE TABLE mysql_server_connect (
+    hostname VARCHAR NOT NULL,
+    port INT NOT NULL DEFAULT 3306,
+    time_since INT NOT NULL DEFAULT 0,
+    time_until INT NOT NULL DEFAULT 0,
+    connect_success_count INT NOT NULL DEFAULT 0,
+    connect_success_first INT NOT NULL DEFAULT 0,
+    connect_success_last INT NOT NULL DEFAULT 0,
+    connect_success_time_min INT NOT NULL DEFAULT 0,
+    connect_success_time_max INT NOT NULL DEFAULT 0,
+    connect_success_time_total INT NOT NULL DEFAULT 0,
+    connect_failure_count INT NOT NULL DEFAULT 0,
+    connect_failure_first INT NOT NULL DEFAULT 0,
+    connect_failure_last INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (hostname, port))
+1 row in set (0.00 sec)
+MySQL [stats] 15:37:46 &gt; show create table monitor.mysql_server_connect_log\G
+*************************** 1. row ***************************
+       table: mysql_server_connect_log
+Create Table: CREATE TABLE mysql_server_connect_log (
+    hostname VARCHAR NOT NULL,
+    port INT NOT NULL DEFAULT 3306,
+    time_start_us INT NOT NULL DEFAULT 0,
+    connect_success_time_us INT DEFAULT 0,
+    connect_error VARCHAR,
+    PRIMARY KEY (hostname, port, time_start_us))
+1 row in set (0.00 sec)
+MySQL [stats] 15:37:51 &gt;
+</code></pre><p>连接到所有MySQL服务器以检查它们是否可用，该表用来存放检测连接的日志。由变量mysql-monitor_connect_interval来控制其检测的时间间隔，由参数mysql-monitor_connect_timeout控制连接是否超时（默认200毫秒）。</p>
+<h4 id="mysql-server-ping-mysql-server-ping-log表"><a href="#mysql-server-ping-mysql-server-ping-log表" class="headerlink" title="mysql_server_ping/mysql_server_ping_log表"></a>mysql_server_ping/mysql_server_ping_log表</h4><pre><code>MySQL [stats] 15:39:23 &gt; show create table monitor.mysql_server_ping\G       
+*************************** 1. row ***************************
+       table: mysql_server_ping
+Create Table: CREATE TABLE mysql_server_ping (
+    hostname VARCHAR NOT NULL,
+    port INT NOT NULL DEFAULT 3306,
+    time_since INT NOT NULL DEFAULT 0,
+    time_until INT NOT NULL DEFAULT 0,
+    ping_success_count INT NOT NULL DEFAULT 0,
+    ping_success_first INT NOT NULL DEFAULT 0, ping_success_last INT NOT NULL DEFAULT 0,
+    ping_success_time_min INT NOT NULL DEFAULT 0,
+    ping_success_time_max INT NOT NULL DEFAULT 0,
+    ping_success_time_total INT NOT NULL DEFAULT 0,
+    ping_failure_count INT NOT NULL DEFAULT 0,
+    ping_failure_first INT NOT NULL DEFAULT 0,
+    ping_failure_last INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (hostname, port))
+1 row in set (0.00 sec)
+MySQL [stats] 15:40:12 &gt; show create table monitor.mysql_server_ping_log\G
+*************************** 1. row ***************************
+       table: mysql_server_ping_log
+Create Table: CREATE TABLE mysql_server_ping_log (
+     hostname VARCHAR NOT NULL,
+    port INT NOT NULL DEFAULT 3306,
+    time_start_us INT NOT NULL DEFAULT 0,
+    ping_success_time_us INT DEFAULT 0,
+    ping_error VARCHAR,
+    PRIMARY KEY (hostname, port, time_start_us))
+1 row in set (0.00 sec)
+MySQL [stats] 15:40:15 &gt;
+</code></pre><p>使用mysql_ping API ping后端MySQL服务器检查它们是否可用，该表用来存放ping的日志。由变量mysql-monitor_ping_interval控制ping的时间间隔，默认值：10000（毫秒，相当于10秒）。</p>
+<h4 id="mysql-server-replication-lag-log表"><a href="#mysql-server-replication-lag-log表" class="headerlink" title="mysql_server_replication_lag_log表"></a>mysql_server_replication_lag_log表</h4><pre><code>MySQL [stats] 15:40:53 &gt; show create table monitor.mysql_server_replication_lag_log\G
+*************************** 1. row ***************************
+       table: mysql_server_replication_lag_log
+Create Table: CREATE TABLE mysql_server_replication_lag_log (
+     hostname VARCHAR NOT NULL,
+    port INT NOT NULL DEFAULT 3306,
+    time_start_us INT NOT NULL DEFAULT 0,
+    success_time_us INT DEFAULT 0,
+    repl_lag INT DEFAULT 0,
+    error VARCHAR,
+    PRIMARY KEY (hostname, port, time_start_us))
+1 row in set (0.00 sec)
+MySQL [stats] 15:41:12 &gt;
+</code></pre><p>后端MySQL服务主从延迟的检测。由参数mysql-monitor_replication_lag_interval控制检测间隔时间， 如果复制滞后太大，可以暂时关闭从。由mysql_servers.max_replication_lag列控制。默认值：10000（毫秒，相当于10秒）。</p>
+<h2 id="内置参数"><a href="#内置参数" class="headerlink" title="内置参数"></a>内置参数</h2><p>global_variables 1.4版本中有95个参数，参数较多，解释请参考文档。</p>
+<pre><code>MySQL [main] 11:16:22 &gt; show variables;
++-----------------------------------------------------+--------------------+
+| Variable_name                                       | Value              |
++-----------------------------------------------------+--------------------+
+| admin-admin_credentials                             | admin:admin        |
+| admin-cluster_check_interval_ms                     | 1000               |
+| admin-cluster_password                              |                    |
+| admin-cluster_username                              |                    |
+| admin-hash_passwords                                | true               |
+| admin-mysql_ifaces                                  | 0.0.0.0:6032       |
+| admin-read_only                                     | false              |
+| admin-refresh_interval                              | 2000               |
+| admin-stats_credentials                             | stats:stats        |
+| admin-telnet_admin_ifaces                           | (null)             |
+| admin-telnet_stats_ifaces                           | (null)             |
+| admin-version                                       | 1.4.1-45-gab4e6ee  |
+| mysql-client_found_rows                             | true               |
+| mysql-commands_stats                                | true               |
+| mysql-connect_retries_delay                         | 1                  |
+| mysql-connect_retries_on_failure                    | 10                 |
+| mysql-connect_timeout_server                        | 3000               |
+| mysql-connect_timeout_server_max                    | 10000              |
+| mysql-connection_delay_multiplex_ms                 | 0                  |
+| mysql-connection_max_age_ms                         | 0                  |
+| mysql-default_charset                               | utf8               |
+| mysql-default_max_latency_ms                        | 1000               |
+| mysql-default_query_delay                           | 0                  |
+| mysql-default_query_timeout                         | 36000000           |
+| mysql-default_reconnect                             | true               |
+| mysql-default_schema                                | information_schema |
+| mysql-default_sql_mode                              |                    |
+| mysql-default_time_zone                             | SYSTEM             |
+| mysql-enforce_autocommit_on_reads                   | false              |
+| mysql-eventslog_filename                            |                    |
+| mysql-eventslog_filesize                            | 104857600          |
+| mysql-forward_autocommit                            | false              |
+| mysql-free_connections_pct                          | 10                 |
+| mysql-have_compress                                 | true               |
+| mysql-hostgroup_manager_verbose                     | 1                  |
+| mysql-init_connect                                  | (null)             |
+| mysql-interfaces                                    | 0.0.0.0:6033       |
+| mysql-long_query_time                               | 1000               |
+| mysql-max_allowed_packet                            | 4194304            |
+| mysql-max_connections                               | 2048               |
+| mysql-max_stmts_cache                               | 10000              |
+| mysql-max_stmts_per_connection                      | 20                 |
+| mysql-max_transaction_time                          | 14400000           |
+| mysql-mirror_max_concurrency                        | 16                 |
+| mysql-mirror_max_queue_length                       | 32000              |
+| mysql-monitor_connect_interval                      | 60000              |
+| mysql-monitor_connect_timeout                       | 600                |
+| mysql-monitor_enabled                               | true               |
+| mysql-monitor_groupreplication_healthcheck_interval | 5000               |
+| mysql-monitor_groupreplication_healthcheck_timeout  | 800                |
+| mysql-monitor_history                               | 600000             |
+| mysql-monitor_password                              | monitor            |
+| mysql-monitor_ping_interval                         | 10000              |
+| mysql-monitor_ping_max_failures                     | 3                  |
+| mysql-monitor_ping_timeout                          | 1000               |
+| mysql-monitor_query_interval                        | 60000              |
+| mysql-monitor_query_timeout                         | 100                |
+| mysql-monitor_read_only_interval                    | 1500               |
+| mysql-monitor_read_only_timeout                     | 500                |
+| mysql-monitor_replication_lag_interval              | 10000              |
+| mysql-monitor_replication_lag_timeout               | 1000               |
+| mysql-monitor_slave_lag_when_null                   | 60                 |
+| mysql-monitor_username                              | monitor            |
+| mysql-monitor_wait_timeout                          | true               |
+| mysql-monitor_writer_is_also_reader                 | true               |
+| mysql-multiplexing                                  | true               |
+| mysql-ping_interval_server_msec                     | 120000             |
+| mysql-ping_timeout_server                           | 500                |
+| mysql-poll_timeout                                  | 2000               |
+| mysql-poll_timeout_on_failure                       | 100                |
+| mysql-query_cache_size_MB                           | 256                |
+| mysql-query_digests                                 | true               |
+| mysql-query_digests_lowercase                       | false              |
+| mysql-query_digests_max_digest_length               | 2048               |
+| mysql-query_digests_max_query_length                | 65000              |
+| mysql-query_processor_iterations                    | 0                  |
+| mysql-query_processor_regex                         | 1                  |
+| mysql-query_retries_on_failure                      | 1                  |
+| mysql-server_capabilities                           | 45578              |
+| mysql-server_version                                | 5.5.30             |
+| mysql-servers_stats                                 | true               |
+| mysql-session_idle_ms                               | 1000               |
+| mysql-session_idle_show_processlist                 | true               |
+| mysql-sessions_sort                                 | true               |
+| mysql-shun_on_failures                              | 5                  |
+| mysql-shun_recovery_time_sec                        | 10                 |
+| mysql-ssl_p2s_ca                                    | (null)             |
+| mysql-ssl_p2s_cert                                  | (null)             |
+| mysql-ssl_p2s_cipher                                | (null)             |
+| mysql-ssl_p2s_key                                   | (null)             |
+| mysql-stacksize                                     | 1048576            |
+| mysql-threads                                       | 4                  |
+| mysql-threshold_query_length                        | 524288             |
+| mysql-threshold_resultset_size                      | 4194304            |
+| mysql-wait_timeout                                  | 28800000           |
++-----------------------------------------------------+--------------------+
+95 rows in set (0.00 sec)
+MySQL [main] 11:16:33 &gt;
+</code></pre><h2 id="ProxySQL多层配置设计"><a href="#ProxySQL多层配置设计" class="headerlink" title="ProxySQL多层配置设计"></a>ProxySQL多层配置设计</h2><h3 id="ProxySQL设计模型介绍"><a href="#ProxySQL设计模型介绍" class="headerlink" title="ProxySQL设计模型介绍"></a>ProxySQL设计模型介绍</h3><p>ProxySQL使用多层配置系统，适合满足以下需求：</p>
+<p>允许自动更新配置，与MySQL兼容管理界面；<br>允许在线修改配置，不用重启ProxySQL；<br>允许回滚配置；<br>多层配置系统的实现，如下图：</p>
+<pre><code>+-------------------------+
+|         RUNTIME         |
++-------------------------+
+       /|\          |
+        |           |
+    [1] |       [2] |
+        |          \|/
++-------------------------+
+|         MEMORY          |
++-------------------------+ _
+       /|\          |      |\
+        |           |        \
+    [3] |       [4] |         \ [5]
+        |          \|/         \
++-------------------------+  +-------------------------+
+|          DISK           |  |       CONFIG FILE       |
++-------------------------+  +-------------------------+
+</code></pre><p>RUNTIME代表ProxySQL当前生效的配置，包括global_variables、mysql_servers、mysql_users、mysql_query_rules。无法直接修改这里的配置，必须要从下一层load过来。</p>
+<p>MEMORY(main)代表平时在mysql命令行修改的main里的配置，可以认为是SQLite数据库在内存的镜像。可修改以下：</p>
+<p>mysql_server        后端服务器列表<br>mysql_users         连接到ProxySQL的用户列表及其凭据<br>mysql_query_rules   将流量路由到不同的后端服务器的规则列表<br>global_variables    全局变量列表<br>mysql_collat        MySQL排序规则列表<br>DISK和CONFIG FILE表示磁盘上SQLite数据库，默认位置在$datadir/proxysql.db，在重新启动过程中，内存中未被保存的配置将丢失。/etc/proxysql.cnf文件只在第一次初始化的时候用到。如要修改端口，还是需要在管理命令行里修改，再save到磁盘。</p>
+<p>ProxySQL多层配置修改示例</p>
+<p>mysql users</p>
+<pre><code>LOAD MYSQL USERS TO RUNTIME / LOAD MYSQL USERS FROM MEMORY
+SAVE MYSQL USERS TO MEMORY / SAVE MYSQL USERS FROM RUNTIME
+LOAD MYSQL USERS TO MEMORY / LOAD MYSQL USERS FROM DISK
+SAVE MYSQL USERS TO DISK /  SAVE MYSQL USERS FROM MEMORY
+LOAD MYSQL USERS FROM CONFIG
+mysql servers
+
+LOAD MYSQL SERVERS TO RUNTIME   让修改的配置生效
+SAVE MYSQL SERVERS TO MEMORY
+LOAD MYSQL SERVERS TO MEMORY
+SAVE MYSQL SERVERS TO DISK      将修改的配置持久化
+LOAD MYSQL SERVERS FROM CONFIG
+mysql query rules
+
+load mysql query rules to run
+save mysql query rules to mem
+load mysql query rules to mem
+save mysql query rules to disk
+load mysql query rules from config
+mysql variables
+
+load mysql variables to runtime
+save mysql variables to memory
+load mysql variables to memory
+save mysql variables to disk
+load mysql variables from config
+admin variables
+
+load admin variables to runtime
+save admin variables to memory
+load admin variables to memory
+save admin variables to disk
+load admin variables from config
+</code></pre><p>参考</p>
+<p><a href="https://github.com/sysown/proxysql/wiki/Multi-layer-configuration-system" target="_blank" rel="noopener">https://github.com/sysown/proxysql/wiki/Multi-layer-configuration-system</a><br><a href="https://severalnines.com/blog/mysql-load-balancing-proxysql-overview" target="_blank" rel="noopener">https://severalnines.com/blog/mysql-load-balancing-proxysql-overview</a><br><a href="http://seanlook.com/2017/04/10/mysql-proxysql-install-config/" target="_blank" rel="noopener">http://seanlook.com/2017/04/10/mysql-proxysql-install-config/</a></p>
+<h1 id="ProxySQL读写分离示例"><a href="#ProxySQL读写分离示例" class="headerlink" title="ProxySQL读写分离示例"></a>ProxySQL读写分离示例</h1><h2 id="准备-1"><a href="#准备-1" class="headerlink" title="准备"></a>准备</h2><p>Master:192.168.56.101:3306<br>Slave :192.168.56.102:3306(192.168.56.102)<br>ProxySQL：192.168.56.102:3306(192.168.56.102)<br>版本：percona-server 5.7.18</p>
+<h2 id="安装配置"><a href="#安装配置" class="headerlink" title="安装配置"></a>安装配置</h2><p>主从安装配置省略。</p>
+<h2 id="示例目标"><a href="#示例目标" class="headerlink" title="示例目标"></a>示例目标</h2><p>客户端通过访问ProxySQL的ip，实际访问Master和Slave的效果。</p>
+<h2 id="添加后端DB服务"><a href="#添加后端DB服务" class="headerlink" title="添加后端DB服务"></a>添加后端DB服务</h2><p>100是主库，101是从库，同时主库也处理1/10的读请求，登录ProxySQL管理端设置：</p>
+<pre><code>MySQL [(none)] 14:22:06 &gt; insert into mysql_servers(hostgroup_id,hostname,port,weight,comment) values(100, &apos;192.168.56.101&apos;, 3306, 1, &apos;db0,ReadWrite&apos;),(101, &apos;192.168.56.102&apos;, 3306, 9, &apos;db0,ReadOnly&apos;);
+Query OK, 2 rows affected (0.00 sec)
+</code></pre><h2 id="添加访问用户"><a href="#添加访问用户" class="headerlink" title="添加访问用户"></a>添加访问用户</h2><p>登录Master主库设置监控用户和程序用户(由于是测试使用，权限较大，主机允许所有)：</p>
+<pre><code>MySQL [(none)] 15:51:32 &gt; create user &apos;monitor&apos;@&apos;%&apos; identified by &apos;monitor&apos;;
+Query OK, 0 rows affected (0.00 sec)
+MySQL [(none)] 15:51:37 &gt; grant select,super,process,show databases,replication client,replication slave on *.* to &apos;monitor&apos;@&apos;%&apos;;
+Query OK, 0 rows affected (0.00 sec)
+MySQL [(none)] 15:45:23 &gt; create user &apos;user0&apos;@&apos;%&apos; identified by &apos;password0&apos;;                   
+Query OK, 0 rows affected (0.00 sec)
+MySQL [(none)] 15:49:42 &gt; GRANT SELECT, RELOAD, PROCESS, SHOW DATABASES, SUPER, LOCK TABLES, EXECUTE, SHOW VIEW, TRIGGER, EVENT ON *.* TO &apos;read0&apos;@&apos;%&apos;;
+Query OK, 0 rows affected (0.00 sec)
+</code></pre><p>登录ProxySQL管理端设置：<br>这里default_hostgroup指定了hostgroup为100的主库，下文会设置SELECT …FOR UPDATE规则到100，SELECT到101，其他所有的SQL到default_hostgroup，也就是主库。</p>
+<pre><code>MySQL [(none)] 14:22:15 &gt; INSERT INTO mysql_users (username, password, active, default_hostgroup, max_connections) VALUES (&apos;user0&apos;, &apos;password0&apos;, 1, 100, 1000); 
+Query OK, 2 rows affected (0.00 sec)
+</code></pre><h2 id="添加复制关系"><a href="#添加复制关系" class="headerlink" title="添加复制关系"></a>添加复制关系</h2><p>登录ProxySQL管理端设置：</p>
+<pre><code>MySQL [main] 17:32:46 &gt; INSERT INTO mysql_replication_hostgroups VALUES(100,101,&apos;db0&apos;);
+Query OK, 1 row affected (0.00 sec)
+MySQL [main] 17:33:30 &gt; load mysql variables to runtime;
+Query OK, 0 rows affected (0.00 sec)
+MySQL [main] 17:33:54 &gt; save mysql variables to disk;
+Query OK, 83 rows affected (0.01 sec)
+MySQL [main] 17:35:53 &gt; SELECT * FROM monitor.mysql_server_read_only_log ORDER BY time_start_us DESC LIMIT 10;
++---------------+------+------------------+-----------------+-----------+-------+
+| hostname      | port | time_start_us    | success_time_us | read_only | error |
++---------------+------+------------------+-----------------+-----------+-------+
+| 192.168.56.102  | 3306 | 1504085770195146 | 630             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504085770194710 | 23722           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504085768695087 | 650             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504085768694620 | 23706           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504085767194957 | 628             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504085767194507 | 23686           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504085765694834 | 634             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504085765694387 | 23669           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504085764194744 | 641             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504085764194301 | 23729           | 0         | NULL  |
++---------------+------+------------------+-----------------+-----------+-------+
+10 rows in set (0.00 sec)
+</code></pre><h2 id="修改全局变量"><a href="#修改全局变量" class="headerlink" title="修改全局变量"></a>修改全局变量</h2><p>登录ProxySQL管理端设置：</p>
+<pre><code>MySQL [(none)] 14:25:07 &gt; set mysql-query_retries_on_failure=0;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-max_stmts_per_connection=1000;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-eventslog_filename=&apos;queries.log&apos;;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-monitor_slave_lag_when_null=7200;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-ping_timeout_server=1500;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-monitor_connect_timeout=1000;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-default_max_latency_ms=2000;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-monitor_username=&apos;monitor&apos;;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-monitor_password=&apos;monitor&apos;;
+Query OK, 1 row affected (0.00 sec)
+MySQL [(none)] 14:25:07 &gt; set mysql-server_version=&apos;5.7.18&apos;;
+Query OK, 1 row affected (0.00 sec)
+</code></pre><p>全局变量生效并保存到磁盘：<br>登录ProxySQL管理端设置：</p>
+<pre><code>MySQL [(none)] 14:25:07 &gt; load mysql users to runtime;
+Query OK, 0 rows affected (0.00 sec)
+MySQL [(none)] 14:25:27 &gt; load mysql servers to runtime;
+Query OK, 0 rows affected (0.00 sec)
+MySQL [(none)] 14:25:27 &gt; load mysql variables to runtime;
+Query OK, 0 rows affected (0.00 sec)
+MySQL [(none)] 14:25:28 &gt; save mysql users to disk;
+Query OK, 0 rows affected (0.02 sec)
+MySQL [(none)] 14:25:36 &gt; save mysql servers to disk;
+save mysql variables to disk;Query OK, 0 rows affected (0.03 sec)
+MySQL [(none)] 14:25:37 &gt; save mysql variables to disk;
+Query OK, 83 rows affected (0.01 sec)
+MySQL [(none)] 14:25:37 &gt; save mysql users to mem;  -- 可以屏蔽看到的明文密码
+Query OK, 0 rows affected (0.00 sec)
+</code></pre><h2 id="路由规则"><a href="#路由规则" class="headerlink" title="路由规则"></a>路由规则</h2><p>ProxySQL使用查询规则来确定路由，如果没有规则用于查询，默认会访问hostgroup 0主机组，会报以下错误：</p>
+<p>[root@mysql_slave ~]# mysql -uuser0 -ppassword0 -h 127.0.0.1 -P6033 -e “SELECT 1”<br>mysql: [Warning] Using a password on the command line interface can be insecure.<br>ERROR 9001 (HY000) at line 1: Max connect timeout reached while reaching hostgroup 1 after 2000ms<br>设置路由规则：</p>
+<pre><code>MySQL [(none)] 09:29:14 &gt; use main;
+Database changed
+MySQL [main] 09:29:17 &gt; INSERT INTO mysql_query_rules (active, match_pattern, destination_hostgroup, cache_ttl) VALUES (1, &apos;^.*&apos;, 101, NULL);
+MySQL [main] 09:29:15 &gt; INSERT INTO mysql_query_rules (active, match_pattern, destination_hostgroup, cache_ttl) VALUES (1, &apos;^SELECT .* FOR UPDATE&apos;, 100, NULL);
+Query OK, 1 row affected (0.00 sec)
+MySQL [main] 09:29:17 &gt; INSERT INTO mysql_query_rules (active, match_pattern, destination_hostgroup, cache_ttl) VALUES (1, &apos;^SELECT .*&apos;, 101, NULL);
+Query OK, 1 row affected (0.00 sec)
+MySQL [main] 09:29:18 &gt; load mysql query rules to run;
+Query OK, 0 rows affected (0.00 sec)
+MySQL [main] 09:29:56 &gt; save mysql query rules to disk;
+Query OK, 0 rows affected (0.03 sec)
+</code></pre><h2 id="常用查询"><a href="#常用查询" class="headerlink" title="常用查询"></a>常用查询</h2><p>查询连接日志：</p>
+<pre><code>MySQL [(none)] 13:45:08 &gt; SELECT * FROM monitor.mysql_server_connect_log ORDER BY time_start_us DESC LIMIT 10;
++---------------+------+------------------+-------------------------+---------------+
+| hostname      | port | time_start_us    | connect_success_time_us | connect_error |
++---------------+------+------------------+-------------------------+---------------+
+| 192.168.56.102  | 3306 | 1504590343795072 | 410                     | NULL          |
+| 192.168.56.101 | 3306 | 1504590343780010 | 69662                   | NULL          |
+| 192.168.56.102  | 3306 | 1504590283795083 | 521                     | NULL          |
+| 192.168.56.101 | 3306 | 1504590283779977 | 68310                   | NULL          |
+| 192.168.56.102  | 3306 | 1504590223794987 | 533                     | NULL          |
+| 192.168.56.101 | 3306 | 1504590223779913 | 53220                   | NULL          |
+| 192.168.56.102  | 3306 | 1504590163794887 | 497                     | NULL          |
+| 192.168.56.101 | 3306 | 1504590163779772 | 71389                   | NULL          |
+| 192.168.56.102  | 3306 | 1504590103794788 | 487                     | NULL          |
+| 192.168.56.101 | 3306 | 1504590103779728 | 68372                   | NULL          |
++---------------+------+------------------+-------------------------+---------------+
+10 rows in set (0.00 sec)
+</code></pre><p>查询ping日志：</p>
+<pre><code>MySQL [(none)] 13:46:22 &gt; SELECT * FROM monitor.mysql_server_ping_log ORDER BY time_start_us DESC LIMIT 10;
++---------------+------+------------------+----------------------+------------+
+| hostname      | port | time_start_us    | ping_success_time_us | ping_error |
++---------------+------+------------------+----------------------+------------+
+| 192.168.56.102  | 3306 | 1504590413773092 | 100                  | NULL       |
+| 192.168.56.101 | 3306 | 1504590413770521 | 23105                | NULL       |
+| 192.168.56.102  | 3306 | 1504590403773088 | 168                  | NULL       |
+| 192.168.56.101 | 3306 | 1504590403770479 | 23080                | NULL       |
+| 192.168.56.102  | 3306 | 1504590393772977 | 135                  | NULL       |
+| 192.168.56.101 | 3306 | 1504590393770364 | 23078                | NULL       |
+| 192.168.56.102  | 3306 | 1504590383772899 | 138                  | NULL       |
+| 192.168.56.101 | 3306 | 1504590383770309 | 23205                | NULL       |
+| 192.168.56.102  | 3306 | 1504590373772885 | 102                  | NULL       |
+| 192.168.56.101 | 3306 | 1504590373770291 | 23099                | NULL       |
++---------------+------+------------------+----------------------+------------+
+10 rows in set (0.00 sec)
+</code></pre><p>查询后端DB状态</p>
+<pre><code>MySQL [(none)] 13:46:55 &gt; SELECT * FROM mysql_servers;
++--------------+---------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------------+
+| hostgroup_id | hostname      | port | status | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment       |
++--------------+---------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------------+
+| 100          | 192.168.56.101 | 3306 | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              | db0,ReadWrite |
+| 101          | 192.168.56.102  | 3306 | ONLINE | 9      | 0           | 1000            | 0                   | 0       | 0              | db0,ReadOnly  |
++--------------+---------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------------+
+2 rows in set (0.00 sec)
+</code></pre><p>查询监控状态：</p>
+<pre><code>MySQL [(none)] 13:47:56 &gt; SELECT * FROM monitor.mysql_server_read_only_log ORDER BY time_start_us DESC LIMIT 10;   
++---------------+------+------------------+-----------------+-----------+-------+
+| hostname      | port | time_start_us    | success_time_us | read_only | error |
++---------------+------+------------------+-----------------+-----------+-------+
+| 192.168.56.102  | 3306 | 1504590524103828 | 577             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504590524103406 | 23499           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504590522603717 | 646             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504590522603268 | 23487           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504590521103641 | 629             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504590521103182 | 23497           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504590519603662 | 639             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504590519603201 | 23525           | 0         | NULL  |
+| 192.168.56.102  | 3306 | 1504590518103492 | 618             | 1         | NULL  |
+| 192.168.56.101 | 3306 | 1504590518103062 | 23508           | 0         | NULL  |
++---------------+------+------------------+-----------------+-----------+-------+
+10 rows in set (0.00 sec)
+</code></pre><p>查询用户信息：</p>
+<pre><code>MySQL [(none)] 13:49:28 &gt;  SELECT * FROM mysql_users;   
++----------+-----------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+
+| username | password  | active | use_ssl | default_hostgroup | default_schema | schema_locked | transaction_persistent | fast_forward | backend | frontend | max_connections |
++----------+-----------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+
+| user0    | password0 | 1      | 0       | 100               | NULL           | 0             | 1                      | 0            | 1       | 1        | 1000            |
++----------+-----------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+
+1 row in set (0.00 sec)
+</code></pre><p>查询连接池：</p>
+<pre><code>MySQL [(none)] 13:51:19 &gt; SELECT * FROM stats.stats_mysql_connection_pool;
++-----------+---------------+----------+--------+----------+----------+--------+---------+---------+-----------------+-----------------+------------+
+| hostgroup | srv_host      | srv_port | status | ConnUsed | ConnFree | ConnOK | ConnERR | Queries | Bytes_data_sent | Bytes_data_recv | Latency_us |
++-----------+---------------+----------+--------+----------+----------+--------+---------+---------+-----------------+-----------------+------------+
+| 100       | 192.168.56.101 | 3306     | ONLINE | 0        | 1        | 1      | 0       | 3       | 58              | 233             | 23059      |
+| 101       | 192.168.56.102  | 3306     | ONLINE | 0        | 1        | 3      | 88      | 5       | 106             | 360             | 102        |
++-----------+---------------+----------+--------+----------+----------+--------+---------+---------+-----------------+-----------------+------------+
+2 rows in set (0.00 sec)
+</code></pre><p>查询执行命令统计信息：</p>
+<pre><code>MySQL [(none)] 13:51:47 &gt; SELECT * FROM stats_mysql_commands_counters WHERE Total_cnt;
++---------+---------------+-----------+-----------+-----------+---------+---------+----------+----------+-----------+-----------+--------+--------+---------+----------+
+| Command | Total_Time_us | Total_cnt | cnt_100us | cnt_500us | cnt_1ms | cnt_5ms | cnt_10ms | cnt_50ms | cnt_100ms | cnt_500ms | cnt_1s | cnt_5s | cnt_10s | cnt_INFs |
++---------+---------------+-----------+-----------+-----------+---------+---------+----------+----------+-----------+-----------+--------+--------+---------+----------+
+| SELECT  | 167664        | 27        | 15        | 4         | 0       | 6       | 0        | 1        | 0         | 1         | 0      | 0      | 0       | 0        |
+| SET     | 0             | 2         | 2         | 0         | 0       | 0       | 0        | 0        | 0         | 0         | 0      | 0      | 0       | 0        |
+| SHOW    | 13818         | 1         | 0         | 0         | 0       | 0       | 0        | 1        | 0         | 0         | 0      | 0      | 0       | 0        |
++---------+---------------+-----------+-----------+-----------+---------+---------+----------+----------+-----------+-----------+--------+--------+---------+----------+
+3 rows in set (0.00 sec)
+</code></pre><p>查询路由规则的详情：</p>
+<pre><code>MySQL [(none)] 13:53:05 &gt; SELECT * FROM stats_mysql_query_digest ORDER BY sum_time DESC;
++-----------+--------------------+----------+--------------------+----------------------------------+------------+------------+------------+----------+----------+----------+
+| hostgroup | schemaname         | username | digest             | digest_text                      | count_star | first_seen | last_seen  | sum_time | min_time | max_time |
++-----------+--------------------+----------+--------------------+----------------------------------+------------+------------+------------+----------+----------+----------+
+| 100       | information_schema | user0    | 0xA322907BCBC120DD | select * from tables limit ?     | 1          | 1504589288 | 1504589288 | 133826   | 133826   | 133826   |
+| 100       | information_schema | user0    | 0x02033E45904D3DF0 | show databases                   | 1          | 1504589886 | 1504589886 | 13818    | 13818    | 13818    |
+| 100       | information_schema | user0    | 0x3765930C7143F468 | select * from t1                 | 1          | 1504589311 | 1504589311 | 13466    | 13466    | 13466    |
+| 101       | information_schema | user0    | 0xA322907BCBC120DD | select * from tables limit ?     | 2          | 1504582304 | 1504583327 | 7325     | 3564     | 3761     |
+| 101       | test               | user0    | 0x814EDBB68FBACD5D | select * from neworders limit ?  | 2          | 1504583184 | 1504583242 | 5959     | 2964     | 2995     |
+| 101       | test               | user0    | 0x3765930C7143F468 | select * from t1                 | 3          | 1504583288 | 1504589859 | 3386     | 64       | 3056     |
+| 101       | test               | user0    | 0xA322907BCBC120DD | select * from tables limit ?     | 2          | 1504583168 | 1504583299 | 3095     | 117      | 2978     |
+| 101       | information_schema | user0    | 0x620B328FE9D6D71A | SELECT DATABASE()                | 2          | 1504589729 | 1504589859 | 607      | 193      | 414      |
+| 100       | information_schema | user0    | 0x226CD90D52A2BA0B | select @@version_comment limit ? | 8          | 1504582304 | 1504589886 | 0        | 0        | 0        |
+| 100       | test               | user0    | 0x52B8B04283B3A18D | set names utf8                   | 1          | 1504583162 | 1504583162 | 0        | 0        | 0        |
+| 100       | information_schema | user0    | 0x52B8B04283B3A18D | set names utf8                   | 1          | 1504582582 | 1504582582 | 0        | 0        | 0        |
+| 100       | test               | user0    | 0x226CD90D52A2BA0B | select @@version_comment limit ? | 6          | 1504583162 | 1504583299 | 0        | 0        | 0        |
++-----------+--------------------+----------+--------------------+----------------------------------+------------+------------+------------+----------+----------+----------+
+12 rows in set (0.00 sec)
+MySQL [(none)] 13:55:46 &gt; SELECT hostgroup hg, sum_time, count_star, digest_text FROM stats_mysql_query_digest ORDER BY sum_time DESC;
++-----+----------+------------+----------------------------------+
+| hg  | sum_time | count_star | digest_text                      |
++-----+----------+------------+----------------------------------+
+| 100 | 133826   | 1          | select * from tables limit ?     |
+| 100 | 13818    | 1          | show databases                   |
+| 100 | 13466    | 1          | select * from t1                 |
+| 101 | 7325     | 2          | select * from tables limit ?     |
+| 101 | 5959     | 2          | select * from neworders limit ?  |
+| 101 | 3386     | 3          | select * from t1                 |
+| 101 | 3095     | 2          | select * from tables limit ?     |
+| 101 | 607      | 2          | SELECT DATABASE()                |
+| 100 | 0        | 8          | select @@version_comment limit ? |
+| 100 | 0        | 1          | set names utf8                   |
+| 100 | 0        | 1          | set names utf8                   |
+| 100 | 0        | 6          | select @@version_comment limit ? |
++-----+----------+------------+----------------------------------+
+12 rows in set (0.00 sec)
+</code></pre><p>查询路由规则：</p>
+<pre><code>MySQL [(none)] 13:57:12 &gt; SELECT rule_id, match_digest, match_pattern, replace_pattern, cache_ttl, apply FROM mysql_query_rules ORDER BY rule_id;
++---------+--------------+-----------------------+-----------------+-----------+-------+
+| rule_id | match_digest | match_pattern         | replace_pattern | cache_ttl | apply |
++---------+--------------+-----------------------+-----------------+-----------+-------+
+| 10      | NULL         | ^SELECT .* FOR UPDATE | NULL            | NULL      | 0     |
+| 11      | NULL         | ^SELECT .*            | NULL            | NULL      | 0     |
++---------+--------------+-----------------------+-----------------+-----------+-------+
+2 rows in set (0.00 sec)
+</code></pre><p>参考：</p>
+<p><a href="https://github.com/sysown/proxysql/wiki/ProxySQL-Configuration#p6033" target="_blank" rel="noopener">https://github.com/sysown/proxysql/wiki/ProxySQL-Configuration#p6033</a><br><a href="http://seanlook.com/2017/04/17/mysql-proxysql-route-rw_split/" target="_blank" rel="noopener">http://seanlook.com/2017/04/17/mysql-proxysql-route-rw_split/</a><br><a href="http://severalnines.com/blog/how-proxysql-adds-failover-and-query-control-your-mysql-replication-setup" target="_blank" rel="noopener">http://severalnines.com/blog/how-proxysql-adds-failover-and-query-control-your-mysql-replication-setup</a></p>
+<h1 id="ProxySQL监控"><a href="#ProxySQL监控" class="headerlink" title="ProxySQL监控"></a>ProxySQL监控</h1><p>PMM是Percona推出的一款很好的监控MySQL和MongoDB的开源工具，安装方便，功能丰富，图表美观，同时也支持ProxySQL的监控，故选择PMM作为ProxySQL的监控软件。<br>这里以ProxySQL服务端(192.168.56.102)为例，作为PMM的客户端，PMM服务器为192.168.56.111,仅演示ProxySQL安装PMM客户端，服务器安装配置省略。</p>
+<h2 id="PMM-Client安装"><a href="#PMM-Client安装" class="headerlink" title="PMM Client安装"></a>PMM Client安装</h2><pre><code>[root@mysql_slave ~]# yum localinstall -y /hwdata/duanwenjie/test/proxysql-1.4.1-1-centos67.x86_64.rpm 
+Loaded plugins: security
+Setting up Local Package Process
+Examining /hwdata/duanwenjie/test/proxysql-1.4.1-1-centos67.x86_64.rpm: proxysql-1.4.1-1.x86_64
+Marking /hwdata/duanwenjie/test/proxysql-1.4.1-1-centos67.x86_64.rpm to be installed
+Resolving Dependencies
+There are unfinished transactions remaining. You might consider running yum-complete-transaction first to finish them.
+--&gt; Running transaction check
+---&gt; Package proxysql.x86_64 0:1.4.1-1 will be installed
+--&gt; Finished Dependency Resolution
+Dependencies Resolved
+========================================================================================================================================================================
+ Package                           Arch                            Version                             Repository                                                  Size
+========================================================================================================================================================================
+Installing:
+ proxysql                          x86_64                          1.4.1-1                             /proxysql-1.4.1-1-centos67.x86_64                           19 M
+Transaction Summary
+========================================================================================================================================================================
+Install       1 Package(s)
+Total size: 19 M
+Installed size: 19 M
+Downloading Packages:
+Running rpm_check_debug
+Running Transaction Test
+Transaction Test Succeeded
+Running Transaction
+Warning: RPMDB altered outside of yum.
+** Found 1 pre-existing rpmdb problem(s), &apos;yum check&apos; output follows:
+mysql-community-libs-5.7.16-1.el6.x86_64 has missing requires of mysql-community-common(x86-64) &gt;= (&apos;0&apos;, &apos;5.7.9&apos;, None)
+  Installing : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
+  Verifying  : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
+Installed:
+  proxysql.x86_64 0:1.4.1-1                                                                                                                                             
+Complete!
+[root@mysql_slave ~]#
+</code></pre><h2 id="PMM-Client配置"><a href="#PMM-Client配置" class="headerlink" title="PMM Client配置"></a>PMM Client配置</h2><pre><code>[root@mysql_slave ~]# ifconfig  #查看IP地址
+eth0      Link encap:Ethernet  HWaddr 00:16:3E:00:DC:49  
+          inet addr:192.168.56.102  Bcast:192.168.15.255  Mask:255.255.240.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1017660 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1380639 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:273791594 (261.1 MiB)  TX bytes:116287303 (110.9 MiB)
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:1297762 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1297762 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:141606631 (135.0 MiB)  TX bytes:141606631 (135.0 MiB)
+[root@mysql_slave ~]# pmm-admin config --bind-address 192.168.56.102 --client-address 192.168.56.102 --server 192.168.56.111:8080 --client-name ProxySQL_Test   #添加config
+OK, PMM server is alive.
+PMM Server      | 192.168.56.111:8080 
+Client Name     | ProxySQL_Test
+Client Address  | 192.168.56.102 (192.168.56.102)
+[root@mysql_slave ~]# pmm-admin add linux:metrics --force ProxySQL_Test     #添加Linux监控
+OK, now monitoring this system.
+[root@mysql_slave ~]# 
+[root@mysql_slave ~]# pmm-admin add proxysql:metrics --dsn &quot;admin:admin@tcp(127.0.0.1:6032)/&quot; proxysql6032 #添加ProxySQL监控
+OK, now monitoring ProxySQL metrics using DSN admin:***@tcp(localhost:6032)
+[root@mysql_slave ~]# 
+[root@mysql_slave ~]# pmm-admin list    #查看状态
+pmm-admin 1.3.0
+PMM Server      | 192.168.56.111:8080 
+Client Name     | ProxySQL_Test
+Client Address  | 192.168.56.102 (192.168.56.102)
+Service Manager | unix-systemv
+----------------- -------------- ----------- -------- ------------------------------ --------
+SERVICE TYPE      NAME           LOCAL PORT  RUNNING  DATA SOURCE                    OPTIONS 
+----------------- -------------- ----------- -------- ------------------------------ --------
+linux:metrics     ProxySQL_Test  42000       YES      -                                      
+mysql:metrics     ProxySQL_Test  42002       YES      root:***@tcp(127.0.0.1:3306)           
+proxysql:metrics  proxysql6032   42004       YES      admin:***@tcp(127.0.0.1:6032)          
+[root@mysql_slave ~]#
+</code></pre><p>PMM Server监控项包括：</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>ProxySQL是一款很出色的MySQL中间件，在稳定性上、易用性、高性能等方面表现很不错。由于发布的时间较短，功能可能还不太完善，需要多做测试，特别是查询路由和规则方面需要详情的了解，测试。可重点关注。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/读写分离/">读写分离</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2018/08/28-ProxySQL 安装配置详解及读写分离、负载均衡.html" data-title="ProxySQL 安装配置详解及读写分离、负载均衡 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/09/09-Percona Xtrabackup 2.4 恢复指定表.html" title="Percona Xtrabackup 2.4 恢复指定表">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Percona Xtrabackup 2.4 恢复指定表</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html"  title="内存的80％？应该如何调整你的innodb_buffer_pool_size">
+ <strong>下一篇：</strong><br/> 
+ <span>内存的80％？应该如何调整你的innodb_buffer_pool_size
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#准备"><span class="toc-number">2.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安装配置详解"><span class="toc-number">3.</span> <span class="toc-text">安装配置详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#安装"><span class="toc-number">3.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动"><span class="toc-number">3.2.</span> <span class="toc-text">启动</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#内置对象介绍"><span class="toc-number">4.</span> <span class="toc-text">内置对象介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#登录"><span class="toc-number">4.1.</span> <span class="toc-text">登录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内置库"><span class="toc-number">4.2.</span> <span class="toc-text">内置库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#main库"><span class="toc-number">4.2.1.</span> <span class="toc-text">main库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#runtime-表"><span class="toc-number">4.2.1.1.</span> <span class="toc-text">runtime_表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-servers表"><span class="toc-number">4.2.1.2.</span> <span class="toc-text">mysql_servers表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-users表"><span class="toc-number">4.2.1.3.</span> <span class="toc-text">mysql_users表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-query-rules查询规则表"><span class="toc-number">4.2.1.4.</span> <span class="toc-text">mysql_query_rules查询规则表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#scheduler调度表"><span class="toc-number">4.2.1.5.</span> <span class="toc-text">scheduler调度表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#disk库"><span class="toc-number">4.2.2.</span> <span class="toc-text">disk库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stats库"><span class="toc-number">4.2.3.</span> <span class="toc-text">stats库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-commands-counters表"><span class="toc-number">4.2.3.1.</span> <span class="toc-text">stats_mysql_commands_counters表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-connection-pool表"><span class="toc-number">4.2.3.2.</span> <span class="toc-text">stats_mysql_connection_pool表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-global表"><span class="toc-number">4.2.3.3.</span> <span class="toc-text">stats_mysql_global表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-processlist表"><span class="toc-number">4.2.3.4.</span> <span class="toc-text">stats_mysql_processlist表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-query-digest表"><span class="toc-number">4.2.3.5.</span> <span class="toc-text">stats_mysql_query_digest表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stats-mysql-query-rules表"><span class="toc-number">4.2.3.6.</span> <span class="toc-text">stats_mysql_query_rules表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-server-connect-mysql-server-connect-log表"><span class="toc-number">4.2.3.7.</span> <span class="toc-text">mysql_server_connect/mysql_server_connect_log表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-server-ping-mysql-server-ping-log表"><span class="toc-number">4.2.3.8.</span> <span class="toc-text">mysql_server_ping/mysql_server_ping_log表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mysql-server-replication-lag-log表"><span class="toc-number">4.2.3.9.</span> <span class="toc-text">mysql_server_replication_lag_log表</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内置参数"><span class="toc-number">4.3.</span> <span class="toc-text">内置参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ProxySQL多层配置设计"><span class="toc-number">4.4.</span> <span class="toc-text">ProxySQL多层配置设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ProxySQL设计模型介绍"><span class="toc-number">4.4.1.</span> <span class="toc-text">ProxySQL设计模型介绍</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ProxySQL读写分离示例"><span class="toc-number">5.</span> <span class="toc-text">ProxySQL读写分离示例</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#准备-1"><span class="toc-number">5.1.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装配置"><span class="toc-number">5.2.</span> <span class="toc-text">安装配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#示例目标"><span class="toc-number">5.3.</span> <span class="toc-text">示例目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加后端DB服务"><span class="toc-number">5.4.</span> <span class="toc-text">添加后端DB服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加访问用户"><span class="toc-number">5.5.</span> <span class="toc-text">添加访问用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加复制关系"><span class="toc-number">5.6.</span> <span class="toc-text">添加复制关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改全局变量"><span class="toc-number">5.7.</span> <span class="toc-text">修改全局变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#路由规则"><span class="toc-number">5.8.</span> <span class="toc-text">路由规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#常用查询"><span class="toc-number">5.9.</span> <span class="toc-text">常用查询</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ProxySQL监控"><span class="toc-number">6.</span> <span class="toc-text">ProxySQL监控</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#PMM-Client安装"><span class="toc-number">6.1.</span> <span class="toc-text">PMM Client安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PMM-Client配置"><span class="toc-number">6.2.</span> <span class="toc-text">PMM Client配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

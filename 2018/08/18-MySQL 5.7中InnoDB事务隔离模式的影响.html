@@ -1,0 +1,701 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>【译】MySQL 5.7中InnoDB事务隔离模式的影响 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="via过去几年，其他人已经写了很多有价值的文章，解释了InnoDB事务隔离级别的所有细节以及如何解决这个问题。因此，我将避免重复已经说过的内容; 我的注意力吸引了PeterZ的性能研究并发表在以下文章中：https://www.percona.com/blog/2015/01/14/mysql-performance-implications-of-innodb-isolation-modes/">
+<meta name="keywords" content="MySQL,性能">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译】MySQL 5.7中InnoDB事务隔离模式的影响">
+<meta property="og:url" content="http://idber.github.io/2018/08/18-MySQL 5.7中InnoDB事务隔离模式的影响.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="via过去几年，其他人已经写了很多有价值的文章，解释了InnoDB事务隔离级别的所有细节以及如何解决这个问题。因此，我将避免重复已经说过的内容; 我的注意力吸引了PeterZ的性能研究并发表在以下文章中：https://www.percona.com/blog/2015/01/14/mysql-performance-implications-of-innodb-isolation-modes/">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/01Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/02Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/03Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/04Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/05Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/06Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/07Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.928Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【译】MySQL 5.7中InnoDB事务隔离模式的影响">
+<meta name="twitter:description" content="via过去几年，其他人已经写了很多有价值的文章，解释了InnoDB事务隔离级别的所有细节以及如何解决这个问题。因此，我将避免重复已经说过的内容; 我的注意力吸引了PeterZ的性能研究并发表在以下文章中：https://www.percona.com/blog/2015/01/14/mysql-performance-implications-of-innodb-isolation-modes/">
+<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/01Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/08/18-MySQL 5.7中InnoDB事务隔离模式的影响.html" title="【译】MySQL 5.7中InnoDB事务隔离模式的影响" itemprop="url">【译】MySQL 5.7中InnoDB事务隔离模式的影响</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2018-08-17T22:01:56.000Z" itemprop="datePublished"> Published 2018-08-18</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<p><a href="http://dimitrik.free.fr/blog/archives/2015/02/mysql-performance-impact-of-innodb-transaction-isolation-modes-in-mysql-57.html" target="_blank" rel="noopener">via</a><br>过去几年，其他人已经写了很多有价值的文章，解释了InnoDB事务隔离级别的所有细节以及如何解决这个问题。因此，我将避免重复已经说过的内容; 我的注意力吸引了PeterZ的性能研究并发表在以下文章中：<a href="https://www.percona.com/blog/2015/01/14/mysql-performance-implications-of-innodb-isolation-modes/" target="_blank" rel="noopener">https://www.percona.com/blog/2015/01/14/mysql-performance-implications-of-innodb-isolation-modes/</a> 这篇文章非常好，可以很好地分析观察问题所在，可以通过修改隔离级别为READ-COMMITTED替代REPEATABLE-READ（InnoDB默认级别）来解决。那么问题来了：为什么我们没有默认的READ-COMMITTED模式？有什么危险吗？</p>
+<p>让我们一起探讨</p>
+<p>首先，你应该记住你的理论，不仅仅是在InnoDB中实现所有这些东西的方式：</p>
+<ul>
+<li>InnoDB中的事务隔离/ MVCC是通过ReadViews实现的</li>
+<li>每次创建ReadView时，都应该获取互斥锁（trx_sys）</li>
+<li>在REPEATABLE-READ模式下，在事务启动时创建ReadView</li>
+<li>在READ-COMMITTED模式下，在每个语句上创建一个ReadView</li>
+<li>意味着，如果您的陈述很短 - 您可能会在工作负载中遇到trx_sys互斥争用风暴。</li>
+</ul>
+<p>当然，一切都取决于工作量，如果你很幸运，你可能会在这里看到一个好处（一切皆有可能，对吧？ - 至少在理论上）</p>
+<p>现在让我告诉你一些你会觉得自己不那么幸运的情况</p>
+<p>对于我的测试用例，我将使用：</p>
+<p>40cores-HT服务器<br>运行OEL 6.5 2.6.32-504内核<br>极快的闪存（Fusion-io ioMemory）<br>每个工作负载使用64个并发用户<br>每个工作负载执行3个测试用例：<br>配置REPEATABLE-READ模式（RR）<br>READ-COMMITTED模式已配置（RC）<br>已配置READ-UNCOMMITTED模式（RU）</p>
+<p>DBT-2 500W工作负载（TPC-C）：<br><img src="https://github.com/idber/idber.photo/blob/master/blog/01Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true" alt=""></p>
+<p>观察 ：<br>你可能已经观察到，与第一个（RR）相比，第二（RC）和第三（RU）测试案例的TPS略低一些<br>“回归”不是很大，但值得注意<br>现在让我们来看看InnoDB中的内部锁定争用。<br>锁定争议：<br><img src="https://github.com/idber/idber.photo/blob/master/blog/02Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true" alt=""></p>
+<p>观察 ：<br>对于RC和RU测试，trx_sys互斥锁的跳跃争用非常明显<br>然而，它还不是太大，不会造成严重的损害..</p>
+<p>现在，让我们转移到一个沉重的Sysbench OLTP_RW - 我在这里通过在我的测试中添加读/写比率稍微改变了“经典”OLTP_RW：<br>最初负载以128：1的比率开始（主要是读取，少写入）<br>那么16：1<br>那么4：1<br>那么2：1<br>最后1：1</p>
+<p>我也在使用这个测试用例来评估写入在事务中的影响等。</p>
+<p>到目前为止：</p>
+<p>Sysbench OLTP_RW 32x10M-tables，rw128 / 16/4/2/1：<br><img src="https://github.com/idber/idber.photo/blob/master/blog/03Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true" alt=""></p>
+<p>观察 ：<br>这里的影响更多只是值得注意的;-)<br>这只是因为trx_sys互斥争用？或者是其他东西？..<br>锁定争议：</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/04Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true" alt=""><br>观察 ：<br>哦，确实，trx_sys现在跳得太高了！<br>它会更糟糕吗？</p>
+<p>让我们看看;-) </p>
+<p>下一个工作负载的代码名称是“OLTP_RW-p_sel10” - 这个测试中的所有读取都被10个点选择所取代，这就是全部，使得写入时的负载更加激进，读取时更快和更快：</p>
+<p>Sysbench OLTP_RW-p_sel10 32x10M表，rw128 / 16/4/2/1：</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/05Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true" alt=""><br>观察 ：<br>事实上，看到x2时间更糟糕的表现真的是杀人..<br>仍然由于trx_sys互斥？<br>锁定争论：</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/06Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true" alt=""></p>
+<p>嗯，你可能仍然会说这只是因为这个服务器太大了，这就是我观察所有这些争论的原因，你将离现实不远 - 在较小的机器上所有这些争论当然都会降​​低 - 但是！仍然“值得注意”;-)）</p>
+<p>相同的OLTP_RW-p_sel10，但在20cores-HT上:(</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/07Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true" alt=""><br>虽然今天许多x2 CPU Intel机器总共拥有超过32个-cx-HT，所以“小”HW变得很大; - ））</p>
+<p>总结：<br>那么，我们最终应该从所有这些东西中得出结论?<br>PeterZ告诉我们一个如此美好的故事，现在你带着你的实验来表明PeterZ错了……<br>伙计们，PeterZ没错！<br>?? - 所以，你在撒谎??????<br>而且我也不是在撒谎;-)）<br>??? …..<br>那么，你应该记住的是，没有“银弹”，大多数情况下最普遍的答案将是“它取决于” ;<br>与InnoDB交易隔离在这里是一样的故事！<br>一般规则如下：<br>如果您的查询和事务很短：请使用默认的REPEATABLE-READ模式！<br>如果您的查询很长并且读取了很多可能被其他事务并行修改的数据：那么使用READ-COMMITTED模式 - 这将允许您在查询进行时读取已提交的更改并避免丢失而不是扫描旧页面图像（正如PeterZ在他的故事中向你展示的那样;-)）</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/性能/">性能</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2018/08/18-MySQL 5.7中InnoDB事务隔离模式的影响.html" data-title="【译】MySQL 5.7中InnoDB事务隔离模式的影响 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/08/19-MySQL经典模板参数详解.html" title="MySQL经典模板参数详解">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MySQL经典模板参数详解</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/17-MySQL 5.7新特性系列一.html"  title="MySQL 5.7新特性系列一">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL 5.7新特性系列一
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,835 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MySQL自动化安装部署 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="MySQL的安装分为三种： 1、RPM包安装； 2、二进制包安装； 3、源码安装。 第一种方式比较简单，直接RPM包安装就OK了，或者通过yum源来安装，一般rpm包安装不支持自定义目录。二进制安装虽然相对源码安装简单些，但是不是根据当前机器编译出的适合当前机器的高性能MySQL。有过MySQL运维的人应该都清楚，线上的MySQL一般都采用源码编译，因为这样才可以根据企业的各自需要选择要编译的功">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL自动化安装部署">
+<meta property="og:url" content="http://idber.github.io/2016/03/28-MySQL的自动化安装部署.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="MySQL的安装分为三种： 1、RPM包安装； 2、二进制包安装； 3、源码安装。 第一种方式比较简单，直接RPM包安装就OK了，或者通过yum源来安装，一般rpm包安装不支持自定义目录。二进制安装虽然相对源码安装简单些，但是不是根据当前机器编译出的适合当前机器的高性能MySQL。有过MySQL运维的人应该都清楚，线上的MySQL一般都采用源码编译，因为这样才可以根据企业的各自需要选择要编译的功">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.931Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL自动化安装部署">
+<meta name="twitter:description" content="MySQL的安装分为三种： 1、RPM包安装； 2、二进制包安装； 3、源码安装。 第一种方式比较简单，直接RPM包安装就OK了，或者通过yum源来安装，一般rpm包安装不支持自定义目录。二进制安装虽然相对源码安装简单些，但是不是根据当前机器编译出的适合当前机器的高性能MySQL。有过MySQL运维的人应该都清楚，线上的MySQL一般都采用源码编译，因为这样才可以根据企业的各自需要选择要编译的功">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/28-MySQL的自动化安装部署.html" title="MySQL自动化安装部署" itemprop="url">MySQL自动化安装部署</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-28T03:23:56.000Z" itemprop="datePublished"> Published 2016-03-28</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<p>MySQL的安装分为三种：</p>
+<pre><code>1、RPM包安装；
+2、二进制包安装；
+3、源码安装。
+</code></pre><p>第一种方式比较简单，直接RPM包安装就OK了，或者通过yum源来安装，一般rpm包安装不支持自定义目录。<br>二进制安装虽然相对源码安装简单些，但是不是根据当前机器编译出的适合当前机器的高性能MySQL。<br>有过MySQL运维的人应该都清楚，线上的MySQL一般都采用源码编译，因为这样才可以根据企业的各自需要选择要编译的功能，虽然MySQL的源码编译挺简单的，但是试想一下，如果你有几百台服务器同时要安装MySQL，难道你还一台台去手动编译、编写配置文件吗？这显然太低效了，本文讨论MySQL的自动化安装部署。<br>其实还有一种方式,定制RPM包.<br>它相当于用源码安装的方式定制了一个RPM包.一次打包,可以多次使用<br>它可以定制路径,安装时自动创建帐号,自动配置服务,环境变量等,并且安装过程快速,简单。<br>在大规模部署的场景下,优点十分突出.<br>缺点是制作RPM包,需要自己编写Red Hat定义的spec文件.而spec文件编写的学习曲线比较陡.</p>
+<p>需求如下<br>1.创建用户mysql<br>2.数据库软件安装在/home/mysql/mysql-5.6.26目录<br>3.数据文件存放在/data目录下<br>4.配置服务,自动启动</p>
+<p>制作符合自己需求的RPM包</p>
+<p>首先,下载rpmbuild</p>
+<pre><code>yum install rpm-build -y
+</code></pre><p>它是Red Hat用于打RPM包的工具.<br>安装之后重启计算机,可以看到/root/rpmbuild目录下有如下文件夹</p>
+<pre><code>[root@guo ~]# cd rpmbuild/
+[root@guo rpmbuild]# ls
+BUILD  BUILDROOT  RPMS  SOURCES  SPECS  SRPMS
+[root@guo rpmbuild]# 
+</code></pre><p>这个工具打包的过程大致如下,<br>编写spec指定打包的过程<br>将源码压缩包放在SOURCES目录下,<br>将源码解压缩到BUILD目录,执行make命令<br>将make install 的结果放在BUILDROOT目录下,<br>最后将BUILDROOT下编译好的二进制文件制作成RPM包。<br>并且可以指定在RPM安装之前,安装之后,卸载等过程执行的命令</p>
+<p>首先,下载源码包<br><a href="http://cdn.mysql.com/archives/mysql-5.6/mysql-5.6.26.tar.gz" target="_blank" rel="noopener">http://cdn.mysql.com/archives/mysql-5.6/mysql-5.6.26.tar.gz</a><br>并将其复制到指定的目录</p>
+<pre><code>/root/rpmbuild/SOURCES/mysql-5.6.26.tar.gz
+</code></pre><p>安装编译MySQL需要的依赖包</p>
+<pre><code>yum -y install make gcc-c++ cmake bison-devel  ncurses-devel
+</code></pre><p>编写spec脚本</p>
+<pre><code>Name:       MySQL
+Version:    5.6.26   
+Release:    1%{?dist}
+Summary:    MySQL-5.6.26 RPM
+
+Group:      applications/database
+License:    GPL    
+URL:        http://www.mysql.com    
+Source0:    mysql-5.6.26.tar.gz
+BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+BuildRequires:  cmake
+
+AutoReqProv: no
+%description
+MySQL 5.6.26
+
+%define MYSQL_USER mysql
+%define MYSQL_GROUP mysql
+
+%prep
+%setup -n mysql-%{version}
+
+%build
+cmake \
+-DCMAKE_INSTALL_PREFIX=/home/mysql/mysql-5.6.26 \
+-DMYSQL_DATADIR=/data \
+-DSYSCONFDIR=/etc \
+-DWITH_MYISAM_STORAGE_ENGINE=1 \
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \
+-DWITH_MEMORY_STORAGE_ENGINE=1 \
+-DWITH_READLINE=1 \
+-DMYSQL_UNIX_ADDR=/data/mysql.sock \
+-DMYSQL_TCP_PORT=3306 \
+-DENABLED_LOCAL_INFILE=1 \
+-DWITH_PARTITION_STORAGE_ENGINE=1 \
+-DEXTRA_CHARSETS=all \
+-DDEFAULT_CHARSET=utf8 \
+-DDEFAULT_COLLATION=utf8_general_ci
+make -j `cat /proc/cpuinfo | grep processor| wc -l`
+
+
+%install
+rm -rf %{buildroot}
+make install DESTDIR=%{buildroot}
+
+
+%pre
+mkdir -p /data
+useradd -m -s /bin/bash mysql
+chown -R mysql:mysql /data
+
+
+%post
+/home/mysql/mysql-5.6.26/scripts/mysql_install_db --basedir=/home/mysql/mysql-5.6.26 --datadir=/data --user=mysql
+cp /home/mysql/mysql-5.6.26/support-files/mysql.server /etc/init.d/mysql
+chkconfig mysql on
+service mysql start
+echo &quot;export PATH=.:$PATH:/home/mysql/mysql-5.6.26/bin;&quot; &gt;&gt; /home/mysql/.bashrc
+source /home/mysql/.bashrc
+
+%preun
+service mysql stop
+chkconfig --del mysql
+userdel mysql
+rm -rf /home/mysql
+rm -rf /data
+rm -rf /etc/init.d/mysql
+
+%clean
+rm -rf %{buildroot}
+
+
+%files
+%defattr(-, %{MYSQL_USER}, %{MYSQL_GROUP})
+%attr(755, %{MYSQL_USER}, %{MYSQL_GROUP}) /home/mysql/mysql-5.6.26/*
+
+
+%changelog
+</code></pre><p>有了这个spec文件之后，就可以执行如下命令生成我们自己的RPM包：</p>
+<pre><code>rpmbuild -bb ./mysql.spec
+</code></pre><p>查看rpm包信息</p>
+<pre><code>[root@guo ~]# cd /root/rpmbuild/RPMS/x86_64
+[root@guo x86_64]# ls
+MySQL-5.6.26-1.el6.x86_64.rpm  MySQL-debuginfo-5.6.26-1.el6.x86_64.rpm
+
+[root@guo x86_64]# rpm -qpi MySQL-5.6.26-1.el6.x86_64.rpm 
+Name        : MySQL                        Relocations: (not relocatable)
+Version     : 5.6.26                            Vendor: (none)
+Release     : 1.el6                         Build Date: Tue 29 Mar 2016 10:31:21 AM CST
+Install Date: (not installed)               Build Host: guo
+Group       : applications/home/mysql/database   Source RPM: MySQL-5.6.26-1.el6.src.rpm
+Size        : 353781822                        License: GPL
+Signature   : (none)
+URL         : http://www.mysql.com
+Summary     : MySQL-5.6.26 RPM
+Description :
+MySQL 5.6.26
+[root@new x86_64]# 
+</code></pre><p>检查/etc/my.cnf文件参数是否正确<br>检查MySQL各目录中文件权限是否正确<br>启动MySQL服务</p>
+<pre><code>[root@guo data]# service mysql start
+Starting MySQL.                                            [  OK  ]
+</code></pre><p>修改密码</p>
+<pre><code>[root@guo data]# mysql -uroot -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 2
+Server version: 5.6.26 Source distribution
+
+Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the current input statement.
+
+mysql&gt; set password=password(&apos;root&apos;);
+Query OK, 0 rows affected (0.01 sec)
+</code></pre><p>这个脚本各个Segment的作用请参考<br><a href="http://machael.blog.51cto.com/829462/213477" target="_blank" rel="noopener">http://machael.blog.51cto.com/829462/213477</a></p>
+<p>其中<br>Source0:    mysql-5.6.26.tar.gz<br>这个压缩文件需要放在指定的目录中(/root/rpmbuild/SOURCES)<br>自动解压的时候,会在这个指定目录中找这个文件</p>
+<p>AutoReqProv: no<br>这个参数必须设置,否则在安装的时候,会显示有依赖包的缺失.实际上是不需要的。</p>
+<p>%setup -n mysql-%{version}<br>解压源码包之后,会进入目录执行build,它默认是根据%{name}和%{version}拼接的目录.<br>以MySQL为例,在spec中写的name为MySQL,version为5.6.26<br>那么它会进入mysql-5.6.26的目录,<br>但是源码包解压之后的目录是mysql-5.6.26(小写)<br>所以在setup这个段使用-n参数,匹配这个目录.(就是说默认的设置不灵,需要自己匹配目录)</p>
+<p>make -j <code>cat /proc/cpuinfo | grep processor| wc -l</code><br>查看计算机有几个核,然后多线程编译</p>
+<p>这个脚本的过程是这样的<br>首先解压源码包<br>%prep<br>%setup -n mysql-%{version}</p>
+<p>然后执行%build的过程,make编译</p>
+<p>然后执行%install<br>将编译之后的代码真实的安装一遍,<br>它安装的目录是/root/rpmbuild/BUILDROOT/mysql-5.6.26-1.el6.i386/home/mysql/mysql-5.6.26/<br>因为我们指定的安装目录是/home/mysql/mysql-5.6.26/，它相当于在一个沙盒中安装了一遍.<br>它会将沙盒中安装之后的文件打成RPM包</p>
+<p>%files就是指定哪些沙盒中的文件打入RPM包<br>%files指定的文件是相对路径,绝对路径应该是%{buildroot}/home/mysql/mysql-5.6.26<br>默认的%{buildroot}就是/root/rpmbuild/BUILDROOT/mysql-5.6.26-1.el6.i386/</p>
+<p>这个%{buildroot}是由spec文件的BuildRoot设置的</p>
+<pre><code>BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+</code></pre><p>%pre是RPM安装之前执行的命令<br>这里主要是创建数据文件的目录和帐号</p>
+<pre><code>mkdir -p /data
+useradd -m -s /bin/bash mysql
+chown -R mysql:mysql /data
+</code></pre><p>%post是RPM安装之后执行的命令<br>这里主要是创建数据库实例,配置服务,配置环境变量</p>
+<pre><code>/home/mysql/mysql-5.6.26/scripts/mysql_install_db --basedir=/home/mysql/mysql-5.6.26 --datadir=/data --user=mysql
+cp /home/mysql/mysql-5.6.26/support-files/mysql.server /etc/init.d/mysql
+chkconfig mysql on
+service mysql start
+echo &quot;export PATH=.:$PATH:/home/mysql/mysql-5.6.26/bin;&quot; &gt;&gt; /home/mysql/.bashrc
+source /home/mysql/.bashrc
+</code></pre><p>%preun是卸载RPM包执行的命令,主要用于清理</p>
+<pre><code>service mysql stop
+chkconfig --del mysql
+userdel mysql
+rm -rf /home/mysql
+rm -rf /data
+rm -rf /etc/init.d/mysql
+</code></pre><p>其实编写spec文件本质上是在写一个回调函数,rpmbuild根据spec的回调函数,生成一个Shell脚本,打包的过程就是执行Shell脚本的过程。</p>
+<p>定制RPM安装包可以满足大规模自动化部署的场景<br>因为它可以<br>定制配置文件(将配置文件放在ftp或者http上,在%post段下载这个配置文件放在/etc下)<br>定制安装目录和数据文件,日志文件的目录(生产系统不同的挂载点,底层可能是不同的物理设备)<br>自动创建帐号,配置服务和环境变量</p>
+<p>这些特性在规模很小时微不足道,<br>比如给研发和测试安装,人家还嫌你有毛病.明明一个rpm能搞定,你还整这么复杂,不是臭显摆吗?<br>生产环境装一个库运行好几年,再装的时候,这个RPM估计都忘了放哪里了…<br>但是一旦规模上来了,一天需要装个10台8台的,这个自动化安装的优点就显现出来了</p>
+<p>参考:<br>源码安装MySQL<br><a href="http://www.cnblogs.com/xiongpq/p/3384681.html" target="_blank" rel="noopener">http://www.cnblogs.com/xiongpq/p/3384681.html</a></p>
+<p>rpmbuild spec文件详解<br><a href="http://machael.blog.51cto.com/829462/213477" target="_blank" rel="noopener">http://machael.blog.51cto.com/829462/213477</a><br><a href="http://www.worldhello.net/2011/04/02/2405.html" target="_blank" rel="noopener">http://www.worldhello.net/2011/04/02/2405.html</a></p>
+<p>AutoReqProv参数的解释<br><a href="http://blog.csdn.net/peng_zhou/article/details/3530230" target="_blank" rel="noopener">http://blog.csdn.net/peng_zhou/article/details/3530230</a></p>
+<p><a href="http://blog.itpub.net/29254281/viewspace-1268918/" target="_blank" rel="noopener">MySQL自动化运维之安装篇</a><br><a href="http://www.linuxidc.com/Linux/2014-07/103973.htm" target="_blank" rel="noopener">MySQL的自动化安装部署</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/03/28-MySQL的自动化安装部署.html" data-title="MySQL自动化安装部署 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/03/29-自动化采集脚本.html" title="自动化采集脚本">
+  <strong>上一篇：</strong><br/>
+  <span>
+  自动化采集脚本</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/25-未知问题.html"  title="未知问题">
+ <strong>下一篇：</strong><br/> 
+ <span>未知问题
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

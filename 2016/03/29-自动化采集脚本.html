@@ -1,0 +1,731 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>自动化采集脚本 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="自动化采集脚本，采集性能评估指标MySQL服务器的性能指标一般包括：负载、CPU、SWAP、磁盘、网络、MySQL状态。基础状态搜集可以采用dstat，地址：http://dag.wieers.com/home-made/dstat/dstat-0.7.2.tar.bz2，看了下源码，用Python写的，值得参考学习。 老师分享了一个很不错的用perl写的一个工具-orzdba,地址：http:">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自动化采集脚本">
+<meta property="og:url" content="http://idber.github.io/2016/03/29-自动化采集脚本.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="自动化采集脚本，采集性能评估指标MySQL服务器的性能指标一般包括：负载、CPU、SWAP、磁盘、网络、MySQL状态。基础状态搜集可以采用dstat，地址：http://dag.wieers.com/home-made/dstat/dstat-0.7.2.tar.bz2，看了下源码，用Python写的，值得参考学习。 老师分享了一个很不错的用perl写的一个工具-orzdba,地址：http:">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.938Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="自动化采集脚本">
+<meta name="twitter:description" content="自动化采集脚本，采集性能评估指标MySQL服务器的性能指标一般包括：负载、CPU、SWAP、磁盘、网络、MySQL状态。基础状态搜集可以采用dstat，地址：http://dag.wieers.com/home-made/dstat/dstat-0.7.2.tar.bz2，看了下源码，用Python写的，值得参考学习。 老师分享了一个很不错的用perl写的一个工具-orzdba,地址：http:">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/29-自动化采集脚本.html" title="自动化采集脚本" itemprop="url">自动化采集脚本</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-29T03:23:56.000Z" itemprop="datePublished"> Published 2016-03-29</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<p>自动化采集脚本，采集性能评估指标<br>MySQL服务器的性能指标一般包括：负载、CPU、SWAP、磁盘、网络、MySQL状态。<br>基础状态搜集可以采用dstat，地址：<a href="http://dag.wieers.com/home-made/dstat/dstat-0.7.2.tar.bz2，看了下源码，用Python写的，值得参考学习。" target="_blank" rel="noopener">http://dag.wieers.com/home-made/dstat/dstat-0.7.2.tar.bz2，看了下源码，用Python写的，值得参考学习。</a><br> 老师分享了一个很不错的用perl写的一个工具-orzdba,地址：<a href="http://code.taobao.org/p/orzdba/src/trunk/" target="_blank" rel="noopener">http://code.taobao.org/p/orzdba/src/trunk/</a> ，包含了许多MySQL状态的搜集及展示，值得学习。另外找到一个Python实现的orzdba，地址：<a href="https://github.com/cnlubo/orzdba" target="_blank" rel="noopener">https://github.com/cnlubo/orzdba</a> ，感兴趣的朋友可以去看看。</p>
+<p>自己用bash写了一个练习脚本，非常原始简单，为完成作业吧。——–干货在上面。</p>
+<pre><code>[mysql@guo ~]$ cat tpcc.sh
+#!/bin/sh
+
+user=guotest
+pass=guotest
+
+load_avg() {
+  echo &apos;-----load-avg----&apos;
+  echo &apos; 1m    5m    15m&apos;
+  cat /proc/loadavg |awk &apos;{print $1&quot;  &quot;$2&quot;  &quot;$3}&apos;
+}
+
+mysql_status() {
+  mysql -u$user -p$pass -e &apos;show global status where Variable_name in   (&quot;Com_select&quot;,&quot;Com_insert&quot;,&quot;Com_update&quot;,&quot;Com_delete&quot;,&quot;Innodb_buffer_pool_read_requests&quot;,&quot;Innodb_buffer_p  ool_reads&quot;,&quot;Innodb_rows_inserted&quot;,&quot;Innodb_rows_updated&quot;,&quot;Innodb_rows_deleted&quot;,&quot;Innodb_rows_read&quot;,&quot;Threa  ds_running&quot;,&quot;Threads_connected&quot;,&quot;Threads_cached&quot;,&quot;Threads_created&quot;,&quot;Bytes_received&quot;,&quot;Bytes_sent&quot;,&quot;Innodb_  buffer_pool_pages_data&quot;,&quot;Innodb_buffer_pool_pages_free&quot;,&quot;Innodb_buffer_pool_pages_dirty&quot;,&quot;Innodb_buffer_p  ool_pages_flushed&quot;,&quot;Innodb_data_reads&quot;,&quot;Innodb_data_writes&quot;,&quot;Innodb_data_read&quot;,&quot;Innodb_data_written&quot;,&quot;Inn  odb_os_log_fsyncs&quot;,&quot;Innodb_os_log_written&quot;)&apos;
+}
+
+usage() {
+  echo &quot;Usage:&quot;
+  echo &quot;  `basename $0` {-l   #show load_avg | -m    #show mysql gernal info}&quot;
+}
+
+case &quot;$1&quot; in
+  l)
+     load_avg
+     ;;
+  m)
+       mysql_status
+       ;;
+  *)
+     usage
+      exit 3
+      ;;
+esac
+[mysql@guo ~]$
+
+[mysql@guo ~]$ sh tpcc.sh l
+-----load-avg----
+ 1m    5m    15m
+0.07  0.02  0.00
+[mysql@guo ~]$ sh tpcc.sh m
+Warning: Using a password on the command line interface can be insecure.
++----------------------------------+---------+
+| Variable_name                    | Value   |
++----------------------------------+---------+
+| Bytes_received                   | 6012    |
+| Bytes_sent                       | 5785    |
+| Com_delete                       | 0       |
+| Com_insert                       | 0       |
+| Com_select                       | 11      |
+| Com_update                       | 0       |
+| Innodb_buffer_pool_pages_dirty   | 0       |
+| Innodb_buffer_pool_pages_free    | 7996    |
+| Innodb_buffer_pool_read_requests | 1675    |
+| Innodb_data_read                 | 2641920 |
+| Innodb_data_reads                | 170     |
+| Innodb_data_writes               | 72      |
+| Innodb_data_written              | 3138048 |
+| Innodb_os_log_written            | 55296   |
+| Innodb_rows_deleted              | 0       |
+| Innodb_rows_inserted             | 0       |
+| Innodb_rows_read                 | 0       |
+| Innodb_rows_updated              | 0       |
+| Threads_cached                   | 0       |
+| Threads_connected                | 1       |
+| Threads_created                  | 1       |
++----------------------------------+---------+
+[mysql@guo ~]$ 
+</code></pre><p>1、《TPC Benchmarks》<a href="http://www.tpc.org/information/benchmarks.asp" target="_blank" rel="noopener">http://www.tpc.org/information/benchmarks.asp</a><br>2、《TPC BENCHMARK™ C》<br>3、《fio》<a href="http://freecode.com/projects/fio" target="_blank" rel="noopener">http://freecode.com/projects/fio</a><br>4、《Fio Output Explained》<a href="http://tobert.github.io/post/2014-04-17-fio-output-explained.html" target="_blank" rel="noopener">http://tobert.github.io/post/2014-04-17-fio-output-explained.html</a><br>5、《TPCC-MySQL使用说明》<a href="http://blog.chinaunix.net/uid-26896862-id-3188313.html" target="_blank" rel="noopener">http://blog.chinaunix.net/uid-26896862-id-3188313.html</a><br>6、《TPCC-MySQL输出结果详解 》<a href="http://blog.chinaunix.net/uid-26896862-id-3563600.html" target="_blank" rel="noopener">http://blog.chinaunix.net/uid-26896862-id-3563600.html</a><br>7、《DBT》<a href="http://sourceforge.net/apps/mediawiki/osdldbt/index.php?title=Main_Page" target="_blank" rel="noopener">http://sourceforge.net/apps/mediawiki/osdldbt/index.php?title=Main_Page</a><br>8、《DBT2使用说明 》<a href="http://blog.chinaunix.net/uid-26896862-id-3188314.html" target="_blank" rel="noopener">http://blog.chinaunix.net/uid-26896862-id-3188314.html</a><br>9、《Sysbench》<a href="http://sysbench.sourceforge.net/" target="_blank" rel="noopener">http://sysbench.sourceforge.net/</a><br>10、《SysBench: a system performance benchmark》<a href="https://code.launchpad.net/sysbench" target="_blank" rel="noopener">https://code.launchpad.net/sysbench</a><br>11、《Using Lua-enabled sysbench》<a href="https://blog.mariadb.org/using-lua-enabled-sysbench/" target="_blank" rel="noopener">https://blog.mariadb.org/using-lua-enabled-sysbench/</a><br>12、《oltp.lua》<a href="http://www.percona.com/docs/wiki/benchmark:sysbench:olpt.lua" target="_blank" rel="noopener">http://www.percona.com/docs/wiki/benchmark:sysbench:olpt.lua</a><br>13、《Sysbench with support of multi-tables workload》<a href="http://www.mysqlperformanceblog.com/2011/04/29/sysbench-with-support-of-multi-tables-workload/" target="_blank" rel="noopener">http://www.mysqlperformanceblog.com/2011/04/29/sysbench-with-support-of-multi-tables-workload/</a><br>14、《tcpcopy》<a href="http://code.google.com/p/tcpcopy/" target="_blank" rel="noopener">http://code.google.com/p/tcpcopy/</a><br>15、《阿里2013双十一备战中的技术突破》<a href="http://www.kankanews.com/ICkengine/archives/73645.shtml" target="_blank" rel="noopener">http://www.kankanews.com/ICkengine/archives/73645.shtml</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/自动化/">自动化</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/03/29-自动化采集脚本.html" data-title="自动化采集脚本 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/03/31-CAP定理.html" title="CAP定理">
+  <strong>上一篇：</strong><br/>
+  <span>
+  CAP定理</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/28-MySQL的自动化安装部署.html"  title="MySQL自动化安装部署">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL自动化安装部署
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,881 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>联接与集合操作二--其他联接 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="NATURAL JOINANSI SQL还支持NATURAL JOIN，即自然联接。NATURAL JION等同于INNER JOIN与USING的组俣，它隐含的作用是将两个表中具有相同名称的列进行匹配。同样的，NATURAL LEFT(RIGHT) JOIN等同于LEFT(RIGHT) OUTER JOIN与USING的组合。对于下面这句INNER JOIN： mysql&amp;gt; select">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="联接与集合操作二--其他联接">
+<meta property="og:url" content="http://idber.github.io/2016/03/19-联接与集合操作二--其他联接.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="NATURAL JOINANSI SQL还支持NATURAL JOIN，即自然联接。NATURAL JION等同于INNER JOIN与USING的组俣，它隐含的作用是将两个表中具有相同名称的列进行匹配。同样的，NATURAL LEFT(RIGHT) JOIN等同于LEFT(RIGHT) OUTER JOIN与USING的组合。对于下面这句INNER JOIN： mysql&amp;gt; select">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/other_join.png?raw=true">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.938Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="联接与集合操作二--其他联接">
+<meta name="twitter:description" content="NATURAL JOINANSI SQL还支持NATURAL JOIN，即自然联接。NATURAL JION等同于INNER JOIN与USING的组俣，它隐含的作用是将两个表中具有相同名称的列进行匹配。同样的，NATURAL LEFT(RIGHT) JOIN等同于LEFT(RIGHT) OUTER JOIN与USING的组合。对于下面这句INNER JOIN： mysql&amp;gt; select">
+<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/other_join.png?raw=true">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/19-联接与集合操作二--其他联接.html" title="联接与集合操作二--其他联接" itemprop="url">联接与集合操作二--其他联接</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-19T10:23:56.000Z" itemprop="datePublished"> Published 2016-03-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NATURAL-JOIN"><span class="toc-number">1.</span> <span class="toc-text">NATURAL JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#STRAIGHT-JOIN"><span class="toc-number">2.</span> <span class="toc-text">STRAIGHT_JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他联接分类"><span class="toc-number">3.</span> <span class="toc-text">其他联接分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SELF-JOIN"><span class="toc-number">4.</span> <span class="toc-text">SELF JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NONEQUI-JOIN"><span class="toc-number">5.</span> <span class="toc-text">NONEQUI JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SEMI-JOIN"><span class="toc-number">6.</span> <span class="toc-text">SEMI JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ANTI-SEMI-JOIN"><span class="toc-number">7.</span> <span class="toc-text">ANTI SEMI JOIN</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<h2 id="NATURAL-JOIN"><a href="#NATURAL-JOIN" class="headerlink" title="NATURAL JOIN"></a>NATURAL JOIN</h2><p>ANSI SQL还支持NATURAL JOIN，即自然联接。NATURAL JION等同于INNER JOIN与USING的组俣，它隐含的作用是将两个表中具有相同名称的列进行匹配。同样的，NATURAL LEFT(RIGHT) JOIN等同于LEFT(RIGHT) OUTER JOIN与USING的组合。对于下面这句INNER JOIN：</p>
+<pre><code>mysql&gt; select a.emp_no,first_name,last_name
+from employees a inner join dept_manager b
+on a.emp_no=b.emp_no;
+
++--------+-------------+--------------+
+| emp_no | first_name  | last_name    |
++--------+-------------+--------------+
+| 110022 | Margareta   | Markovitch   |
+| 110039 | Vishwani    | Minakawa     |
+| 110085 | Ebru        | Alpin        |
+| 110114 | Isamu       | Legleitner   |
+| 110183 | Shirish     | Ossenbruggen |
+| 110228 | Karsten     | Sigstam      |
+| 110303 | Krassimir   | Wegerle      |
+| 110344 | Rosine      | Cools        |
+| 110386 | Shem        | Kieras       |
+| 110420 | Oscar       | Ghazalie     |
+| 110511 | DeForest    | Hagimont     |
+| 110567 | Leon        | DasSarma     |
+| 110725 | Peternela   | Onuegbe      |
+| 110765 | Rutger      | Hofmeyr      |
+| 110800 | Sanjoy      | Quadeer      |
+| 110854 | Dung        | Pesch        |
+| 111035 | Przemyslawa | Kaelbling    |
+| 111133 | Hauke       | Zhang        |
+| 111400 | Arie        | Staelin      |
+| 111534 | Hilary      | Kambil       |
+| 111692 | Tonny       | Butterworth  |
+| 111784 | Marjo       | Giarratana   |
+| 111877 | Xiaobin     | Spinelli     |
+| 111939 | Yuchang     | Weedman      |
++--------+-------------+--------------+
+24 rows in set (0.00 sec)
+</code></pre><p>上述语句和如下的NATURAL JOIN是等价的：</p>
+<pre><code>mysql&gt; select a.emp_no,first_name,last_name from employees a natural join dept_manager b;
++--------+-------------+--------------+
+| emp_no | first_name  | last_name    |
++--------+-------------+--------------+
+| 110022 | Margareta   | Markovitch   |
+| 110039 | Vishwani    | Minakawa     |
+| 110085 | Ebru        | Alpin        |
+| 110114 | Isamu       | Legleitner   |
+| 110183 | Shirish     | Ossenbruggen |
+| 110228 | Karsten     | Sigstam      |
+| 110303 | Krassimir   | Wegerle      |
+| 110344 | Rosine      | Cools        |
+| 110386 | Shem        | Kieras       |
+| 110420 | Oscar       | Ghazalie     |
+| 110511 | DeForest    | Hagimont     |
+| 110567 | Leon        | DasSarma     |
+| 110725 | Peternela   | Onuegbe      |
+| 110765 | Rutger      | Hofmeyr      |
+| 110800 | Sanjoy      | Quadeer      |
+| 110854 | Dung        | Pesch        |
+| 111035 | Przemyslawa | Kaelbling    |
+| 111133 | Hauke       | Zhang        |
+| 111400 | Arie        | Staelin      |
+| 111534 | Hilary      | Kambil       |
+| 111692 | Tonny       | Butterworth  |
+| 111784 | Marjo       | Giarratana   |
+| 111877 | Xiaobin     | Spinelli     |
+| 111939 | Yuchang     | Weedman      |
++--------+-------------+--------------+
+24 rows in set (0.00 sec)
+</code></pre><h2 id="STRAIGHT-JOIN"><a href="#STRAIGHT-JOIN" class="headerlink" title="STRAIGHT_JOIN"></a>STRAIGHT_JOIN</h2><p>STRAIGHT_JOIN其实不是新的联接类型，而是用户对SQL优化器的控制，其等同于JOIN。通过STRAIGHT_JOIN，MySQL数据库会强制先读取左边的表。先看一个未使用STRAIGHT_JOIN的SQL语句的执行计划，其SQL语句如下，</p>
+<pre><code>mysql&gt; desc select a.emp_no,first_name,last_name from employees a inner join dept_manager b on a.emp_no=b.emp_no;
++----+-------------+-------+--------+----------------+---------+---------+--------------------+------+-------------+
+| id | select_type | table | type   | possible_keys  | key     | key_len | ref                | rows | Extra       |
++----+-------------+-------+--------+----------------+---------+---------+--------------------+------+-------------+
+|  1 | SIMPLE      | b     | index  | PRIMARY,emp_no | emp_no  | 4       | NULL               |   24 | Using index |
+|  1 | SIMPLE      | a     | eq_ref | PRIMARY        | PRIMARY | 4       | employees.b.emp_no |    1 | NULL        |
++----+-------------+-------+--------+----------------+---------+---------+--------------------+------+-------------+
+2 rows in set (0.00 sec)
+</code></pre><p>可以看到，MySQL数据库先选择b表，也就是dept_manager表，然后进行匹配。这样做的好处实际只进行了24次匹配。如果使用STRAIGHT_JOIN，则会强制使用左表，也就是employees表，例如：</p>
+<pre><code>mysql&gt; desc select a.emp_no,first_name,last_name from employees a straight_join dept_manager b on a.emp_no=b.emp_no;   
++----+-------------+-------+------+----------------+---------+---------+--------------------+--------+-------------+
+| id | select_type | table | type | possible_keys  | key     | key_len | ref                | rows   | Extra       |
++----+-------------+-------+------+----------------+---------+---------+--------------------+--------+-------------+
+|  1 | SIMPLE      | a     | ALL  | PRIMARY        | NULL    | NULL    | NULL               | 299290 | NULL        |
+|  1 | SIMPLE      | b     | ref  | PRIMARY,emp_no | PRIMARY | 4       | employees.a.emp_no |      1 | Using index |
++----+-------------+-------+------+----------------+---------+---------+--------------------+--------+-------------+
+2 rows in set (0.00 sec)
+</code></pre><p>可以看到，MySQL优化器会强制使用左边的表进行匹配，因为左表employees表大约30多万行的数据，因此一共要匹配30多万次，显然选择的这个联接并不是最有效率的。<br>对两张表进行INNER JOIN，通常MySQL数据库的优化器都能工作得很好。但是对于多张表参与联接的语句，MySQL数据库的优化器选择可能并不总是正确的。这时，对于有经验的DBA，要确定最优的路径，可以使用STRAIGHT_JOIN,强制优化器按照自己的联接顺序来进行联接操作。不过随着MySQL数据库的不断完善，这种情况正变得越来越少。</p>
+<h2 id="其他联接分类"><a href="#其他联接分类" class="headerlink" title="其他联接分类"></a>其他联接分类</h2><p>到目前为止介绍的都是基本的联接类型。除此之外还有其他几种联接分类方式。这一节将介绍SELF JOIN、NONEQUI JOIN和SEMI JOIN。</p>
+<h2 id="SELF-JOIN"><a href="#SELF-JOIN" class="headerlink" title="SELF JOIN"></a>SELF JOIN</h2><p>SELF JOIN是同一个表的两个实例之间的JOIN操作。前面的最小缺失值问题使用的就是SELF JON，只是没有显式地进行归类。</p>
+<pre><code>mysql&gt; select min(x.a+1) from t x left outer join t y 
+     -&gt;on x.a+1=y.a where y.a is null; 
++------------+
+| min(x.a+1) |
++------------+
+|          3 |
++------------+
+1 row in set (0.00 sec)
+</code></pre><p>显然是表t自己对自己进行的JOIN操作。再次提醒，对同一个表进行联接操作必须指定表的别名。下面介绍另外一个见的使用SELF JOIN的问题—-员工—-经理问题。先根据下列语句来创建表emp。</p>
+<pre><code>mysql&gt; create table emp(
+    -&gt; emp_no int primary key,
+    -&gt; mgr_no int,
+    -&gt; emp_name varchar(30)
+    -&gt; );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql&gt; 
+
+insert into emp select 1,null,&quot;Michael&quot;;
+insert into emp select 4,1,&quot;Jim&quot;;
+insert into emp select 3,1,&quot;Tommy&quot;;
+insert into emp select 2,3,&quot;Mariah&quot;;
+insert into emp select 5,3,&quot;Beyond&quot;;
+insert into emp select 6,4,&quot;John&quot;;
+insert into emp select 8,3,&quot;Monty&quot;;
+</code></pre><p>在表emp中，emp_no代表员工编号，mgr_no代表员工的上级经理的员工编号。员工—-经理问题就是得到每位员工的经理信息。这个问题的解决方案如下：</p>
+<pre><code>mysql&gt; select a.emp_name as employee,b.emp_name as manager 
+    -&gt; from emp a 
+    -&gt; left join emp b
+    -&gt; on a.mgr_no=b.emp_no;
++----------+---------+
+| employee | manager |
++----------+---------+
+| Michael  | NULL    |
+| Mariah   | Tommy   |
+| Tommy    | Michael |
+| Jim      | Michael |
+| Beyond   | Tommy   |
+| John     | Jim     |
+| Monty    | Tommy   |
++----------+---------+
+7 rows in set (0.01 sec)
+
+mysql&gt; 
+</code></pre><p>由于Michael是最高级别的员工，所以他没有经理信息，其manager为NULL。如果再深入地分析员工—-经理问题，会发现它其实是一个层次结构问题，表emp表示的员工组织图如下</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/other_join.png?raw=true" alt="员工组织结构图"></p>
+<p>对于层次结构的问题，通常可以通过SELF JOIN来解决。</p>
+<h2 id="NONEQUI-JOIN"><a href="#NONEQUI-JOIN" class="headerlink" title="NONEQUI JOIN"></a>NONEQUI JOIN</h2><p>前面介绍的都是EQUAL JOIN(等值联接），即联接条件是基于“等于”运算的联接操作，NONEQUI JOIN的联手条件包含“等于”运算符之外的运算符。<br>要生成dept_manager表中所有两不同经理的组合，这里先假设当前表中仅包含员工号A、B、C，执行CROSS JOIN后生成九对：（A,A),(A,B),(A,C),(B,A),(B,B),(B,C),(C,A),(C,B),(C,C)。<br>显然，（A,A),(B,B),(C,C)包含相同的员工号，不是有效的员工组合。而（A,B),(B,A)又表示同样的组合。要解决这个问题，可以指定一个左边值小于右边值的联接条件，这样可以移除上述两种情况。该问题的解决方案为：</p>
+<pre><code>mysql&gt; select a.emp_no,b.emp_no from emp a inner join emp b on a.emp_no&lt;b.emp_no;            
++--------+--------+
+| emp_no | emp_no |
++--------+--------+
+|      1 |      2 |
+|      1 |      3 |
+|      1 |      4 |
+|      1 |      5 |
+|      1 |      6 |
+|      1 |      8 |
+|      2 |      3 |
+|      2 |      4 |
+|      2 |      5 |
+|      2 |      6 |
+|      2 |      8 |
+|      3 |      4 |
+|      3 |      5 |
+|      3 |      6 |
+|      3 |      8 |
+|      4 |      5 |
+|      4 |      6 |
+|      4 |      8 |
+|      5 |      6 |
+|      5 |      8 |
+|      6 |      8 |
++--------+--------+
+21 rows in set (0.01 sec)
+</code></pre><p>通过1*N的CROSS JOIN产生行号。利用如下SQL语句来产生行号：</p>
+<pre><code>mysql&gt; select a.emp_no,b.emp_no,count(1) as rownum from emp a inner join emp b on a.emp_no&gt;=b.emp_no group by a.emp_no;
++--------+--------+--------+
+| emp_no | emp_no | rownum |
++--------+--------+--------+
+|      1 |      1 |      1 |
+|      2 |      1 |      2 |
+|      3 |      1 |      3 |
+|      4 |      1 |      4 |
+|      5 |      1 |      5 |
+|      6 |      1 |      6 |
+|      8 |      1 |      7 |
++--------+--------+--------+
+7 rows in set (0.00 sec)
+</code></pre><h2 id="SEMI-JOIN"><a href="#SEMI-JOIN" class="headerlink" title="SEMI JOIN"></a>SEMI JOIN</h2><pre><code>SEMI JOIN是根据一个表中存在的想着记录找到另一个表中想要数据的联接。如果从左表返回记录，该联接被称为左半联接；如果从右表返回记录，该联接被称为右半联接。
+</code></pre><p>实现SEMI JOIN的方法有多种，如内部联接，子查询、集合操作等。在使用内部联接方式时，只从一个表中选择记录，然后应用DISTINCT。下面的SQL查询返回的是来自杭州且发生过订单的客户信息。</p>
+<pre><code>mysql&gt; select distinct c.customer_id,city from customers as c
+    -&gt; join orders as o on c.customer_id=o.customer_id
+    -&gt; where c.city=&apos;HangZhou&apos;;
++-------------+----------+
+| customer_id | city     |
++-------------+----------+
+| 139         | Hangzhou |
+| tx          | Hangzhou |
++-------------+----------+
+2 rows in set (0.00 sec)
+
+mysql&gt; desc select distinct c.customer_id,city from customers as c
+    -&gt; join orders as o on c.customer_id=o.customer_id where c.city=&apos;HangZhou&apos;;
++----+-------------+-------+------+---------------+------+---------+------+------+----------------------------------------------------+
+| id | select_type | table | type | possible_keys | key  | key_len | ref  | rows | Extra                                              |
++----+-------------+-------+------+---------------+------+---------+------+------+----------------------------------------------------+
+|  1 | SIMPLE      | o     | ALL  | NULL          | NULL | NULL    | NULL |    7 | Using temporary                                    |
+|  1 | SIMPLE      | c     | ALL  | PRIMARY       | NULL | NULL    | NULL |    4 | Using where; Using join buffer (Block Nested Loop) |
++----+-------------+-------+------+---------------+------+---------+------+------+----------------------------------------------------+
+2 rows in set (0.01 sec)
+</code></pre><h2 id="ANTI-SEMI-JOIN"><a href="#ANTI-SEMI-JOIN" class="headerlink" title="ANTI SEMI JOIN"></a>ANTI SEMI JOIN</h2><p>与SEMI JOIN相反的是ANTI SEMI JOIN，它根据一个表中不存在的记录而从另一个表中返回记录。使用OUTER JOIN并过滤外部行，可以实现ANTI SEMI JOIN。例如，下面的SQL查询返回的是来自杭州但没有订单的客户信息。</p>
+<pre><code>mysql&gt; desc select c.customer_id,c.city from customers as c left outer 
+    -&gt;join orders as o  on c.customer_id=o.customer_id where 
+    -&gt;c.city=&apos;Hangzhou&apos; AND o.customer_id is null;
++----+-------------+-------+------+---------------+------+---------+------+------+----------------------------------------------------+
+| id | select_type | table | type | possible_keys | key  | key_len | ref  | rows | Extra                                              |
++----+-------------+-------+------+---------------+------+---------+------+------+----------------------------------------------------+
+|  1 | SIMPLE      | c     | ALL  | NULL          | NULL | NULL    | NULL |    5 | Using where                                        |
+|  1 | SIMPLE      | o     | ALL  | NULL          | NULL | NULL    | NULL |    7 | Using where; Using join buffer (Block Nested Loop) |
++----+-------------+-------+------+---------------+------+---------+------+------+----------------------------------------------------+
+2 rows in set (0.00 sec)
+</code></pre><p>可以看到所有来自杭州的订单都被访问到。如果来自杭州的客户数量为a，每个消费者的平均订单数为b，则霜访问的订单数是a*b。然后过滤外部行。最后得到的结果如下所示。</p>
+<pre><code>mysql&gt;  select c.customer_id,c.city from customers as c left outer 
+     -&gt;join orders as o  on c.customer_id=o.customer_id where 
+     -&gt;c.city=&apos;Hangzhou&apos; AND o.customer_id is null;
+    +-------------+----------+
+    | customer_id | city     |
+    +-------------+----------+
+    | 186         | Hangzhou |
+    +-------------+----------+
+    1 row in set (0.00 sec)
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/SQL编程/">SQL编程</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/03/19-联接与集合操作二--其他联接.html" data-title="联接与集合操作二--其他联接 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/03/21-联接与集合操作三--集合操作.html" title="联接与集合操作三--集合操作">
+  <strong>上一篇：</strong><br/>
+  <span>
+  联接与集合操作三--集合操作</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/18-联接与集合操作一--常见联接.html"  title="联接与集合操作一--常见联接">
+ <strong>下一篇：</strong><br/> 
+ <span>联接与集合操作一--常见联接
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NATURAL-JOIN"><span class="toc-number">1.</span> <span class="toc-text">NATURAL JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#STRAIGHT-JOIN"><span class="toc-number">2.</span> <span class="toc-text">STRAIGHT_JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他联接分类"><span class="toc-number">3.</span> <span class="toc-text">其他联接分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SELF-JOIN"><span class="toc-number">4.</span> <span class="toc-text">SELF JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NONEQUI-JOIN"><span class="toc-number">5.</span> <span class="toc-text">NONEQUI JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SEMI-JOIN"><span class="toc-number">6.</span> <span class="toc-text">SEMI JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ANTI-SEMI-JOIN"><span class="toc-number">7.</span> <span class="toc-text">ANTI SEMI JOIN</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

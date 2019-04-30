@@ -1,0 +1,712 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>CAP定理 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="via 1976年6月4号，周5，在远离音乐会大厅的一个楼上的房间内，在位于Manchester的Lesser Free Trade Hall ，Sex Pistols 乐队（注：Sex Pistols的经理人Malcolm McLaren 2010.4.8去世）开始了他们的第一次演出（gig， 注：规模太小称不上演唱会 ）。关于当晚谁出席了那场演出有些混乱，部分是因为6周后的另一场音乐会，但最">
+<meta name="keywords" content="分布式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CAP定理">
+<meta property="og:url" content="http://idber.github.io/2016/03/31-CAP定理.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="via 1976年6月4号，周5，在远离音乐会大厅的一个楼上的房间内，在位于Manchester的Lesser Free Trade Hall ，Sex Pistols 乐队（注：Sex Pistols的经理人Malcolm McLaren 2010.4.8去世）开始了他们的第一次演出（gig， 注：规模太小称不上演唱会 ）。关于当晚谁出席了那场演出有些混乱，部分是因为6周后的另一场音乐会，但最">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/CAP01.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/CAP02.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/CAP03.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/CAP04.png?raw=true">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.927Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CAP定理">
+<meta name="twitter:description" content="via 1976年6月4号，周5，在远离音乐会大厅的一个楼上的房间内，在位于Manchester的Lesser Free Trade Hall ，Sex Pistols 乐队（注：Sex Pistols的经理人Malcolm McLaren 2010.4.8去世）开始了他们的第一次演出（gig， 注：规模太小称不上演唱会 ）。关于当晚谁出席了那场演出有些混乱，部分是因为6周后的另一场音乐会，但最">
+<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/CAP01.png?raw=true">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/31-CAP定理.html" title="CAP定理" itemprop="url">CAP定理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-31T03:23:56.000Z" itemprop="datePublished"> Published 2016-03-31</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<p><a href="http://www.julianbrowne.com/article/viewer/brewers-cap-theorem" target="_blank" rel="noopener">via</a></p>
+<p>1976年6月4号，周5，在远离音乐会大厅的一个楼上的房间内，在位于Manchester的Lesser Free Trade Hall ，Sex Pistols 乐队（注：Sex Pistols的经理人Malcolm McLaren 2010.4.8去世）开始了他们的第一次演出（gig， 注：规模太小称不上演唱会 ）。关于当晚谁出席了那场演出有些混乱，部分是因为6周后的另一场音乐会，但最主要的还是因为，这场演出被认为是永久改变西方音乐文化 的一场演出。这场演出是如此的重要且富有象征意义，以至于David Nolan写了一本书：《我发誓我在那里：那场改变了世界的演出 》，对那些声称自己看过那场演出的人做出判断。因为6月4号被认为是punk摇滚的开始。</p>
+<p>在这之前（大约是在1971年左右）曾有一些protopunk 乐队，例如New York Dolls 和Velet Underground ，但从音乐民俗学来说，是Sex Pistals开启了这场革命，在这场运动中驱动了Buzzcocks 乐队的吉他，The Smiths 乐队哀怨的哭诉，The Fall 乐队的电子切音，Joy Division 和Simply Red 乐队华丽的升调（我猜你不了解所有的含义）（注：我缺乏摇滚方面的知识，这部分翻的不是很满意，好在不影响大局，有punk摇滚知识的同学可以提供帮助 ）</p>
+<p>2000年7月19号，周三，对主流文化来说并不（象前者一样）具有同样的重要性，但这个日子对互联网公司来说，和25年Sex Pistols对音乐所做的一样，具有同样的影响。这就是Eric Brewer 在ACM研讨会上关于分布式计算的原则 （Principles of Distributed Computing）所做的开题演讲  （keynote speech）。</p>
+<p>Sex Pistols向同时代的人展示了几乎无限制的狂躁远比学院派的结构主义重要的多，给任何人3根弦以及一些许可就可以组建一支乐队。Eric Brewer，在那时被称为Brewer猜想，认为当应用系统变得越来越web化，应当放弃对数据一致性（data consistency）的担忧，因为要想获得这种新的分布式系统的高可用性（high availability），确保数据一致性是我们无法做到的，这样给予任何人3台服务器和一双关注客户体验的眼睛就可以建立一家互联网公司。Brewer的信徒（当天就有的和后来皈依的）包括像Amazon , EBay 和Twitter 这类公司</p>
+<p>2年后，2002年，麻省理工（MIT）的Seth Gilbert 和Nancy Lynch ，理论上证明 了Brewer猜想是正确的，就此Brewer定理（Theorem）诞生了。</p>
+<p>Brewer（CAP）定理<br>那么到底Brewer的定理是什么，为何它足以和1976年Manchester的punk演出媲美？</p>
+<p>Brewer 在2000年的演讲是基于他在UC Berkley的理论工作以及主持Inktomi （期间）的观察，是通过数年前Brewer和其他人，在如何构建高伸缩性系统（highly scalable system）时所做出的各种折衷方案的讨论（例如：SOSP（Symposium on Operating System Principles）的1997年的Cluster-Based Scalable Network Service  和1999年的Harvest, yield, and scalable tolerant system  ）就像其他的许多思想，因此这个演讲的内容并不是全新的，它是许多聪明人的共同成果（我确信Brewer会很快说明这一点）。</p>
+<p>Brewer认为在分布式的环境下设计和部署系统时，有3个核心的系统需求 （systemic requirements），以一种特殊的关系存在。（他主要是谈论Web类的应用，但如今非常多的公司业务是多站点／多国家的，因此该理论同样适用于你的数据中心/LAN/WAN的设计）</p>
+<p>这3个核心的需求是：Consistency ，Availability 和Partition Tolerance ，赋予了该理论另外一个名字 － CAP 。</p>
+<p>要想将该理论和现实的联系起来，让我们举一个简单的例子：你想购买一套托尔斯泰 的《战争与和平 》，以便在明天开始的长假中有可读的东西。然而你最喜欢的网上书店只有一本库存了。你进行搜索，确认书可以在你出发前送到，然后将书加入你的购物车。接着你想起来还有一些其他的东西要买，所以继续浏览网站（你是否在网站只买一件东西？当然要充分利用包裹的费用了）。但当你查看某个防晒霜的客户反馈时，国内某个地方的某个人，进入网站，将那本书加入到自己的购物车，然后直接付款（他们急需解决桌子摇晃的问题，其中一条桌脚比其他的短的多）。</p>
+<p>Consistency<br>一个服务是一致的完整操作或完全不操作（A service that is consistent operates fully or not at all，精确起见列出原文，也有人将其简称为数据一致性）。Gilbert 和Lynch在他们的证明中使用“atomic”而不是consistent，技术上来讲更准确，因为严格来说，当用在数据库事务的属性中时，consistent是指ACID 中的C，其含义是如果数据违反了某些预设的约束（preset constraints）就不能被持久化（persisted）。但如果你将其认为是分布式系统中的一个预设约束：不允许同一数据有不同的值，那么我认为这个抽象概念的漏洞就被堵住了（而且，如果Brewer使用atomic这个词，就会被称为AAP定理，那每次我们读它的时候都会被送进医院）（注：我估计是有口吃加白痴的嫌疑）。在前面购书的例子中，你将书加入购物车或无法加入。支付成功或不成功。你无法部分加入或部分支付一本书。库存中只有一本书，当天只有一个人能得到它。如果2个客户都可以完成订单流程（如完成支付），那么仓库中的和系统中的不一致性就会导致问题。在这个例子中也许并不是个大问题：某个人在假期中会很无聊或摆弄防晒霜，但如果将其扩大到数千个不一致性，并且涉及到金钱（例如：金融交易中关于买卖的东西和交易记录的内容不一致）就会是个大问题。也许我们可以利用数据库来解决一致性问题。在（购书的）订单流程中的某个点减少《战争与和平》的库存记录。当其他的客户到达这个点的时候，书架空了，订单流程将会通知客户，而不会进行到支付环节。这样第一个操作顺利完成，第二个操作则不会完成。数据库非常适合这种情况，因为数据库关注ACID属性，并且通过隔离性（Isolation）来保证一致性，这样当第一个客户会使得库存记录减1，同时购物车的记录加1，任何中间状态同第二个客户都是隔离的，当然第二个客户必须等待几百毫秒以便数据存储达到一致状态。<br>Availability<br>可用性只是意味着服务是可用的（可以完成如上的操作或不完成）。当你购书时期望得到反馈，而不是浏览器报告网站无法连接的信息。Gilbert 和Lynch在其CAP定理的证明中很好地指出了，可用性通常在你最需要的时刻背弃你。网站通常在业务最繁忙的时刻挂掉，因为网站压力最大。一个他人无法访问的服务对任何人都没有价值。<br>Partition Tolerance<br>如果你的应用和数据库运行在一个机器上（忽略规模的问题并假定你的代码都没问题），你的服务器是作为一种原子处理单元（atomic processor）：要么工作要么不工作（例如：如果down机就不可用，但也不会造成数据不一致问题）<br>一旦开始将数据和逻辑分布在不同的节点上，就有形成partition的风险。假定网线被切断，partition就形成了，节点A无法和节点B通讯。由于Web提供的这种分布式能力，临时的partition是一个常见的情况，如之前说所的，在全球化的有多个数据中心的公司中这并不罕见。</p>
+<p>Gilbert 和Lynch是这样定义partition tolerance的</p>
+<p>除了整个网络的故障外，其他的故障（集）都不能导致整个系统无法正确响应。(No set of failures less than total network failure is allowed to cause the system to respond incorrectly)</p>
+<p>请注意Brewer的注释，单节点partition就等同于服务器crash，因为如果无法连接它，那它就和不存在一样。</p>
+<p>定理的重要性<br>CAP定理在应用系统规模化时最有效。在低压力的情况下，小的延迟（以便数据库达到一致的状态）还不足以对总体的性能或用户体验造成影响。你所承担的负载分布，可能都是出于系统管理的原因。？</p>
+<p>但随着活动的增加，吞吐量的上限（pinch-points）将会限制增长并产生错误。必须等待网页的返回是一种情况，另一种情况则是在你输入信用卡信息后遇到 “HTTP 500 java.lang.schrodinger.purchasingerror”，你就想知道你是否付了钱但无法得到东西，还是没付钱，或者这只是交易中一个不重要的错误。谁知道呢？你不太可能继续下去，很有可能到别的地方购物，或更有可能给银行打电话。</p>
+<p>不管是那种情况对业务都没有好处。Amazon声称 每0.1秒的响应延迟都会导致1％的销售降低。Google说 他们注意到0.5秒的延迟会使流量减少15%。</p>
+<p>我之前 曾就scalability写过一些东西，不想在这里重复，只想指出2点：第一点是，解决scale问题看起来是一个架构方面的问题，但最初的讨论却不是，而是业务决策。我已经很厌倦听到技术人员说，因为当前的流量，这样或那样的方案不能用。并不是说技术人员错了，通常他们讲的非常正确，是由于从一开始所限定的scale 隐含地做了revenue决策－这一问题应该在业务分析时明确地决定下来。</p>
+<p>第二点是，一旦你开始讨论如何scale业务系统，大致会落到2种意识形态阵营中：数据库派和非数据库派。</p>
+<p>对于数据库派来说，毫无疑问，钟爱数据库技术，并倾向于谈论optimistic locking 和sharding 这类的东西来解决scale问题，并将数据库作为系统的核心。</p>
+<p>非数据库派会倾向于尽可能多的在数据库环境（避免关系世界）之外管理数据以解决scale问题。</p>
+<p>我认为，可以公平地说，前一派人对CAP定理的热情肯定不如后一派（尽管他们在讨论定理 ）。这是因为，如果你必须在consistency，availability，partition tolerance三者中放弃一个，大多数会选择放弃consistency，而consistency是数据库存在的理由。（选择的）逻辑，无疑，是availability和partition tolerance能够使你赖以赚钱的系统生存下去，而不一致性感觉好像是你可以用好的设计来解决的问题。</p>
+<p>和IT中的其他事情一样，这不是非黑即白的问题。Eric Brewer在其PODC演讲的第13页slide中，当比较ACID和其非正式的对应物的BASE 时，甚至说“我认为这是一个系列（spectrum）”（注：这里光谱有一个系列的含义，是指ACID和BASE是不对立的）。如果你对这个主题感兴趣（有些超出我在这里讨论的范围了），你可以从一篇叫做，“Design and Evaluation of a Continuous Consistency Model for Replicated Service page_white_acrobat ”的论文开始，该文由Haifeng Yu和Amin Vahdat 编写。大家不可以将CAP解读为暗示数据库的消亡。</p>
+<p>尽管这样，双方都认同scale的解决之道是分布式的并行计算，而不是曾经认为的超级计算机。90年代中期进行的Network of Workstations 项目受到了Eric Brewer的影响，并最终导致了CAP定理的诞生，因为他在一个关于Inktomi and the Internet Bubble page_white_acrobat 的介绍中说到，答案总是并行处理：</p>
+<p>如果不通过并行的方式，你就没有机会，在合适的时间内解决问题。和其他许多事情一样。如果是个很大的项目，会需要很多人来完成它。因此，如果想建造一个桥梁，就需要很多建筑工人。这就是并行处理。因此问题会演变为“如何将并行处理和internet结合在一起”</p>
+<p>图片证明<br>这里有一个简单的图片证明，因为我发现用图片会比较好理解。多数情况下我使用和Gilber 和Lynch相同的术语，以便和他们的论文联系起来。</p>
+<p> <img src="https://github.com/idber/idber.photo/blob/master/blog/CAP01.png?raw=true" alt=""> </p>
+<p>上图显示了网络中的两个节点N1，N2。他们共享同一数据V（库存中《战争与和平》的数量），其值为V0。N1上有一个算法A，我们可以认为A是安全，无bug，可预测和可靠的。N2上有一个类似的算法B。在这个例子中，A写入V的新值而B读取V的值。</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/CAP02.png?raw=true" alt="scenario-1 "> </p>
+<p>正常情况下（sunny-day scenario），过程如下：(1)A写入新的V值，我们称作v1。(2)N1发送信息给N2，更新V的值。(3)现在B读取的V值将会是V1。</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/CAP03.png?raw=true" alt="scenario-2
+"><br>如果网络断开（partions）（意味着从N1无法发送信息到N2）那么在第3步的时候，N2就会包含一个步一致的V值。</p>
+<p>希望看上去很明白。即使将其scale到几百个事务（transaction）中，这也会成为一个大问题。如果M是一个异步消息，那么N1无法知道N2是否收到了消息。即使M是保证能发送的（guaranteed delivery），N1也无法知道是否消息由于partition事件的发生而延迟，或N2上的其他故障而延迟。即使将M作为同步（synchronous）信息也不能解决问题，因为那将会使得N1上A的写操作和N1到N2的更新事件成为一个原子操作（atomic operation），而这将导致同样的等待问题，该问题我们已经讨论过（或更糟）。Gilbert 和Lynch已经证明，使用其他的变种方式，即使是部分同步模型（每个节点上使用安排好的时钟）也无法保证原子性（atomicity）。</p>
+<p>因此，CAP告诉我们，如果想让A和B是高可用（highly available）的（例如，以最小的延迟（latency）提供服务）并且想让所有的N1到Nn（n的值可以是数百甚至是上千）的节点能够冗余网络的partitions（丢失信息，无法传递信息，硬件无法提供服务，处理失败），那么有时我们就得面临这样的情况：某些节点认为V的值是V0（一本《战争与和平》的库存）而其他节点会认为V的值是V1（《战争与和平》的库存为0）</p>
+<p>我们都希望所有的事情是结构化的，一致的且和谐的，就像70年代早期的prog rock 乐队，但我们面临的是一些punk风格的混乱。事实上，尽管有可能会吓到我们的祖母，但一旦你了解了它就还OK，因为2者可以非常愉快地在一起工作。</p>
+<p>让我们从事务（transactional）的角度快速分析一下。</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/CAP04.png?raw=true" alt="tx-view  
+"></p>
+<p>如果我们有个事务（例如：一组围绕着persistent数据项V的工作单元）a，a1是写操作，a2是读操作。在一个local的系统中，可以利用数据库中的简单锁（simple locking）的机制方便地处理，隔离（isolating）a2中的读操作，直到a1的写成功完成。然而，在分布式的模型中，需要考虑到N1和N2节点，中间的消息同步也要完成才行。除非我们可以控制a2何时发生，我们永远无法保证a2可以读到a1写入的数据。所有加入控制的方法（阻塞，隔离，中央化的管理，等等）会要么影响partition tolerance，要么影响a1(A)和a2(B)的可用性。</p>
+<p>CAP选择<br>当处理CAP的问题时，你会有几个选择。最明显的是：</p>
+<p>放弃Partition Tolerance 如果你想避免partition问题发生，你就必须要阻止其发生。一种做法是将所有的东西（与事务相关的）都放到一台机器上。或者放在像rack这类的atomically-failling单元上。无法100%地保证，因为还是有可能部分失败，但你不太可能碰到由partition问题带来的负面效果。当然，这个选择会严重影响scale限制。<br>放弃Availability 相对于放弃partition tolerance来说，其反面就是放弃availability。一旦遇到partition 事件，受影响的服务需要等待数据一致，因此在等待期间就无法对外提供服务。在多个节点上控制这一点会相当复杂，而且恢复的节点需要处理逻辑，以便平滑地返回服务状态。<br>放弃Consistency 或者如同Werner Vogels所提倡的，接受事情会变得“最终一致 （Eventually Consistent）”（2008年12月更新）。Vogels的文章值得一读。他比我在这里讨论了更多的操作方面的细节。许多的不一致性并不比你想的需要更多的工作（意味着持续的consistency或许并不是我们所需要的）。在购书的例子中，如果一本库存的书，接到了2个订单，第二个就会成为备份订单。只要告知客户这种情况（请记住这是一种罕见的情况），也许每个人都会高兴的。<br>引入（jump）BASE<br>有一种架构的方法（approach）称作BASE（B asically A vailable, S oft-state, E ventually consistent）支持最终一致概念的接受。BASE（注：化学中的含义是碱），如其名字所示，是ACID（注：化学中的含义是酸）的反面，但如果认为任何架构应该完全基于一种（BASE）或完全基于另一种（ACID），就大错特错了。这一点是需要谨记重点，尤其是这个行业的“一边倒（oooh shiny，注：这个完全意译了）”的习惯性的采用策略。这里，我要遵从Brewer教授自己的观点，他就本文通过email表达了自己的观点（comment）：<br>如您所指出的，术语BASE第一次出现是在1997年的SOSP文章中。那一年，我和我的学生在他们的办公室中，一起造了这个词。我承认这有些人为的因素，但ACID也是一样的－－远超人们所能意识到的，所以我们人为还行。Jim Gray和我讨论了这些缩写，他欣然认可ACID也有些扭曲（stretch）– A和D（的概念）有相当多的重复部分，C至多也是含糊不清的。但这对术语暗示了一系列的理念（idea of spectrum），这是PODC演讲中的一个重要观点，你正确地指出了这一点。</p>
+<p>EBay的Dan Pritchett有一篇关于BASE的很棒的介绍  （presentation）。</p>
+<p>围绕其进行设计<br>Guy Pardon， atomikos 的CTO写了一篇他称作“CAP解决之道（证实Brewer的错误） ”的文章，提出了一种架构方法，可以达到Consistency, Availability和Partition-tolerance，当然附带了一些说明（显然你不可能在同一时刻满足全部的3个要求）。值得一读，Guy雄辩地表达了（在该领域）相反的观点。<br>总结<br>在Consistency, Availability和Partition-tolerance中，你只能保证2点，这是确实的，并且已经被这个星球上最成功的网站证实了。如果对网站是有效的，我看不出在企业环境中，在日常的工作中，不考虑同样的折衷设计的理由。如果业务方面明确表明不需要上规模（scale）那好，有简单的解决方案，但这是值得讨论的。在任何情况下，这些讨论都是针对特定操作的适合的设计，而不是庐山（注：shebang取意译）全貌。正如Brewer在其邮件中所说的：“唯一的我可以加入的是同一服务的不同部分可以选择这一系列（spectrum）中的不同的点”有时，无论scale的代价如何，你绝对需要一致性 ，因为缺少它的风险太大了。</p>
+<p>这些天，我说得有些过，说Amazon和EBay没有scalability问题，我认为他们的确有这类问题，但他们现在有办法解决该问题。这也是为何他们可以自由讨论这些问题的原因。不论他们现在是何规模（结合他们早就公布的数字）只会越来越大。一旦规模上来，你的问题就会转到（shift）诸如操作维护，监控，发布软件的更新等等 － 当然（这些问题）都很难解决，但值得，尤其当你因此获得现金流（revenue stream）。</p>
+<p>参考<br>HP接纳CAPd定理，白皮书的标题为“分布式数据没有免费的午餐  ”<br>Sussex大学计算机科学讲义，关于分布式事务 和网络partitions<br>Jens Alfke的关于数据库，scaling和Twitter的好文<br>Pat Helland 的关于分布式事务和SOA的Microsoft论文，叫做数据在外和数据在外  ，他随后将其和CAP理论关联了起来 。<br>另一套计算机科学方面课程slides  ，这一次是来自Virginia的George Mason大学，是关于分布式软件系统 和CAP定理以及ACID和BASE两大阵营的对比。<br>在英国1976年6月4号被认为是Punk摇滚诞生的日子。感谢Charlie Dellacona指出在美国Ramones 普遍认为是从1974年就开启了这一运动，尽管他们正式的punk唱片 是在同时发行的。<br>感谢Hiroshi Yuki ，提供了本文的日文版译本<br>感谢哦Daniel Cohen ，提供了分为两  部分 的希伯来版译本</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/分布式/">分布式</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/分布式/">分布式</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/03/31-CAP定理.html" data-title="CAP定理 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/04/05-行锁的三种算法.html" title="行锁的三种算法">
+  <strong>上一篇：</strong><br/>
+  <span>
+  行锁的三种算法</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/29-自动化采集脚本.html"  title="自动化采集脚本">
+ <strong>下一篇：</strong><br/> 
+ <span>自动化采集脚本
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

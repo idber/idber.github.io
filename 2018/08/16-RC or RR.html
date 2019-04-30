@@ -1,0 +1,860 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>RC or RR | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="数据库事务隔离级别分为四种（级别递减）： 1、Serializable （串行化）：最严格的级别，事务串行执行，资源消耗最大； 2、REPEATABLE READ（重复读） ：保证了一个事务不会修改已经由另一个事务读取但未提交（回滚）的数据。避免了“脏读取”和“不可重复读取”的情况，但不能避免“幻读”(MySQL通过Next-Key lock算法解决了幻读问题)，但是带来了更多的性能损失。 3">
+<meta name="keywords" content="MySQL,事务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RC or RR">
+<meta property="og:url" content="http://idber.github.io/2018/08/16-RC or RR.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="数据库事务隔离级别分为四种（级别递减）： 1、Serializable （串行化）：最严格的级别，事务串行执行，资源消耗最大； 2、REPEATABLE READ（重复读） ：保证了一个事务不会修改已经由另一个事务读取但未提交（回滚）的数据。避免了“脏读取”和“不可重复读取”的情况，但不能避免“幻读”(MySQL通过Next-Key lock算法解决了幻读问题)，但是带来了更多的性能损失。 3">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.933Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RC or RR">
+<meta name="twitter:description" content="数据库事务隔离级别分为四种（级别递减）： 1、Serializable （串行化）：最严格的级别，事务串行执行，资源消耗最大； 2、REPEATABLE READ（重复读） ：保证了一个事务不会修改已经由另一个事务读取但未提交（回滚）的数据。避免了“脏读取”和“不可重复读取”的情况，但不能避免“幻读”(MySQL通过Next-Key lock算法解决了幻读问题)，但是带来了更多的性能损失。 3">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/08/16-RC or RR.html" title="RC or RR" itemprop="url">RC or RR</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2018-08-16T02:01:56.000Z" itemprop="datePublished"> Published 2018-08-16</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一、隔离级别"><span class="toc-number">1.</span> <span class="toc-text">一、隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-什么叫一致性锁定读-和-一致性非锁定读"><span class="toc-number">1.0.0.1.</span> <span class="toc-text">1.1 什么叫一致性锁定读 和 一致性非锁定读</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#一致性锁定读"><span class="toc-number">1.0.0.1.1.</span> <span class="toc-text">一致性锁定读</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#一致性非锁定读"><span class="toc-number">1.0.0.1.2.</span> <span class="toc-text">一致性非锁定读</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-什么是幻读"><span class="toc-number">1.0.0.2.</span> <span class="toc-text">1.2 什么是幻读</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-什么是脏读"><span class="toc-number">1.0.0.3.</span> <span class="toc-text">1.3 什么是脏读</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#二、隔离级别是如何实现的"><span class="toc-number">2.</span> <span class="toc-text">二、隔离级别是如何实现的</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<blockquote>
+<p>数据库事务隔离级别分为四种（级别递减）：</p>
+<p>1、Serializable （串行化）：最严格的级别，事务串行执行，资源消耗最大；</p>
+<p>2、REPEATABLE READ（重复读） ：保证了一个事务不会修改已经由另一个事务读取但未提交（回滚）的数据。避免了“脏读取”和“不可重复读取”的情况，但不能避免“幻读”(MySQL通过Next-Key lock算法解决了幻读问题)，但是带来了更多的性能损失。</p>
+<p>3、READ COMMITTED （提交读）：大多数主流数据库的默认事务等级，保证了一个事务不会读到另一个并行事务已修改但未提交的数据，避免了“脏读取”，但不能避免“幻读”和“不可重复读取”。该级别适用于大多数系统。</p>
+<p>4、Read Uncommitted（未提交读） ：事务中的修改，即使没有提交，其他事务也可以看得到，会导致“脏读”、“幻读”和“不可重复读取”。</p>
+<p>脏读、不可重复读、幻读：</p>
+<p>也许有很多读者会对上述隔离级别中提及到的 脏读、不可重复读、幻读 的理解有点吃力，我在这里尝试使用通俗的方式来解释这三种语义：</p>
+<p>脏读：所谓的脏读，其实就是读到了别的事务回滚前的脏数据。比如事务B执行过程中修改了数据X，在未提交前，事务A读取了X，而事务B却回滚了，这样事务A就形成了脏读。</p>
+<p>也就是说，当前事务读到的数据是别的事务想要修改成为的但是没有修改成功的数据。</p>
+<p>不可重复读：事务A首先读取了一条数据，然后执行逻辑的时候，事务B将这条数据改变了，然后事务A再次读取的时候，发现数据不匹配了，就是所谓的不可重复读了。</p>
+<p>也就是说，当前事务先进行了一次数据读取，然后再次读取到的数据是别的事务修改成功的数据，导致两次读取到的数据不匹配，也就照应了不可重复读的语义。</p>
+<p>幻读：事务A首先根据条件索引得到N条数据，然后事务B改变了这N条数据之外的M条或者增添了M条符合事务A搜索条件的数据，导致事务A再次搜索发现有N+M条数据了，就产生了幻读。</p>
+<p>也就是说，当前事务读第一次取到的数据比后来读取到数据条目少。</p>
+<p>不可重复读和幻读比较：</p>
+<p>两者有些相似，但是前者针对的是update或delete，后者针对的insert。</p>
+</blockquote>
+<h1 id="一、隔离级别"><a href="#一、隔离级别" class="headerlink" title="一、隔离级别"></a>一、隔离级别</h1><p>事务的隔离级别有4种: SQL-1992 ，但是我只想介绍其中两种，因为其他的两个根本就用不上</p>
+<h4 id="1-1-什么叫一致性锁定读-和-一致性非锁定读"><a href="#1-1-什么叫一致性锁定读-和-一致性非锁定读" class="headerlink" title="1.1 什么叫一致性锁定读 和 一致性非锁定读"></a>1.1 什么叫一致性锁定读 和 一致性非锁定读</h4><h5 id="一致性锁定读"><a href="#一致性锁定读" class="headerlink" title="一致性锁定读"></a>一致性锁定读</h5><ol>
+<li>读数据的时候，会去加S-lock、x-lock</li>
+<li>eg：select … for update , select … lock in share mode</li>
+<li>dml语句</li>
+</ol>
+<h5 id="一致性非锁定读"><a href="#一致性非锁定读" class="headerlink" title="一致性非锁定读"></a>一致性非锁定读</h5><ol>
+<li>读数据的时候，不加任何的锁，快照读（snapshot read）    </li>
+<li>eg: select … 最普通的查询语句</li>
+</ol>
+<h4 id="1-2-什么是幻读"><a href="#1-2-什么是幻读" class="headerlink" title="1.2 什么是幻读"></a>1.2 什么是幻读</h4><p>概念<br>一个事务内的同一条【一致性锁定读】SQL多次执行，读到的结果不一致，我们称之为幻读。<br>实战</p>
+<pre><code>set global tx_isolation=&apos;READ-COMMITTED&apos;
+</code></pre><p>事务一: </p>
+<pre><code>root:test&gt; begin;select * from lc for update;
++------+
+| id   |
++------+
+|    1 |
+|    2 |
++------+
+</code></pre><p>事务二：</p>
+<pre><code>root:test&gt;begin; insert into lc values(3);
+Query OK, 1 row affected (0.00 sec)
+root:test&gt; commit ;
+Query OK, 0 rows affected (0.00 sec)
+</code></pre><p>事务一：  </p>
+<pre><code>root:test&gt; select * from lc for update;  
++------+
+| id   |
++------+
+|    1 |
+|    2 |
+|    3 |
++------+
+3 rows in set (0.00 sec)
+</code></pre><ul>
+<li>同一个事务一中，同一条select * from lc for update (一致性锁定读) 执行两次，得到的结果不一致，说明产生了幻读</li>
+<li>同一个事务一中，同一条select * from lc  (一致性非锁定读) 执行两次，得到的结果不一致，说明产生了幻读</li>
+<li>我们姑且认为，幻读和不可重复读为一个概念，实际上也差不多一个概念。</li>
+</ul>
+<h4 id="1-3-什么是脏读"><a href="#1-3-什么是脏读" class="headerlink" title="1.3 什么是脏读"></a>1.3 什么是脏读</h4><p>这个大家都很多好理解，就是事务一还没有提交的事务，却被事务二读到了，这就是脏读</p>
+<p>repeatable-read（RR）可重复读<br>顾名思义：一个事务内的同一条【一致性锁定读】SQL多次执行，读到的结果一致，我们称之为可重复读。<br>解决了幻读的问题<br>read-committed （RC）读已提交<br>顾名思义: 只要其他事务提交了，我就能读到<br>解决了脏读的问题，没有解决幻读的问题</p>
+<h1 id="二、隔离级别是如何实现的"><a href="#二、隔离级别是如何实现的" class="headerlink" title="二、隔离级别是如何实现的"></a>二、隔离级别是如何实现的</h1><p>就拿上面那个简单的例子来佐证好了</p>
+<p>环境</p>
+<pre><code>dba:lc_4&gt; show create table lc;
++-------+--------------------------------------------------------------------------------------------------------+
+| Table | Create Table                                                                                           |
++-------+--------------------------------------------------------------------------------------------------------+
+| lc    | CREATE TABLE `lc` (
+  `id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 |
++-------+--------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+dba:lc_4&gt; select * from lc;
++----+
+| id |
++----+
+|  1 |
+|  2 |
+|  3 |
++----+
+3 rows in set (0.00 sec)
+</code></pre><p>RR</p>
+<p>RR 如何解决幻读问题？<br>RR 的锁算法：next-key lock</p>
+<p>解决幻读的案例</p>
+<pre><code>dba:lc_4&gt; set tx_isolation=&apos;repeatable-read&apos;;
+Query OK, 0 rows affected (0.00 sec)
+dba:lc_4&gt; select * from lc for update ;
++----+
+| id |
++----+
+|  1 |
+|  2 |
+|  3 |
++----+
+3 rows in set (0.00 sec)
+</code></pre><p>这时候，查看下锁的情况：</p>
+<pre><code>------------
+TRANSACTIONS
+------------
+Trx id counter 133588361
+Purge done for trx&apos;s n:o &lt; 133588356 undo n:o &lt; 0 state: running but idle
+History list length 892
+LIST OF TRANSACTIONS FOR EACH SESSION:
+---TRANSACTION 421565826150000, not started
+0 lock struct(s), heap size 1136, 0 row lock(s)
+---TRANSACTION 421565826149088, not started
+0 lock struct(s), heap size 1136, 0 row lock(s)
+---TRANSACTION 133588360, ACTIVE 4 sec
+2 lock struct(s), heap size 1136, 4 row lock(s)
+MySQL thread id 135, OS thread handle 140001104295680, query id 1176 localhost dba cleaning up
+TABLE LOCK table `lc_4`.`lc` trx id 133588360 lock mode IX
+RECORD LOCKS space id 289 page no 3 n bits 72 index PRIMARY of table `lc_4`.`lc` trx id 133588360 lock_mode X  --next key lock ， 锁记录和范围
+Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
+ 0: len 8; hex 73757072656d756d; asc supremum;;   --next-key lock, 锁住正无穷大
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 3; compact format; info bits 0
+ 0: len 4; hex 80000001; asc     ;;  --next-key lock, 锁住1和1之前的区间，包括记录 (negtive,1]
+ 1: len 6; hex 000007f6657e; asc     e~;;
+ 2: len 7; hex e5000040220110; asc    @&quot;  ;;
+Record lock, heap no 3 PHYSICAL RECORD: n_fields 3; compact format; info bits 0
+ 0: len 4; hex 80000002; asc     ;;  --next-key lock, 锁住2和1之前的区间，包括记录 (1,2]
+ 1: len 6; hex 000007f6657f; asc     e ;;
+ 2: len 7; hex e6000040330110; asc    @3  ;;
+Record lock, heap no 4 PHYSICAL RECORD: n_fields 3; compact format; info bits 0
+ 0: len 4; hex 80000003; asc     ;;  --next-key lock, 锁住3和2之间的区间，包括记录 (2,3]
+ 1: len 6; hex 000007f66584; asc     e ;;
+ 2: len 7; hex e9000040240110; asc    @$  ;;
+</code></pre><p>总结下来就是：</p>
+<ol>
+<li>(negtive bounds,1] ， (1,2] ， (2,3]，(3,positive bounds) –锁住的记录和范围，相当于表锁  </li>
+<li>这时候，session 2 插入任何一条记录，会被锁住，所以幻读可以避免，尤其彻底解决了幻读的问题</li>
+</ol>
+<p>RC</p>
+<p>RC 的锁算法：record locks<br>幻读对线上影响大吗？ oracle默认就是RC隔离级别</p>
+<p>不解决幻读的案例</p>
+<pre><code>dba:lc_4&gt; set tx_isolation=&apos;read-committed&apos;;
+Query OK, 0 rows affected (0.00 sec)
+dba:lc_4&gt; select * from lc for update ;
++----+
+| id |
++----+
+|  1 |
+|  2 |
+|  3 |
++----+
+3 rows in set (0.00 sec)
+</code></pre><p>查看锁的信息如下  </p>
+<pre><code>------------
+TRANSACTIONS
+------------
+Trx id counter 133588362
+Purge done for trx&apos;s n:o &lt; 133588356 undo n:o &lt; 0 state: running but idle
+History list length 892
+LIST OF TRANSACTIONS FOR EACH SESSION:
+---TRANSACTION 421565826150000, not started
+0 lock struct(s), heap size 1136, 0 row lock(s)
+---TRANSACTION 421565826149088, not started
+0 lock struct(s), heap size 1136, 0 row lock(s)
+---TRANSACTION 133588361, ACTIVE 3 sec
+2 lock struct(s), heap size 1136, 3 row lock(s)
+MySQL thread id 138, OS thread handle 140001238955776, query id 1192 localhost dba cleaning up
+TABLE LOCK table `lc_4`.`lc` trx id 133588361 lock mode IX
+RECORD LOCKS space id 289 page no 3 n bits 72 index PRIMARY of table `lc_4`.`lc` trx id 133588361 lock_mode X locks rec but not gap  --记录锁，只锁记录
+Record lock, heap no 2 PHYSICAL RECORD: n_fields 3; compact format; info bits 0
+ 0: len 4; hex 80000001; asc     ;;   -- 记录锁，锁住1
+ 1: len 6; hex 000007f6657e; asc     e~;;
+ 2: len 7; hex e5000040220110; asc    @&quot;  ;;
+Record lock, heap no 3 PHYSICAL RECORD: n_fields 3; compact format; info bits 0
+ 0: len 4; hex 80000002; asc     ;;  -- 记录锁，锁住2
+ 1: len 6; hex 000007f6657f; asc     e ;;
+ 2: len 7; hex e6000040330110; asc    @3  ;;
+Record lock, heap no 4 PHYSICAL RECORD: n_fields 3; compact format; info bits 0
+ 0: len 4; hex 80000003; asc     ;; -- 记录锁，锁住3
+ 1: len 6; hex 000007f66584; asc     e ;;
+ 2: len 7; hex e9000040240110; asc    @$  ;;
+</code></pre><p>总结下来</p>
+<ol>
+<li>锁住的是哪些？  [1,2,3] 这些记录被锁住  </li>
+<li>那么session 2 除了1，2，3 不能插入之外，其他的记录都能，比如； insert into lc select 4 , 那么再次select * from lc for udpate 的时候，就是4条记录了，由此产生幻读</li>
+</ol>
+<p>RC vs RR 安全性</p>
+<p>RC 和 binlog</p>
+<p>RC 模式，binlog 必须使用Row 模式<br>为什么RC的binlog必须使用Row</p>
+<pre><code>session 1:
+begin;
+delete from  tb_1 where id &gt; 0;
+
+session 2:
+begin;
+insert into tb_1 select 100;
+commit;
+
+session 1:
+commit;
+</code></pre><p>如果RC模式下的binlog是statement模式，结果会是怎么样呢？<br>master :  结果是 100<br>slave  :  结果是 空<br>这样就导致master和slave结果不一致了: 因为在slave上，先执行insert into tb_1 select 100; 再执行delete from  tb_1 where id &gt; 0; 当然等于空咯    </p>
+<p>如果RC模式下的binlog是ROW模式，结果会是怎么样呢？<br>master :  结果是 100<br>slave :  结果是 100<br>主从结果一致，因为binlog是row模式，slave并不是逻辑的执行上述sql，而记录的都是行的变化</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>RC 的优点</p>
+<p>1.由于降低了隔离级别，那么实现起来简单，对锁的开销小，基本上不会有Gap lock，那么导致死锁和锁等待的可能就小<br>2.当然RC也不是完全没有Gap lock，当purge 和 唯一性索引存在的时候会产生特殊的Gap lock，这个后面会具体讲</p>
+<p>RC 的缺点<br>1.会有幻读发生<br>2.事务内的每条select，都会产生新的read-view，造成资源浪费</p>
+<p>RR 的优点<br>1.一个事务，只有再开始的时候才会产生read-view，有且只有一个，所以这块消耗比较小<br>2.解决了幻读的问题, 实现了真正意义上的隔离级别</p>
+<p>RR 的缺点<br>由于RR的实现，是通过Gap-lock实现，经常会锁定一个范围，那么导致死锁和所等待的概率非常大<br>我们的选择<br>一般我们生产环境的标配，都是RC+Row 模式，谁用谁知道哦</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/事务/">事务</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2018/08/16-RC or RR.html" data-title="RC or RR | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/08/17-MySQL 5.7新特性系列一.html" title="MySQL 5.7新特性系列一">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MySQL 5.7新特性系列一</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/15-隔离级别.html"  title="隔离级别">
+ <strong>下一篇：</strong><br/> 
+ <span>隔离级别
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一、隔离级别"><span class="toc-number">1.</span> <span class="toc-text">一、隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-什么叫一致性锁定读-和-一致性非锁定读"><span class="toc-number">1.0.0.1.</span> <span class="toc-text">1.1 什么叫一致性锁定读 和 一致性非锁定读</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#一致性锁定读"><span class="toc-number">1.0.0.1.1.</span> <span class="toc-text">一致性锁定读</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#一致性非锁定读"><span class="toc-number">1.0.0.1.2.</span> <span class="toc-text">一致性非锁定读</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-什么是幻读"><span class="toc-number">1.0.0.2.</span> <span class="toc-text">1.2 什么是幻读</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-什么是脏读"><span class="toc-number">1.0.0.3.</span> <span class="toc-text">1.3 什么是脏读</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#二、隔离级别是如何实现的"><span class="toc-number">2.</span> <span class="toc-text">二、隔离级别是如何实现的</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

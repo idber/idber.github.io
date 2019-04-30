@@ -1,0 +1,843 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>常用工具 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="前言工欲善其事，必先利其器。开源软件无论数据库MySQL、还是Linux操作系统，相对于商业软件都是只能满足基本功能。好在开源社区的力量是无限的，所以在拥报开源的同时就需要了解一些MySQL、Linux本身未集成的常用工具，可以达到事半功倍的效果。 vmstatvmstat命令是最常见的Linux/Unix监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内">
+<meta name="keywords" content="MySQL,Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常用工具">
+<meta property="og:url" content="http://idber.github.io/2016/05/13-常用工具.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="前言工欲善其事，必先利其器。开源软件无论数据库MySQL、还是Linux操作系统，相对于商业软件都是只能满足基本功能。好在开源社区的力量是无限的，所以在拥报开源的同时就需要了解一些MySQL、Linux本身未集成的常用工具，可以达到事半功倍的效果。 vmstatvmstat命令是最常见的Linux/Unix监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.935Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="常用工具">
+<meta name="twitter:description" content="前言工欲善其事，必先利其器。开源软件无论数据库MySQL、还是Linux操作系统，相对于商业软件都是只能满足基本功能。好在开源社区的力量是无限的，所以在拥报开源的同时就需要了解一些MySQL、Linux本身未集成的常用工具，可以达到事半功倍的效果。 vmstatvmstat命令是最常见的Linux/Unix监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/05/13-常用工具.html" title="常用工具" itemprop="url">常用工具</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-05-13T06:51:56.000Z" itemprop="datePublished"> Published 2016-05-13</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vmstat"><span class="toc-number">2.</span> <span class="toc-text">vmstat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iostat"><span class="toc-number">3.</span> <span class="toc-text">iostat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dstat"><span class="toc-number">4.</span> <span class="toc-text">dstat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ifstat"><span class="toc-number">5.</span> <span class="toc-text">ifstat</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>工欲善其事，必先利其器。开源软件无论数据库MySQL、还是Linux操作系统，相对于商业软件都是只能满足基本功能。好在开源社区的力量是无限的，所以在拥报开源的同时就需要了解一些MySQL、Linux本身未集成的常用工具，可以达到事半功倍的效果。</p>
+<h2 id="vmstat"><a href="#vmstat" class="headerlink" title="vmstat"></a>vmstat</h2><p>vmstat命令是最常见的Linux/Unix监控工具，可以展现给定时间间隔的服务器的状态值,包括服务器的CPU使用率，内存使用，虚拟内存交换情况,IO读写情况。这个命令是我查看Linux/Unix最喜爱的命令，一个是Linux/Unix都支持，二是相比top，我可以看到整个机器的CPU,内存,IO的使用情况，而不是单单看到各个进程的CPU使用率和内存使用率(使用场景不一样)。</p>
+<p>一般vmstat工具的使用是通过两个数字参数来完成的，第一个参数是采样的时间间隔数，单位是秒，第二个参数是采样的次数，如:</p>
+<pre><code>[mysql@mysql ~]$ vmstat 2 1
+procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+ 0  0  35752  71612  26740 412368    0    0    20    35   33   73  0  0 100  0  0
+</code></pre><p>2表示每个两秒采集一次服务器状态，1表示只采集一次。</p>
+<p>实际上，在应用过程中，我们会在一段时间内一直监控，不想监控直接结束vmstat就行了,例如:</p>
+<pre><code>[mysql@mysql ~]$ vmstat 2
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+11  1 3648540 6486920      0 39745776    0    0     5   402    0    0  9  2 87  2  0
+16  1 3648540 6486468      0 39746100    0    0     0  1914 6229 4501 77 23  0  0  0
+10  0 3648540 6485660      0 39746296    0    0     0  1854 7131 4888 72 28  0  0  0
+ 5  1 3648540 6485068      0 39746692    0    0     0   255 6448 5162 77 22  1  0  0
+16  0 3648540 6484452      0 39747076    0    0     0   248 6697 5290 74 25  1  0  0
+ 6  0 3648540 6483972      0 39747580    0    0     0   435 6354 4804 77 19  3  2  0
+ 6  0 3648540 6482744      0 39748044    0    0     0   248 6590 5119 77 21  1  0  0
+ 5  0 3648540 6483508      0 39748540    0    0     4   664 6988 5507 73 25  1  0  0
+ 8  1 3648540 6483072      0 39749072    0    0     0   255 6278 4941 76 20  3  1  0
+ 7  0 3648540 6482448      0 39749664    0    0     0   226 6346 5169 75 21  3  1  0
+ 5  1 3648540 6480868      0 39751432    0    0     0  2205 6054 4790 76 18  3  3  0
+ 9  1 3648540 6479896      0 39751988    0    0     0   339 5776 4332 78 14  5  2  0
+</code></pre><p>r 表示运行队列(就是说多少个进程真的分配到CPU)，我测试的服务器目前CPU比较空闲，没什么程序在跑，当这个值超过了CPU数目，就会出现CPU瓶颈了。这个也和top的负载有关系，一般负载超过了3就比较高，超过了5就高，超过了10就不正常了，服务器的状态很危险。top的负载类似每秒的运行队列。如果运行队列过大，表示你的CPU很繁忙，一般会造成CPU使用率很高。</p>
+<p>b 表示阻塞的进程,这个不多说，进程阻塞，大家懂的。</p>
+<p>swpd 虚拟内存已使用的大小，如果大于0，表示你的机器物理内存不足了，如果不是程序内存泄露的原因，那么你该升级内存了或者把耗内存的任务迁移到其他机器。</p>
+<p>free   空闲的物理内存的大小，我的机器内存总共8G，剩余3415M。</p>
+<p>buff   Linux/Unix系统是用来存储，目录里面有什么内容，权限等的缓存，我本机大概占用300多M</p>
+<p>cache cache直接用来记忆我们打开的文件,给文件做缓冲，我本机大概占用300多M(这里是Linux/Unix的聪明之处，把空闲的物理内存的一部分拿来做文件和目录的缓存，是为了提高 程序执行的性能，当程序使用内存时，buffer/cached会很快地被使用。)</p>
+<p>si  每秒从磁盘读入虚拟内存的大小，如果这个值大于0，表示物理内存不够用或者内存泄露了，要查找耗内存进程解决掉。我的机器内存充裕，一切正常。</p>
+<p>so  每秒虚拟内存写入磁盘的大小，如果这个值大于0，同上。</p>
+<p>bi  块设备每秒接收的块数量，这里的块设备是指系统上所有的磁盘和其他块设备，默认块大小是1024byte，我本机上没什么IO操作，所以一直是0，但是我曾在处理拷贝大量数据(2-3T)的机器上看过可以达到140000/s，磁盘写入速度差不多140M每秒</p>
+<p>bo 块设备每秒发送的块数量，例如我们读取文件，bo就要大于0。bi和bo一般都要接近0，不然就是IO过于频繁，需要调整。</p>
+<p>in 每秒CPU的中断次数，包括时间中断</p>
+<p>cs 每秒上下文切换次数，例如我们调用系统函数，就要进行上下文切换，线程的切换，也要进程上下文切换，这个值要越小越好，太大了，要考虑调低线程或者进程的数目,例如在apache和nginx这种web服务器中，我们一般做性能测试时会进行几千并发甚至几万并发的测试，选择web服务器的进程可以由进程或者线程的峰值一直下调，压测，直到cs到一个比较小的值，这个进程和线程数就是比较合适的值了。系统调用也是，每次调用系统函数，我们的代码就会进入内核空间，导致上下文切换，这个是很耗资源，也要尽量避免频繁调用系统函数。上下文切换次数过多表示你的CPU大部分浪费在上下文切换，导致CPU干正经事的时间少了，CPU没有充分利用，是不可取的。</p>
+<p>us 用户CPU时间，我曾经在一个做加密解密很频繁的服务器上，可以看到us接近100,r运行队列达到80(机器在做压力测试，性能表现不佳)。</p>
+<p>sy 系统CPU时间，如果太高，表示系统调用时间长，例如是IO操作频繁。</p>
+<p>id  空闲 CPU时间，一般来说，id + us + sy = 100,一般我认为id是空闲CPU使用率，us是用户CPU使用率，sy是系统CPU使用率。</p>
+<p>wt 等待IO CPU时间。</p>
+<h2 id="iostat"><a href="#iostat" class="headerlink" title="iostat"></a>iostat</h2><p>iostat主要用于监控系统设备的IO负载情况，iostat首次运行时显示自系统启动开始的各项统计信息，之后运行iostat将显示自上次运行该命令以后的统计信息。用户可以通过指定统计的次数和时间来获得所需的统计信息。</p>
+<p>语法</p>
+<pre><code>iostat [ -c ] [ -d ] [ -h ] [ -N ] [ -k | -m ] [ -t ] [ -V ] [ -x ] [ -z ] [ device [...] | ALL ] [ -p [ device [,...] | ALL ] ] [ interval [ count ] ]
+</code></pre><p>使用</p>
+<pre><code>iostat -d -m 2
+</code></pre><p>参数 -d 表示，显示设备（磁盘）使用状态；-m某些使用block为单位的列强制使用Megabytes为单位；2表示，数据显示每隔2秒刷新一次。<br>    [mysql@mysql ~]$ iostat -m -d 2<br>    Linux 2.6.32-279.el6.x86_64 (mysql)     01/06/2016      _x86_64_        (4 CPU)</p>
+<pre><code>Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+sda              33.50         0.02         1.58     333970   26945098
+dm-0              0.32         0.00         0.00       9727      11235
+dm-1             14.79         0.02         1.21     277027   20528445
+dm-2             65.82         0.00         0.38      47187    6405415
+
+Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+sda              29.50         0.00         0.34          0          0
+dm-0              0.00         0.00         0.00          0          0
+dm-1             29.00         0.00         0.34          0          0
+dm-2              1.00         0.00         0.00          0          0
+
+Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+sda              25.50         0.00         0.26          0          0
+dm-0              0.00         0.00         0.00          0          0
+dm-1             26.50         0.00         0.27          0          0
+dm-2              0.00         0.00         0.00          0          0
+
+Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+sda              52.00         0.00         1.28          0          2
+dm-0              0.00         0.00         0.00          0          0
+dm-1             21.50         0.00         0.22          0          0
+dm-2            267.50         0.00         1.04          0          2
+</code></pre><p>-c 参数</p>
+<p>iostat还可以用来获取cpu部分状态值：</p>
+<pre><code>[mysql@mysql mysql]$ iostat -c 2
+Linux 2.6.32-279.el6.x86_64 (mysql)     01/06/2016      _x86_64_        (4 CPU)
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           9.36    0.00    1.82    1.59    0.00   87.23
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+          82.10    0.00   17.77    0.00    0.00    0.13
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+          73.97    0.00   25.91    0.00    0.00    0.13
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+          77.12    0.00   22.75    0.00    0.00    0.12
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+          79.47    0.00   20.40    0.00    0.00    0.13
+</code></pre><p>-x 参数</p>
+<p>iostat还有一个比较常用的选项-x，该选项将用于显示和io相关的扩展数据。</p>
+<pre><code>[mysql@mysql ~]$ iostat -m -d -x 2
+Linux 2.6.32-279.el6.x86_64 (mysql)     01/06/2016      _x86_64_        (4 CPU)
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+sda               0.12    47.12    0.64   32.86     0.02     1.58    98.08     0.14    4.09    6.49    4.05   4.14  13.87
+dm-0              0.00     0.00    0.15    0.17     0.00     0.00     8.00     0.03   80.02    7.71  142.77   1.91   0.06
+dm-1              0.00     0.00    0.32   14.47     0.02     1.21   169.39     0.02    1.49    6.48    1.38   4.06   6.01
+dm-2              0.00     0.00    0.29   65.53     0.00     0.38    11.81     0.02    0.32    6.35    0.30   1.56  10.27
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+sda               0.00     1.01    0.00   17.09     0.00     0.17    20.56     0.25   14.41    0.00   14.41  13.32  22.76
+dm-0              0.00     0.00    0.00    0.00     0.00     0.00     0.00     0.00    0.00    0.00    0.00   0.00   0.00
+dm-1              0.00     0.00    0.00   16.08     0.00     0.16    20.28     0.23   14.06    0.00   14.06  14.06  22.61
+dm-2              0.00     0.00    0.00    2.01     0.00     0.01    12.50     0.04   18.75    0.00   18.75   9.75   1.96
+</code></pre><p>输出信息的含义<br>rrqm/s：每秒这个设备相关的读取请求有多少被Merge了（当系统调用需要读取数据的时候，VFS将请求发到各个FS，如果FS发现不同的读取请求读取的是相同Block的数据，FS会将这个请求合并Merge）；wrqm/s：每秒这个设备相关的写入请求有多少被Merge了。<br>rsec/s：每秒读取的扇区数；<br>wsec/：每秒写入的扇区数。<br>rKB/s：The number of read requests that were issued to the device per second；<br>wKB/s：The number of write requests that were issued to the device per second；<br>avgrq-sz 平均请求扇区的大小<br>avgqu-sz 是平均请求队列的长度。毫无疑问，队列长度越短越好。<br>await：  每一个IO请求的处理的平均时间（单位是微秒毫秒）。这里可以理解为IO的响应时间，一般地系统IO响应时间应该低于5ms，如果大于10ms就比较大了。<br>         这个时间包括了队列时间和服务时间，也就是说，一般情况下，await大于svctm，它们的差值越小，则说明队列时间越短，反之差值越大，队列时间越长，说明系统出了问题。<br>svctm    表示平均每次设备I/O操作的服务时间（以毫秒为单位）。如果svctm的值与await很接近，表示几乎没有I/O等待，磁盘性能很好，如果await的值远高于svctm的值，则表示I/O队列等待太长，         系统上运行的应用程序将变慢。<br>%util： 在统计时间内所有处理IO时间，除以总共统计时间。例如，如果统计间隔1秒，该设备有0.8秒在处理IO，而0.2秒闲置，那么该设备的%util = 0.8/1 = 80%，所以该参数暗示了设备的繁忙程度<br>。</p>
+<p>一般地，如果该参数是100%表示设备已经接近满负荷运行了（当然如果是多磁盘，即使%util是100%，因为磁盘的并发能力，所以磁盘使用未必就到了瓶颈）。</p>
+<h2 id="dstat"><a href="#dstat" class="headerlink" title="dstat"></a>dstat</h2><p>安装</p>
+<pre><code>[root@mysql mysql]# yum install dstat -y
+</code></pre><p>使用</p>
+<pre><code>[root@mysql mysql]# dstat
+----total-cpu-usage---- -dsk/total- -net/total- ---paging-- ---system--
+usr sys idl wai hiq siq| read  writ| recv  send|  in   out | int   csw 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  22    50 
+  0   0 100   0   0   0|   0     0 |  66B  326B|   0     0 |  29    68 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  22    45 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  31    75 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  22    47 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  26    77 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  21    43 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  27    75 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  27    53 
+  0   0 100   0   0   0|   0  4096B|  66B  182B|   0     0 |  30    72 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  23    40 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  30    75 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  23    48 
+  1   0  99   0   0   0|   0     0 |  66B  182B|   0     0 |  30    73 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  20    43 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  25    69 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  20    47 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  25    71 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  25    49 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  26    72 
+  0   1  99   0   0   0|   0     0 |  66B  182B|   0     0 |  26    52 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  26    69 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  22    48 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  31    76 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  22    46 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  26    67 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  22    43 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  29    73 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  27    55 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  27    69 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  22    49 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  29    70 
+  0   0 100   0   0   0|   0     0 |  66B  182B|   0     0 |  25    60 
+----total-cpu-usage---- -dsk/total- -net/total- ---paging-- ---system--
+
+默认1s执行一次，如果想5s执行一次使用dstat 5
+----total-cpu-usage----  CPU使用情况
+-dsk/total-              磁盘使用情况
+-net/total-              网络情况
+---paging--              交换页使用情况
+---system--              system负载情况
+</code></pre><h2 id="ifstat"><a href="#ifstat" class="headerlink" title="ifstat"></a>ifstat</h2><p><a href="http://pkgs.repoforge.org/ifstat/ifstat-1.1-1.2.el6.rf.x86_64.rpm" target="_blank" rel="noopener">下载</a></p>
+<pre><code>[root@mysql mysql]# ifstat
+   eth2                eth3       
+ KB/s in  KB/s out   KB/s in  KB/s out
+0.00      0.00      0.06      0.19
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+0.00      0.00      0.06      0.15
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/Linux/">Linux</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/05/13-常用工具.html" data-title="常用工具 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/06/16-MySQL Online DDL 工具之pt-online-schema-change.html" title="MySQL Online DDL 工具之Pt-Online-Schema-Change">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MySQL Online DDL 工具之Pt-Online-Schema-Change</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/04/29-Xtrabackup流备份与恢复.html"  title="Xtrabackup流备份与恢复">
+ <strong>下一篇：</strong><br/> 
+ <span>Xtrabackup流备份与恢复
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vmstat"><span class="toc-number">2.</span> <span class="toc-text">vmstat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iostat"><span class="toc-number">3.</span> <span class="toc-text">iostat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dstat"><span class="toc-number">4.</span> <span class="toc-text">dstat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ifstat"><span class="toc-number">5.</span> <span class="toc-text">ifstat</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

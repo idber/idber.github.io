@@ -1,0 +1,740 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MySQL 5.7新特性系列一 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="1. 背景MySQL 5.7在2015-10-21发布了GA版本，即5.7.9，目前小版本已经到了5.7.23。5.7新增了许多新的feature和优化，接下来一个系列，我们就一起来尝尝鲜。首先这次主要是预览feature的变化以及兼容性问题。后面的系列，会针对重要的feature展开来学习。 2 安全相关的特性2.1 认证插件mysql.user表中的plugin更改成not null，5.7">
+<meta name="keywords" content="MySQL,新特性">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL 5.7新特性系列一">
+<meta property="og:url" content="http://idber.github.io/2018/08/17-MySQL 5.7新特性系列一.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="1. 背景MySQL 5.7在2015-10-21发布了GA版本，即5.7.9，目前小版本已经到了5.7.23。5.7新增了许多新的feature和优化，接下来一个系列，我们就一起来尝尝鲜。首先这次主要是预览feature的变化以及兼容性问题。后面的系列，会针对重要的feature展开来学习。 2 安全相关的特性2.1 认证插件mysql.user表中的plugin更改成not null，5.7">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.929Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL 5.7新特性系列一">
+<meta name="twitter:description" content="1. 背景MySQL 5.7在2015-10-21发布了GA版本，即5.7.9，目前小版本已经到了5.7.23。5.7新增了许多新的feature和优化，接下来一个系列，我们就一起来尝尝鲜。首先这次主要是预览feature的变化以及兼容性问题。后面的系列，会针对重要的feature展开来学习。 2 安全相关的特性2.1 认证插件mysql.user表中的plugin更改成not null，5.7">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/08/17-MySQL 5.7新特性系列一.html" title="MySQL 5.7新特性系列一" itemprop="url">MySQL 5.7新特性系列一</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2018-08-16T22:01:56.000Z" itemprop="datePublished"> Published 2018-08-17</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-背景"><span class="toc-number">1.</span> <span class="toc-text">1. 背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-安全相关的特性"><span class="toc-number">2.</span> <span class="toc-text">2 安全相关的特性</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-认证插件"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 认证插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-迁移mysql-old-password用户"><span class="toc-number">2.1.1.</span> <span class="toc-text">1. 迁移mysql_old_password用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-user表结构升级"><span class="toc-number">2.1.2.</span> <span class="toc-text">2. user表结构升级</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-密码过期"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 密码过期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-账号锁定"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 账号锁定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-SSL连接"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 SSL连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-安装数据库"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 安装数据库</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-sql-mode变更"><span class="toc-number">3.</span> <span class="toc-text">3 sql mode变更</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-online-alter-table"><span class="toc-number">4.</span> <span class="toc-text">4. online alter table</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-InnoDB增强"><span class="toc-number">5.</span> <span class="toc-text">5. InnoDB增强</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-varchar长度变更支持inplace"><span class="toc-number">5.0.1.</span> <span class="toc-text">5.1 varchar长度变更支持inplace</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-优化InnoDB临时表"><span class="toc-number">5.0.2.</span> <span class="toc-text">5.2 优化InnoDB临时表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-InnoDB原生支持DATA-GEOMETRY类型"><span class="toc-number">5.0.3.</span> <span class="toc-text">5.3 InnoDB原生支持DATA_GEOMETRY类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-buffer-pool-dump"><span class="toc-number">5.0.4.</span> <span class="toc-text">5.4 buffer pool dump</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-多线程flush-dirty"><span class="toc-number">5.0.5.</span> <span class="toc-text">5.5 多线程flush dirty</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-NVM-file-system"><span class="toc-number">5.0.6.</span> <span class="toc-text">5.6 NVM file system</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-7-InnoDB分区表"><span class="toc-number">5.0.7.</span> <span class="toc-text">5.7 InnoDB分区表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-8-动态调整buffer-pool-size"><span class="toc-number">5.0.8.</span> <span class="toc-text">5.8 动态调整buffer pool size</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-9-加快recovery"><span class="toc-number">5.0.9.</span> <span class="toc-text">5.9 加快recovery</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-10-表空间管理"><span class="toc-number">5.0.10.</span> <span class="toc-text">5.10 表空间管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-11-InnoDB-Tablespace-Encryption"><span class="toc-number">5.0.11.</span> <span class="toc-text">5.11 InnoDB Tablespace Encryption</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<hr>
+<h1 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h1><p>MySQL 5.7在2015-10-21发布了GA版本，即5.7.9，目前小版本已经到了5.7.23。5.7新增了许多新的feature和优化，接下来一个系列，我们就一起来尝尝鲜。首先这次主要是预览feature的变化以及兼容性问题。后面的系列，会针对重要的feature展开来学习。</p>
+<h1 id="2-安全相关的特性"><a href="#2-安全相关的特性" class="headerlink" title="2 安全相关的特性"></a>2 安全相关的特性</h1><h2 id="2-1-认证插件"><a href="#2-1-认证插件" class="headerlink" title="2.1 认证插件"></a>2.1 认证插件</h2><p>mysql.user表中的plugin更改成not null，5.7开始不再支持mysql_old_password的认证插件，推荐全部使用mysql_native_password。从低版本升级到5.7的时候，需要处理两个兼容性问题。</p>
+<p>[兼容性] 需要先迁移mysql_old_password的用户，然后进行user表结构的升级：</p>
+<h3 id="1-迁移mysql-old-password用户"><a href="#1-迁移mysql-old-password用户" class="headerlink" title="1. 迁移mysql_old_password用户"></a>1. 迁移mysql_old_password用户</h3><p> MySQL 5.7.2之前的版本，是根据password的hash value来判断使用的认证插件类型，5.7.2以后的版本，plugin字段为not null，就直接根据plugin来判断了。新的密码从password字段中，保存到新的字段authentication_string中，password字段废弃处理。</p>
+<p>如果user是隐式的mysql_native_password。直接使用sql进行变更：</p>
+<pre><code>UPDATE mysql.user SET plugin = &apos;mysql_native_password&apos; WHERE plugin = &apos;&apos; AND (Password = &apos;&apos; OR LENGTH(Password) = 41);
+FLUSH PRIVILEGES;
+</code></pre><p>如果user是隐式的或者显示的mysql_old_password， 首先通过以下sql进行查询：</p>
+<pre><code>SELECT User, Host, Password FROM mysql.user WHERE (plugin = &apos;&apos; AND LENGTH(Password) = 16) OR plugin = &apos;mysql_old_password&apos;;
+</code></pre><p>如果存在记录，就表示还有使用mysql_old_password的user，使用以下sql进行用户的迁移：</p>
+<pre><code>ALTER USER &apos;user1&apos;@&apos;localhost&apos; IDENTIFIED WITH mysql_native_password BY &apos;DBA-chosen-password&apos;;
+</code></pre><h3 id="2-user表结构升级"><a href="#2-user表结构升级" class="headerlink" title="2. user表结构升级"></a>2. user表结构升级</h3><p>通过mysql_upgrade直接进行升级，步骤如下[5.6-&gt;5.7]：</p>
+<p>stop MySQL 5.6实例<br>替换5.7的mysqld二进制版本<br>使用5.7启动实例<br>run mysql_upgrade升级系统表<br>重启MySQL 5.7实例</p>
+<h2 id="2-2-密码过期"><a href="#2-2-密码过期" class="headerlink" title="2.2 密码过期"></a>2.2 密码过期</h2><p>用户可以通过 ALTER USER ‘test‘@’localhost’ PASSWORD EXPIRE;这样的语句来使用户的密码过期。 并新增加 default_password_lifetime来表示用户密码自动过期时间，从5.7.10开始，其默认值从0变更到了360，也就是默认一年过期。 可以通过以下两种方法禁止过期：</p>
+<pre><code>1. SET GLOBAL default_password_lifetime = 0;
+2. ALTER USER &apos;test&apos;@&apos;localhost&apos; PASSWORD EXPIRE NEVER;
+</code></pre><p>[兼容性] 只需要通过mysql_upgrade升级mysql.user系统表就可以使用密码过期新功能。</p>
+<h2 id="2-3-账号锁定"><a href="#2-3-账号锁定" class="headerlink" title="2.3 账号锁定"></a>2.3 账号锁定</h2><p>用户可以通过以下语法进行账号锁定，阻止这个用户进行登录：</p>
+<pre><code>ALTER USER &apos;test&apos;@&apos;localhost&apos; ACCOUNT LOCK;
+ALTER USER &apos;test&apos;@&apos;localhost&apos; ACCOUNT UNLOCK;
+</code></pre><p>[兼容性] 只需要通过mysql_upgrade升级mysql.user系统表就可以使用密码过期新功能。</p>
+<h2 id="2-4-SSL连接"><a href="#2-4-SSL连接" class="headerlink" title="2.4 SSL连接"></a>2.4 SSL连接</h2><p>如果mysqld编译使用的openssl，在启动的时候，默认创建SSL， RSA certificate 和 key 文件。 但不管是openssl还是yassl，如果没有设置ssl相关的参数，mysqld都会在data directory里查找ssl认证文件，来尽量打开ssl特性。</p>
+<p>[兼容性] 不存在兼容性的问题</p>
+<h2 id="2-5-安装数据库"><a href="#2-5-安装数据库" class="headerlink" title="2.5 安装数据库"></a>2.5 安装数据库</h2><p>5.7开始建议用户使用 mysqld –initialize来初始化数据库，放弃之前的mysql_install_db的方式，新的方式只创建了一个root@localhost的用户，随机密码保存在~/.mysql_secret文件中，并且账号是expired，第一次使用必须reset password，并且不再创建test db。</p>
+<p>[兼容性] 不存在兼容性的问题</p>
+<h1 id="3-sql-mode变更"><a href="#3-sql-mode变更" class="headerlink" title="3 sql mode变更"></a>3 sql mode变更</h1><p>5.7 sql_mode的默认值变更为：</p>
+<pre><code>mode_no_engine_substitution |
+mode_only_full_group_by |
+mode_strict_trans_tables |
+mode_no_zero_in_date |
+mode_no_zero_date |
+mode_error_for_division_by_zero |
+mode_no_auto_create_user
+</code></pre><p>而在5.7之前，sql_mode的默认值都只有mode_no_engine_substitution。 所以在5.7默认的情况下，比如grant不存在的用户的时候，会报一下错误：</p>
+<pre><code>ERROR 1133 (42000): Can&apos;t find any matching row in the user table
+</code></pre><p>必须先使用create user，然后再使用grant user。</p>
+<p>[兼容性] 默认sql mode发生变更会导致sql的行为不一致。</p>
+<h1 id="4-online-alter-table"><a href="#4-online-alter-table" class="headerlink" title="4. online alter table"></a>4. online alter table</h1><p>支持online rename index操作， in_place并且不需要table copy。 [兼容性] 不存在兼容性的问题</p>
+<h1 id="5-InnoDB增强"><a href="#5-InnoDB增强" class="headerlink" title="5. InnoDB增强"></a>5. InnoDB增强</h1><h3 id="5-1-varchar长度变更支持inplace"><a href="#5-1-varchar长度变更支持inplace" class="headerlink" title="5.1 varchar长度变更支持inplace"></a>5.1 varchar长度变更支持inplace</h3><p>变更varchar 类型字段的长度支持inplace方法，但有一个限制，即用于表示varchar字段长度的字节数不能发生变化，也就是支持比如varchar的长度在255以下变更或者255以上的范围进行变更，因为从小于255变更到大于255，其size的字节需要从1个增加到2个。</p>
+<p>注意：减少varchar的长度，仍然需要table copy。</p>
+<h3 id="5-2-优化InnoDB临时表"><a href="#5-2-优化InnoDB临时表" class="headerlink" title="5.2 优化InnoDB临时表"></a>5.2 优化InnoDB临时表</h3><p>因为InnoDB临时表的数据不再不受redo保护，而redo只保护临时表的元数据，所以大幅提升了临时表的性能。 并且InnoDB临时表的元数据保存在一个新的系统表中即innodb_temp_table_info， 临时表将建立一个统一的表空间，我们称之为临时表空间，其目录地址可以通过参数innodb_temp_data_file_path来设置。系统在启动的时候，都会新建这个表空间，重启会删除重建。</p>
+<p>例如：</p>
+<pre><code>mysql&gt; show global variables like &apos;%temp_data_file_path%&apos;;
++----------------------------+-----------------------+
+| Variable_name              | Value                 |
++----------------------------+-----------------------+
+| innodb_temp_data_file_path | ibtmp1:12M:autoextend |
++----------------------------+-----------------------+
+</code></pre><p>并且5.7存储引擎默认都变更成InnoDB了：</p>
+<pre><code>mysql&gt; show global variables like &apos;%storage_engine%&apos;;
++----------------------------------+--------+
+| Variable_name                    | Value  |
++----------------------------------+--------+
+| default_storage_engine           | InnoDB |
+| default_tmp_storage_engine       | InnoDB |
+| disabled_storage_engines         |        |
+| internal_tmp_disk_storage_engine | InnoDB |
++----------------------------------+--------+
+</code></pre><p>注意： 在开启gtid的情况下，非auto commit或者显示begin的context下，create 或者drop 临时表，仍然和5.6一样：</p>
+<pre><code>ERROR 1787 (HY000): Statement violates GTID consistency: CREATE TEMPORARY TABLE and DROP TEMPORARY TABLE can only be executed outside transactional context.
+</code></pre><p>另外， insert into t select * from t也会遇到错误，不能在一个sql语句中reference两次临时表。</p>
+<p>备注： 因为InnoDB临时表进行了比较大的变动，我们会专门进行一次详细的介绍。</p>
+<h3 id="5-3-InnoDB原生支持DATA-GEOMETRY类型"><a href="#5-3-InnoDB原生支持DATA-GEOMETRY类型" class="headerlink" title="5.3 InnoDB原生支持DATA_GEOMETRY类型"></a>5.3 InnoDB原生支持DATA_GEOMETRY类型</h3><p>并且支持在spatial data types上建立index，加速查询。</p>
+<h3 id="5-4-buffer-pool-dump"><a href="#5-4-buffer-pool-dump" class="headerlink" title="5.4 buffer pool dump"></a>5.4 buffer pool dump</h3><p>buffer pool dump和load支持一个新的参数innodb_buffer_pool_dump_pct，即dump的比例，并且使用innodb_io_capacity 来控制load过程中的IO吞吐量。</p>
+<h3 id="5-5-多线程flush-dirty"><a href="#5-5-多线程flush-dirty" class="headerlink" title="5.5 多线程flush dirty"></a>5.5 多线程flush dirty</h3><p>从5.7.4开始，innodb_page_cleaners参数可以设置，支持多线程flush dirty page，加快脏块的刷新。</p>
+<h3 id="5-6-NVM-file-system"><a href="#5-6-NVM-file-system" class="headerlink" title="5.6 NVM file system"></a>5.6 NVM file system</h3><p>MySQL 一直使用double write buffer来解决一个page写入的partial write问题，但在linux系统上的Fusion-io Non-Volatile Memory (NVM) file system支持原子的写入。 这样就可以省略掉double write buffer的使用， 5.7.4以后，如果Fusion-io devices支持atomic write，那么MySQL自动把dirty block直接写入到数据文件了。这样减少了一次内存copy和IO操作。</p>
+<h3 id="5-7-InnoDB分区表"><a href="#5-7-InnoDB分区表" class="headerlink" title="5.7 InnoDB分区表"></a>5.7 InnoDB分区表</h3><p>MySQL 5.7之前的版本，InnoDB并不支持分区表，分区表的支持是在ha_partition引擎上支持的，从5.7开始，InnoDB支持原生的分区表，并且可以使用传输表空间。</p>
+<p>[兼容性] mysql_upgrade会扫描ha_partition引擎支持的InnoDB表，并升级成InnoDB分区表，5.7.9之后，可以通过命令ALTER TABLE … UPGRADE PARTITIONING.进行升级。如果之前的版本大量使用了分区表，要注意使用mysql_upgrade会消耗非常长的时间来升级分区表。</p>
+<h3 id="5-8-动态调整buffer-pool-size"><a href="#5-8-动态调整buffer-pool-size" class="headerlink" title="5.8 动态调整buffer pool size"></a>5.8 动态调整buffer pool size</h3><p>MySQL 5.7.5之后，可以online动态调整buffer pool size，通过设置动态的参数innodb_buffer_pool_size来调整，并且根据Innodb_buffer_pool_resize_status状态来查看resize的进度，因为resize的过程是以chunk为大小，把pages从一个内存区域copy到另一片内存的。</p>
+<h3 id="5-9-加快recovery"><a href="#5-9-加快recovery" class="headerlink" title="5.9 加快recovery"></a>5.9 加快recovery</h3><p>MySQL 5.7.5之前，在recovery的过程中，需要扫描所有的ibd文件，获取元信息， 5.7.5之后，新加了一种redo log类型，即MLOG_FILE_NAME， 记录从上一次checkpoint以来，发生过变更的文件，这样在recovery的过程中，只需要打开这些文件就可以了。 [兼容性] 因为增加了新的log record type，需要安全的关闭5.7之前的实例，清理掉redo。</p>
+<h3 id="5-10-表空间管理"><a href="#5-10-表空间管理" class="headerlink" title="5.10 表空间管理"></a>5.10 表空间管理</h3><p>支持创建表空间，例如</p>
+<pre><code>CREATE TABLESPACE `tablespace_name`
+ADD DATAFILE &apos;file_name.ibd&apos;
+[FILE_BLOCK_SIZE = n]
+</code></pre><p>并可以在创建表的时候，指定属于哪个表空间，</p>
+<p>[兼容性] 因为可以任意指定空间目录，要注意升级过程中，不要漏掉目录。</p>
+<h3 id="5-11-InnoDB-Tablespace-Encryption"><a href="#5-11-InnoDB-Tablespace-Encryption" class="headerlink" title="5.11 InnoDB Tablespace Encryption"></a>5.11 InnoDB Tablespace Encryption</h3><p>支持InnoDB数据文件加密，其依赖keyring plugin来进行秘钥的管理，后面我们单独来介绍InnoDB加密的方法，并且RDS也实现了一种InnoDB数据文件透明加密方法，并通过KMS系统来管理秘钥。例如：</p>
+<pre><code>create table t(id int) encryption=&apos;y&apos;;
+</code></pre><p>未完待续</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/新特性/">新特性</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2018/08/17-MySQL 5.7新特性系列一.html" data-title="MySQL 5.7新特性系列一 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/08/18-MySQL 5.7中InnoDB事务隔离模式的影响.html" title="【译】MySQL 5.7中InnoDB事务隔离模式的影响">
+  <strong>上一篇：</strong><br/>
+  <span>
+  【译】MySQL 5.7中InnoDB事务隔离模式的影响</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/16-RC or RR.html"  title="RC or RR">
+ <strong>下一篇：</strong><br/> 
+ <span>RC or RR
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-背景"><span class="toc-number">1.</span> <span class="toc-text">1. 背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-安全相关的特性"><span class="toc-number">2.</span> <span class="toc-text">2 安全相关的特性</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-认证插件"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 认证插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-迁移mysql-old-password用户"><span class="toc-number">2.1.1.</span> <span class="toc-text">1. 迁移mysql_old_password用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-user表结构升级"><span class="toc-number">2.1.2.</span> <span class="toc-text">2. user表结构升级</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-密码过期"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 密码过期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-账号锁定"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 账号锁定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-SSL连接"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 SSL连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-安装数据库"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 安装数据库</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-sql-mode变更"><span class="toc-number">3.</span> <span class="toc-text">3 sql mode变更</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-online-alter-table"><span class="toc-number">4.</span> <span class="toc-text">4. online alter table</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-InnoDB增强"><span class="toc-number">5.</span> <span class="toc-text">5. InnoDB增强</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-varchar长度变更支持inplace"><span class="toc-number">5.0.1.</span> <span class="toc-text">5.1 varchar长度变更支持inplace</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-优化InnoDB临时表"><span class="toc-number">5.0.2.</span> <span class="toc-text">5.2 优化InnoDB临时表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-InnoDB原生支持DATA-GEOMETRY类型"><span class="toc-number">5.0.3.</span> <span class="toc-text">5.3 InnoDB原生支持DATA_GEOMETRY类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-buffer-pool-dump"><span class="toc-number">5.0.4.</span> <span class="toc-text">5.4 buffer pool dump</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-多线程flush-dirty"><span class="toc-number">5.0.5.</span> <span class="toc-text">5.5 多线程flush dirty</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-NVM-file-system"><span class="toc-number">5.0.6.</span> <span class="toc-text">5.6 NVM file system</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-7-InnoDB分区表"><span class="toc-number">5.0.7.</span> <span class="toc-text">5.7 InnoDB分区表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-8-动态调整buffer-pool-size"><span class="toc-number">5.0.8.</span> <span class="toc-text">5.8 动态调整buffer pool size</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-9-加快recovery"><span class="toc-number">5.0.9.</span> <span class="toc-text">5.9 加快recovery</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-10-表空间管理"><span class="toc-number">5.0.10.</span> <span class="toc-text">5.10 表空间管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-11-InnoDB-Tablespace-Encryption"><span class="toc-number">5.0.11.</span> <span class="toc-text">5.11 InnoDB Tablespace Encryption</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,854 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>CentOS 6.3下快速安装MongoDB 3.2.1 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="MongoDB是一个基于分布式文件存储的数据库。由C++语言编写。旨在为WEB应用提供可扩展的高性能数据存储解决方案。是一个介于关系数据 库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。他支持的数据结构非常松散，是类似json的bson格式，因此可以存储 比较复杂的数据类型。Mongo最大的特点是他支持的查询语言非常强大，其语法有点类似于面向对象的查询语言，几乎可以实现">
+<meta name="keywords" content="NoSQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS 6.3下快速安装MongoDB 3.2.1">
+<meta property="og:url" content="http://idber.github.io/2016/01/21-CentOS 6.3下快速安装MongoDB 3.2.1.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="MongoDB是一个基于分布式文件存储的数据库。由C++语言编写。旨在为WEB应用提供可扩展的高性能数据存储解决方案。是一个介于关系数据 库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。他支持的数据结构非常松散，是类似json的bson格式，因此可以存储 比较复杂的数据类型。Mongo最大的特点是他支持的查询语言非常强大，其语法有点类似于面向对象的查询语言，几乎可以实现">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.927Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CentOS 6.3下快速安装MongoDB 3.2.1">
+<meta name="twitter:description" content="MongoDB是一个基于分布式文件存储的数据库。由C++语言编写。旨在为WEB应用提供可扩展的高性能数据存储解决方案。是一个介于关系数据 库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。他支持的数据结构非常松散，是类似json的bson格式，因此可以存储 比较复杂的数据类型。Mongo最大的特点是他支持的查询语言非常强大，其语法有点类似于面向对象的查询语言，几乎可以实现">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/01/21-CentOS 6.3下快速安装MongoDB 3.2.1.html" title="CentOS 6.3下快速安装MongoDB 3.2.1" itemprop="url">CentOS 6.3下快速安装MongoDB 3.2.1</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-01-21T10:10:07.000Z" itemprop="datePublished"> Published 2016-01-21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、安装配置mongodb"><span class="toc-number">1.</span> <span class="toc-text">一、安装配置mongodb</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-1-设置系统环境及确保缺省端口27107可用"><span class="toc-number">2.</span> <span class="toc-text">Step 1: 设置系统环境及确保缺省端口27107可用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-2-下载安装文件"><span class="toc-number">3.</span> <span class="toc-text">Step 2: 下载安装文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-3-解压下载的文件"><span class="toc-number">4.</span> <span class="toc-text">Step 3: 解压下载的文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-4-复制解压文件到运行目录"><span class="toc-number">5.</span> <span class="toc-text">Step 4: 复制解压文件到运行目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-5-设置环境变量"><span class="toc-number">6.</span> <span class="toc-text">Step 5: 设置环境变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-6-创建数据目录"><span class="toc-number">7.</span> <span class="toc-text">Step 6: 创建数据目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二、启动及验证mongodb"><span class="toc-number">8.</span> <span class="toc-text">二、启动及验证mongodb</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三、mongodb相关工具"><span class="toc-number">9.</span> <span class="toc-text">三、mongodb相关工具</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#mongod-–help-more"><span class="toc-number">9.0.0.1.</span> <span class="toc-text">mongod –help|more</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mongod-–version"><span class="toc-number">9.0.0.2.</span> <span class="toc-text">mongod –version</span></a></li></ol></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<p>MongoDB是一个基于分布式文件存储的数据库。由C++语言编写。旨在为WEB应用提供可扩展的高性能数据存储解决方案。<br>是一个介于关系数据 库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。他支持的数据结构非常松散，是类似json的bson格式，因此可以存储 比较复杂的数据类型。Mongo最大的特点是他支持的查询语言非常强大，其语法有点类似于面向对象的查询语言，几乎可以实现类似关系数据库单表查询的绝大 部分功能，而且还支持对数据建立索引。</p>
+<p>MongoDB 是目前在IT行业非常流行的一种非关系型数据库(NoSql),其灵活的数据存储方式备受当前IT从业人员的青睐。MongoDB很好的实现了面向对象的 思想(OO思想),在MongoDB中 每一条记录都是一个Document对象。MongoDB最大的优势在于所有的数据持久操作都无需开发人员手动编写SQL语句,直接调用方法就可以轻松的 实现CRUD操作。本文介绍了如何快速安装mongodb供大家参考。</p>
+<h2 id="一、安装配置mongodb"><a href="#一、安装配置mongodb" class="headerlink" title="一、安装配置mongodb"></a>一、安装配置mongodb</h2><p>useradd mongodb</p>
+<h2 id="Step-1-设置系统环境及确保缺省端口27107可用"><a href="#Step-1-设置系统环境及确保缺省端口27107可用" class="headerlink" title="Step 1: 设置系统环境及确保缺省端口27107可用"></a>Step 1: 设置系统环境及确保缺省端口27107可用</h2><hr>
+<p>当前环境</p>
+<blockquote>
+<p>cat /etc/issue</p>
+<p>vi /etc/selinux/config</p>
+<p>SELINUX=disabled</p>
+</blockquote>
+<h2 id="Step-2-下载安装文件"><a href="#Step-2-下载安装文件" class="headerlink" title="Step 2: 下载安装文件"></a>Step 2: 下载安装文件</h2><hr>
+<p>下载地址： </p>
+<blockquote>
+<p><a href="https://www.mongodb.org/downloads" target="_blank" rel="noopener">https://www.mongodb.org/downloads</a>.</p>
+</blockquote>
+<p>或者直接在命令提示符下使用curl命令下载</p>
+<blockquote>
+<p>curl -O <a href="https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.1.tgz" target="_blank" rel="noopener">https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.1.tgz</a></p>
+</blockquote>
+<h2 id="Step-3-解压下载的文件"><a href="#Step-3-解压下载的文件" class="headerlink" title="Step 3: 解压下载的文件"></a>Step 3: 解压下载的文件</h2><hr>
+<blockquote>
+<p>pwd</p>
+</blockquote>
+<blockquote>
+<p>/home/mongo</p>
+</blockquote>
+<blockquote>
+<p>tar -xvf mongodb-linux-x86_64-rhel62-3.2.1.gz  </p>
+</blockquote>
+<p>注，本文直接从网站下载，所以文件为.gz</p>
+<pre><code>[mongo@mysql ~]$ tar -xvf mongodb-linux-x86_64-3.2.1.tgz
+mongodb-linux-x86_64-3.2.1/README
+tar: mongodb-linux-x86_64-3.2.1/README: time stamp 2016-01-12 02:37:17 is 48732.469243332 s in the future
+mongodb-linux-x86_64-3.2.1/THIRD-PARTY-NOTICES
+tar: mongodb-linux-x86_64-3.2.1/THIRD-PARTY-NOTICES: time stamp 2016-01-12 02:37:17 is 48732.468806195 s in the future
+mongodb-linux-x86_64-3.2.1/MPL-2
+tar: mongodb-linux-x86_64-3.2.1/MPL-2: time stamp 2016-01-12 02:37:17 is 48732.468729339 s in the future
+mongodb-linux-x86_64-3.2.1/GNU-AGPL-3.0
+tar: mongodb-linux-x86_64-3.2.1/GNU-AGPL-3.0: time stamp 2016-01-12 02:37:17 is 48732.468416571 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongodump
+tar: mongodb-linux-x86_64-3.2.1/bin/mongodump: time stamp 2016-01-12 02:37:30 is 48745.395380045 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongorestore
+tar: mongodb-linux-x86_64-3.2.1/bin/mongorestore: time stamp 2016-01-12 02:37:28 is 48743.308178108 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongoexport
+tar: mongodb-linux-x86_64-3.2.1/bin/mongoexport: time stamp 2016-01-12 02:37:25 is 48740.256976344 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongoimport
+tar: mongodb-linux-x86_64-3.2.1/bin/mongoimport: time stamp 2016-01-12 02:37:26 is 48741.205864231 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongostat
+tar: mongodb-linux-x86_64-3.2.1/bin/mongostat: time stamp 2016-01-12 02:37:23 is 48738.158042438 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongotop
+tar: mongodb-linux-x86_64-3.2.1/bin/mongotop: time stamp 2016-01-12 02:37:31 is 48746.110027909 s in the future
+mongodb-linux-x86_64-3.2.1/bin/bsondump
+tar: mongodb-linux-x86_64-3.2.1/bin/bsondump: time stamp 2016-01-12 02:37:21 is 48736.074523763 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongofiles
+tar: mongodb-linux-x86_64-3.2.1/bin/mongofiles: time stamp 2016-01-12 02:37:24 is 48739.014639938 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongooplog
+tar: mongodb-linux-x86_64-3.2.1/bin/mongooplog: time stamp 2016-01-12 02:37:33 is 48747.960322499 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongoperf
+tar: mongodb-linux-x86_64-3.2.1/bin/mongoperf: time stamp 2016-01-12 02:49:50 is 49484.63946251 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongod
+tar: mongodb-linux-x86_64-3.2.1/bin/mongod: time stamp 2016-01-12 02:49:50 is 49484.277970529 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongos
+tar: mongodb-linux-x86_64-3.2.1/bin/mongos: time stamp 2016-01-12 02:49:49 is 49483.120921568 s in the future
+mongodb-linux-x86_64-3.2.1/bin/mongo
+tar: mongodb-linux-x86_64-3.2.1/bin/mongo: time stamp 2016-01-12 02:49:50 is 49483.896681132 s in the future
+</code></pre><h2 id="Step-4-复制解压文件到运行目录"><a href="#Step-4-复制解压文件到运行目录" class="headerlink" title="Step 4: 复制解压文件到运行目录"></a>Step 4: 复制解压文件到运行目录</h2><hr>
+<pre><code>mongo@mysql ~]$ pwd
+/home/mongo
+[mongo@mysql ~]$ mv mongodb-linux-x86_64-3.2.1 mongo
+[mongo@mysql ~]$ ll
+total 55108
+drwxrwxr-x. 3 mongo mongo     4096 Jan 11 13:05 mongo
+-rw-r-----. 1 mongo mongo 56419937 Jan 21  2016 mongodb-linux-x86_64-3.2.1.tgz
+
+[mongo@mysql ~]$ 
+</code></pre><h2 id="Step-5-设置环境变量"><a href="#Step-5-设置环境变量" class="headerlink" title="Step 5: 设置环境变量"></a>Step 5: 设置环境变量</h2><hr>
+<pre><code>[mongo@mysql ~]$ vi .bash_profile 
+PATH=$PATH:$HOME/bin:/home/mongo/mongo/bin
+export PATH
+</code></pre><h2 id="Step-6-创建数据目录"><a href="#Step-6-创建数据目录" class="headerlink" title="Step 6: 创建数据目录"></a>Step 6: 创建数据目录</h2><hr>
+<pre><code>mkdir -p /data/mongodata
+</code></pre><h2 id="二、启动及验证mongodb"><a href="#二、启动及验证mongodb" class="headerlink" title="二、启动及验证mongodb"></a>二、启动及验证mongodb</h2><p>启动mongo</p>
+<pre><code>mongod --dbpath /home/mongo/mongo/data
+</code></pre><p>以下内容为启动后输出的相关信息</p>
+<pre><code>[mongo@mysql ~]$ mongod -dbpath /home/mongo/mongo/data/
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten] MongoDB starting :
+pid=12579 port=27017 dbpath=/home/mongo/mongo/data/ 64-bit host=mysql
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten] db version v3.2.1
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten] git version: a14d55980c2cdc565d4704a7e3ad37e4e535c1b2
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten] allocator: tcmalloc
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten] modules: none
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten] build environment:
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten]     distarch: x86_64
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten]     target_arch: x86_64
+2016-01-11T13:08:33.684+0800 I CONTROL  [initandlisten] options: { storage: { dbPath: &quot;/home/mongo/mongo/data/&quot; } }
+2016-01-11T13:08:33.725+0800 I STORAGE  [initandlisten] wiredtiger_open config: create,cache_size=1G,session_max=20000,eviction=(threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,archive=true,path=journal,compressor=snappy),file_manager=(close_idle_time=100000),checkpoint=(wait=60,log_size=2GB),statistics_log=(wait=0),
+2016-01-11T13:08:33.828+0800 I FTDC     [initandlisten] Initializing full-time diagnostic data capture with directory &apos;/home/mongo/mongo/data/diagnostic.data&apos;
+2016-01-11T13:08:33.829+0800 I NETWORK  [HostnameCanonicalizationWorker] Starting hostname canonicalization worker
+2016-01-11T13:08:33.844+0800 I NETWORK  [initandlisten] waiting for connections on port 27017
+</code></pre><p>停止mongo，直接使用ctrl + c</p>
+<pre><code>f^C2016-01-11T13:09:46.734+0800 I CONTROL[signalProcessingThread] got signal 2 (Interrupt), will terminate after current cmd ends
+2016-01-11T13:09:46.734+0800 I FTDC     [signalProcessingThread] Shutting down full-time diagnostic data capture
+2016-01-11T13:09:46.735+0800 I CONTROL  [signalProcessingThread] now exiting
+2016-01-11T13:09:46.735+0800 I NETWORK  [signalProcessingThread] shutdown: going to close listening sockets...
+2016-01-11T13:09:46.735+0800 I NETWORK  [signalProcessingThread] closing listening socket: 5
+2016-01-11T13:09:46.735+0800 I NETWORK  [signalProcessingThread] closing listening socket: 6
+2016-01-11T13:09:46.735+0800 I NETWORK  [signalProcessingThread] removing socket file: /tmp/mongodb-27017.sock
+2016-01-11T13:09:46.737+0800 I NETWORK[signalProcessingThread] shutdown: going to flush diaglog...
+2016-01-11T13:09:46.737+0800 I NETWORK  [signalProcessingThread] shutdown: going to close sockets...
+2016-01-11T13:09:46.737+0800 I STORAGE  [signalProcessingThread] WiredTigerKVEngine shutting down
+2016-01-11T13:09:46.781+0800 I STORAGE  [signalProcessingThread] shutdown: removing fs lock...
+2016-01-11T13:09:46.781+0800 I CONTROL  [signalProcessingThread] dbexit:  rc: 0
+</code></pre><p>修复启动过程中的两个警告，关于使用root用户启动mongo的警告先忽略</p>
+<pre><code>echo &quot;never&quot; &gt; /sys/kernel/mm/transparent_hugepage/enabled
+echo &quot;never&quot; &gt; /sys/kernel/mm/transparent_hugepage/defrag
+</code></pre><p>再次重启，后置于后台进程</p>
+<pre><code>mongod --dbpath /home/mongo/mongo/data &amp;
+</code></pre><p>查看启动后的进程</p>
+<pre><code>ps -ef|grep mongo
+</code></pre><p>使用mongo连接到mongod</p>
+<pre><code>mongo
+MongoDB shell version: 3.2.1
+
+
+&gt; help
+    db.help()                    help on db methods
+    db.mycoll.help()            help on collection methods
+    sh.help()                    sharding helpers
+    rs.help()                    replica set helpers
+    help admin                  administrative help
+    help connect                connecting to a db help
+    help keys                    key shortcuts
+    help misc                    misc things to know
+    help mr                      mapreduce
+
+
+    show dbs                    show database names
+    show collections            show collections in current database
+    show users                  show users in current database
+    show profile                show most recent system.profile entries with time &gt;= 1ms
+    show logs                    show the accessible logger names
+    show log [name]              prints out the last segment of log in memory, &apos;global&apos; is default
+    use                 set current database
+    db.foo.find()                list objects in collection foo
+    db.foo.find( { a : 1 } )    list objects in foo where a == 1
+    it                          result of the last line evaluated; use to further iterate
+    DBQuery.shellBatchSize = x  set default number of items to display on shell
+    exit                        quit the mongo shell
+    db.getCollection(&quot;version&quot;);
+    test.version
+    &gt; exit
+    bye
+</code></pre><h2 id="三、mongodb相关工具"><a href="#三、mongodb相关工具" class="headerlink" title="三、mongodb相关工具"></a>三、mongodb相关工具</h2><p>   在安装文件下有README，描述了常用的mongodb相关命令行工具</p>
+<pre><code>more /usr/local/mongodb/README
+MongoDB README
+Welcome to MongoDB!
+COMPONENTS
+
+bin/mongod - The database process.
+bin/mongos - Sharding controller.
+bin/mongo  - The database shell (uses interactive javascript).
+
+UTILITIES
+
+bin/mongodump        - MongoDB dump tool - for backups, snapshots, etc..
+bin/mongorestore      - MongoDB restore a dump
+bin/mongoexport      - Export a single collection to test (JSON, CSV)
+bin/mongoimport      - Import from JSON or CSV
+bin/mongofiles        - Utility for putting and getting files from MongoDB GridFS
+bin/mongostat        - Show performance statistics
+
+RUNNING
+
+For command line options invoke:
+
+$ ./mongod --help
+
+To run a single server database:
+
+$ mkdir /data/db
+$ ./mongod
+$
+$ # The mongo javascript shell connects to localhost and test database by default:
+$ ./mongo
+&gt; help
+
+DRIVERS
+
+ Client drivers for most programming languages are available at mongodb.org.  Use the
+ shell (&quot;mongo&quot;) for administrative tasks.
+</code></pre><p>获取单个命令用法<br>–help</p>
+<h5 id="mongod-–help-more"><a href="#mongod-–help-more" class="headerlink" title="mongod –help|more"></a>mongod –help|more</h5><p>Options:</p>
+<p>General options:<br>  -h [ –help ]              show this usage information<br>  –version                  show version information</p>
+<h5 id="mongod-–version"><a href="#mongod-–version" class="headerlink" title="mongod –version"></a>mongod –version</h5><p>db version v3.2.1<br>git version: 1ef45a23a4c5e3480ac919b28afcba3c615488f2 </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/NoSQL/">NoSQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/NoSQL/">NoSQL</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/01/21-CentOS 6.3下快速安装MongoDB 3.2.1.html" data-title="CentOS 6.3下快速安装MongoDB 3.2.1 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/01/24-MongoDB 3.0.8权限管理.html" title="MongoDB 3.0.8 权限管理">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MongoDB 3.0.8 权限管理</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/01/12-MySQL binlog日期解析.html"  title="MySQL Binlog日期解析">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL Binlog日期解析
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、安装配置mongodb"><span class="toc-number">1.</span> <span class="toc-text">一、安装配置mongodb</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-1-设置系统环境及确保缺省端口27107可用"><span class="toc-number">2.</span> <span class="toc-text">Step 1: 设置系统环境及确保缺省端口27107可用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-2-下载安装文件"><span class="toc-number">3.</span> <span class="toc-text">Step 2: 下载安装文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-3-解压下载的文件"><span class="toc-number">4.</span> <span class="toc-text">Step 3: 解压下载的文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-4-复制解压文件到运行目录"><span class="toc-number">5.</span> <span class="toc-text">Step 4: 复制解压文件到运行目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-5-设置环境变量"><span class="toc-number">6.</span> <span class="toc-text">Step 5: 设置环境变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-6-创建数据目录"><span class="toc-number">7.</span> <span class="toc-text">Step 6: 创建数据目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二、启动及验证mongodb"><span class="toc-number">8.</span> <span class="toc-text">二、启动及验证mongodb</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三、mongodb相关工具"><span class="toc-number">9.</span> <span class="toc-text">三、mongodb相关工具</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#mongod-–help-more"><span class="toc-number">9.0.0.1.</span> <span class="toc-text">mongod –help|more</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#mongod-–version"><span class="toc-number">9.0.0.2.</span> <span class="toc-text">mongod –version</span></a></li></ol></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

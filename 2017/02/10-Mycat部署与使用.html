@@ -1,0 +1,757 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Mycat部署与使用 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="MyCAT 可以视为“MySQL”集群的企业级数据库，用来替代昂贵的Oracle集群，其背后是阿里曾经开源的知名产品Cobar。MyCAT的目标是：低成本的将现有的单机数据库和应用平滑迁移到“云”端，解决数据存储和业务规模迅速增长情况下的数据瓶颈问题。 下面就适合订单的业务场景做介绍 1 应用场景 Mycat 有很多数据分库规则，接下来几篇就相关觉得常用的规则进行试用与总结。 一般来说，按自然月">
+<meta name="keywords" content="MySQL,分表">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mycat部署与使用">
+<meta property="og:url" content="http://idber.github.io/2017/02/10-Mycat部署与使用.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="MyCAT 可以视为“MySQL”集群的企业级数据库，用来替代昂贵的Oracle集群，其背后是阿里曾经开源的知名产品Cobar。MyCAT的目标是：低成本的将现有的单机数据库和应用平滑迁移到“云”端，解决数据存储和业务规模迅速增长情况下的数据瓶颈问题。 下面就适合订单的业务场景做介绍 1 应用场景 Mycat 有很多数据分库规则，接下来几篇就相关觉得常用的规则进行试用与总结。 一般来说，按自然月">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.931Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mycat部署与使用">
+<meta name="twitter:description" content="MyCAT 可以视为“MySQL”集群的企业级数据库，用来替代昂贵的Oracle集群，其背后是阿里曾经开源的知名产品Cobar。MyCAT的目标是：低成本的将现有的单机数据库和应用平滑迁移到“云”端，解决数据存储和业务规模迅速增长情况下的数据瓶颈问题。 下面就适合订单的业务场景做介绍 1 应用场景 Mycat 有很多数据分库规则，接下来几篇就相关觉得常用的规则进行试用与总结。 一般来说，按自然月">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/10-Mycat部署与使用.html" title="Mycat部署与使用" itemprop="url">Mycat部署与使用</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-10T09:17:56.000Z" itemprop="datePublished"> Published 2017-02-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<p>MyCAT 可以视为“MySQL”集群的企业级数据库，用来替代昂贵的Oracle集群，其背后是阿里曾经开源的知名产品Cobar。MyCAT的目标是：低成本的将现有的单机数据库和应用平滑迁移到“云”端，解决数据存储和业务规模迅速增长情况下的数据瓶颈问题。</p>
+<p>下面就适合订单的业务场景做介绍</p>
+<p>1 应用场景</p>
+<p>Mycat 有很多数据分库规则，接下来几篇就相关觉得常用的规则进行试用与总结。</p>
+<p>一般来说，按自然月份或按日期来进行数据分片的规则比较适用于商城订单查询，类似最近1周、2周、3个月内的数据。或是报表类应用。</p>
+<p>这样的数据放在一个片区内省去了数据合并的时间。</p>
+<p>当然按月数据量不要过大就OK。</p>
+<p>一、部署步骤详解<br>  (1) 用命令行工具或图形化客户端，连接MYSQL，创建DEMO所用三个分片数据库；</p>
+<pre><code>CREATE SCHEMA `range_db_01` DEFAULT CHARACTER SET utf8 ;
+CREATE SCHEMA `range_db_02` DEFAULT CHARACTER SET utf8 ;
+CREATE SCHEMA `range_db_03` DEFAULT CHARACTER SET utf8 ;
+CREATE SCHEMA `range_db_04` DEFAULT CHARACTER SET utf8 ;
+</code></pre><p>  (2) 修改配置my.cnf新增以下语句， 一般会放在/etc/my.cnf 或 /etc/mysql/my.cnf，设置为Mysql表名大小写不敏感，否则可能会发生表找不到的问题。</p>
+<pre><code>lower_case_table_names = 1
+</code></pre><p>  (3) 解压Mycat-server-1.6-RELEASE-20161028204710-linux.tar.gz 到安装目录下，会生成mycat目录</p>
+<p>  (4) 安装jdk-7u79-linux-x64</p>
+<p>  (5) 修改mycat/conf/wrap.conf 修改wrapper.Java.command=java为上一步存放路径</p>
+<pre><code>wrapper.java.command=/usr/java/jdk1.7.0_79/
+</code></pre><p>  (6) 创建mycat 用户，改变目录权限为mycat</p>
+<pre><code>useradd mycat
+chown -R mycat.mycat mycat
+</code></pre><p>  (7) 修改用户密码</p>
+<pre><code>passwd mycat
+输入：
+</code></pre><p>  (8) 修改mycat/conf/schema.xml，URL、用户名、密码修改，其余不变</p>
+<pre><code>&lt;writeHost host=&quot;hostM1&quot; url=&quot;192.168.184.56:3306&quot; user=&quot;root&quot;
+                       password=&quot;root&quot;&gt;
+</code></pre><p>二、运行步骤详解<br>  (1) 进入 mycat/bin （默认数据端口为8066，管理端口为9066）<br> 执行./mycat start<br>  (2) 进入logs目录，查看日志，如果wrapper.log 报错 java.NET.BindException: Address already in use 杀掉正在执行的相关java进程</p>
+<pre><code>ps -ef|grep java
+kill -9 xxx
+</code></pre><p>三、使用步骤详解<br>  (1) 进入mysql bin目录mysql/bin/<br>  (2) 登录mysql 执行以下命令<br> ./mysql -utest -ptest -h192.168.184.56 -P8066 -DTESTDB</p>
+<p> (mycat的用户账号和授权信息是在conf/server.xml文件中配置)<br>  (3) 表创建测试：</p>
+<pre><code>mysql&gt; create table employee (id int not null primary key,name varchar(100),sharding_id int not null);
+Query OK, 0 rows affected (0.30 sec)
+mysql&gt; explain create table employee (id int not null primary key,name varchar(100),sharding_id int not null);
++-----------+------------------------------------------------------------------------------------------------+
+| DATA_NODE | SQL                                                                                            |
++-----------+------------------------------------------------------------------------------------------------+
+| dn1       | create table employee (id int not null primary key,name varchar(100),sharding_id int not null) | 
+| dn2       | create table employee (id int not null primary key,name varchar(100),sharding_id int not null) | 
++-----------+------------------------------------------------------------------------------------------------+
+2 rows in set (0.04 sec)
+</code></pre><p>  (4) 客户端软件使用：navicat<br> 创建mycat新连接：ip：192.168.184.56，用户名：test，密码：test，端口：8066<br> 可看到TESTDB数据库下已创建表：employee<br> 打开db1，db2 数据库也可看到已创建表employee</p>
+<p>  (5) 插入数据测试</p>
+<pre><code>mysql&gt; insert into employee(id,name,sharding_id) values(1,&apos;leader us&apos;,10000);
+ERROR 2006 (HY000): MySQL server has gone away
+No connection. Trying to reconnect...
+Connection id:    6
+Current database: TESTDB
+Query OK, 1 row affected (0.03 sec)
+mysql&gt; explain insert into employee(id,name,sharding_id) values(1,&apos;leader us&apos;,10000);
++-----------+-----------------------------------------------------------------------+
+| DATA_NODE | SQL                                                                   |
++-----------+-----------------------------------------------------------------------+
+| dn1       | insert into employee(id,name,sharding_id) values(1,&apos;leader us&apos;,10000) | 
++-----------+-----------------------------------------------------------------------+
+1 row in set (0.00 sec)
+</code></pre><p>  (6) 根据规则auto-sharding-long（主键范围）进行分片测试</p>
+<pre><code>mysql&gt; explain create table company(id int not null primary key,name varchar(100));
++-----------+---------------------------------------------------------------------+
+| DATA_NODE | SQL                                                                 |
++-----------+---------------------------------------------------------------------+
+| dn1       | create table company(id int not null primary key,name varchar(100)) | 
+| dn2       | create table company(id int not null primary key,name varchar(100)) | 
+| dn3       | create table company(id int not null primary key,name varchar(100)) | 
++-----------+---------------------------------------------------------------------+
+3 rows in set (0.01 sec)
+</code></pre><p>  (7) 三个分片上都插入了3条数据</p>
+<pre><code>mysql&gt; explain insert into company(id,name) values(1,&apos;hp&apos;);
++-----------+---------------------------------------------+
+| DATA_NODE | SQL                                         |
++-----------+---------------------------------------------+
+| dn1       | insert into company(id,name) values(1,&apos;hp&apos;) | 
+| dn2       | insert into company(id,name) values(1,&apos;hp&apos;) | 
+| dn3       | insert into company(id,name) values(1,&apos;hp&apos;) | 
++-----------+---------------------------------------------+
+3 rows in set (0.00 sec)
+</code></pre><p>  (8) 确认是分片存储</p>
+<pre><code>mysql&gt; select * from employee;
++----+-----------+-------------+
+| id | name      | sharding_id |
++----+-----------+-------------+
+|  2 | me        |       10010 | 
+|  4 | mydog     |       10010 | 
+|  1 | leader us |       10000 | 
+|  3 | mycat     |       10000 | 
++----+-----------+-------------+
+4 rows in set (0.01 sec)
+mysql&gt; explain select * from employee;
++-----------+----------------------------------+
+| DATA_NODE | SQL                              |
++-----------+----------------------------------+
+| dn1       | SELECT * FROM employee LIMIT 100 | 
+| dn2       | SELECT * FROM employee LIMIT 100 | 
++-----------+----------------------------------+
+2 rows in set (0.00 sec)
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/分表/">分表</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2017/02/10-Mycat部署与使用.html" data-title="Mycat部署与使用 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/23-MHA搭建及故障维护.html" title="MHA搭建及故障维护">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MHA搭建及故障维护</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/12/13-聊聊Greenplum的那些事.html"  title="聊聊Greenplum的那些事">
+ <strong>下一篇：</strong><br/> 
+ <span>聊聊Greenplum的那些事
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

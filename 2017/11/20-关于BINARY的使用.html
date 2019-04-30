@@ -1,0 +1,800 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>关于BINARY的使用 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="数据库版本:MySQL 5.6.26 线上某业务表为了区分大小写，使用BINARY关键字，正常来说使用这个关键字是走索引的，测试过程如下： 创建测试表，插入数据： drop table  if EXISTS student;  CREATE TABLE `student` (   `id` int(11) PRIMARY key auto_increment,   `name` varchar(">
+<meta name="keywords" content="MySQL,SQL,BINARY">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于BINARY的使用">
+<meta property="og:url" content="http://idber.github.io/2017/11/20-关于BINARY的使用.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="数据库版本:MySQL 5.6.26 线上某业务表为了区分大小写，使用BINARY关键字，正常来说使用这个关键字是走索引的，测试过程如下： 创建测试表，插入数据： drop table  if EXISTS student;  CREATE TABLE `student` (   `id` int(11) PRIMARY key auto_increment,   `name` varchar(">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.935Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关于BINARY的使用">
+<meta name="twitter:description" content="数据库版本:MySQL 5.6.26 线上某业务表为了区分大小写，使用BINARY关键字，正常来说使用这个关键字是走索引的，测试过程如下： 创建测试表，插入数据： drop table  if EXISTS student;  CREATE TABLE `student` (   `id` int(11) PRIMARY key auto_increment,   `name` varchar(">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/11/20-关于BINARY的使用.html" title="关于BINARY的使用" itemprop="url">关于BINARY的使用</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2017-11-20T02:01:56.000Z" itemprop="datePublished"> Published 2017-11-20</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<p>数据库版本:<br>MySQL 5.6.26</p>
+<p>线上某业务表为了区分大小写，使用BINARY关键字，正常来说使用这个关键字是走索引的，测试过程如下：</p>
+<p>创建测试表，插入数据：</p>
+<pre><code>drop table  if EXISTS student;
+
+CREATE TABLE `student` (
+  `id` int(11) PRIMARY key auto_increment,
+  `name` varchar(20) DEFAULT NULL,
+key `idx_name`(`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ; 
+
+insert into `student` ( `id`, `name`) values ( &apos;1&apos;, &apos;michael&apos;);
+insert into `student` ( `id`, `name`) values ( &apos;2&apos;, &apos;lucy&apos;);
+insert into `student` ( `id`, `name`) values ( &apos;3&apos;, &apos;nacy&apos;);
+insert into `student` ( `id`, `name`) values ( &apos;4&apos;, &apos;mike&apos;);
+insert into `student` ( `id`, `name`) values ( null, &apos;guo&apos;);
+insert into `student` ( `id`, `name`) values ( &apos;6&apos;, &apos;Guo&apos;);
+</code></pre><p>不加BINARY关键字可以走索引：</p>
+<pre><code>mysql&gt; desc select * from student where name = &apos;guo&apos;;
++----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
+| id | select_type | table   | type | possible_keys | key      | key_len | ref   | rows | Extra                    |
++----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
+| 1  | SIMPLE      | student | ref  | idx_name      | idx_name | 63      | const | 2    | Using where; Using index |
++----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
+1 rows in set (0.03 sec)
+</code></pre><p>正常来说BINARY关键字是可以走索引的：</p>
+<pre><code>mysql&gt; desc select * from student where BINARY name = &apos;guo&apos;;
++----+-------------+---------+-------+---------------+----------+---------+------+------+--------------------------+
+| id | select_type | table   | type  | possible_keys | key      | key_len | ref  | rows | Extra                    |
++----+-------------+---------+-------+---------------+----------+---------+------+------+--------------------------+
+| 1  | SIMPLE      | student | index | NULL          | idx_name | 63      | NULL | 6    | Using where; Using index |
++----+-------------+---------+-------+---------------+----------+---------+------+------+--------------------------+
+1 rows in set (0.04 sec)
+</code></pre><p>不使用BINARY关键字默认不会区分大小写：</p>
+<pre><code>mysql&gt; select * from student where name = &apos;guo&apos;;
++----+------+
+| id | name |
++----+------+
+| 5  | guo  |
+| 6  | Guo  |
++----+------+
+2 rows in set (0.03 sec)
+
+mysql&gt; select * from student where name = &apos;Guo&apos;;
++----+------+
+| id | name |
++----+------+
+| 5  | guo  |
+| 6  | Guo  |
++----+------+
+2 rows in set (0.03 sec)
+</code></pre><p>使用BINARY关键字可以区分大小写：</p>
+<pre><code>mysql&gt;  select * from student where BINARY name = &apos;guo&apos;;
++----+------+
+| id | name |
++----+------+
+| 5  | guo  |
++----+------+
+1 rows in set (0.04 sec)
+
+mysql&gt;  select * from student where BINARY name = &apos;Guo&apos;;
++----+------+
+| id | name |
++----+------+
+| 6  | Guo  |
++----+------+
+1 rows in set (0.03 sec)
+
+mysql&gt; 
+</code></pre><p>到这里以上都没问题，但关键在于，业务的表结构大于索引的最大长度即字串长度超过255。</p>
+<pre><code>CREATE TABLE `student` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(2000) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_name` (`name`(255))
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8
+
+mysql&gt; desc select * from student where name = &apos;guo&apos;;
++----+-------------+---------+------+---------------+----------+---------+-------+------+-------------+
+| id | select_type | table   | type | possible_keys | key      | key_len | ref   | rows | Extra       |
++----+-------------+---------+------+---------------+----------+---------+-------+------+-------------+
+| 1  | SIMPLE      | student | ref  | idx_name      | idx_name | 768     | const | 2    | Using where |
++----+-------------+---------+------+---------------+----------+---------+-------+------+-------------+
+1 rows in set (0.04 sec)
+</code></pre><p>加上BINARY关键字不再走索引：</p>
+<pre><code>mysql&gt; desc select * from student where BINARY name = &apos;guo&apos;;
++----+-------------+---------+------+---------------+------+---------+------+------+-------------+
+| id | select_type | table   | type | possible_keys | key  | key_len | ref  | rows | Extra       |
++----+-------------+---------+------+---------------+------+---------+------+------+-------------+
+| 1  | SIMPLE      | student | ALL  | NULL          | NULL | NULL    | NULL | 6    | Using where |
++----+-------------+---------+------+---------------+------+---------+------+------+-------------+
+1 rows in set (0.05 sec)
+
+mysql&gt; 
+</code></pre><p>这时需要在表结构里加上BINARY</p>
+<pre><code>mysql&gt;ALTER TABLE student MODIFY COLUMN name VARCHAR(20) BINARY;
+Query OK, 6 rows affected (0.06 sec)
+</code></pre><p>数据库会自动转换成COLLATE utf8_bin<br>collate关键字为校对集，主要是对字符集之间的比较和排序，可以通过 show collation查看所有的校对集</p>
+<pre><code>mysql&gt; show create table student\G
+*************************** 1. row ***************************
+Table       : student
+Create Table: CREATE TABLE `student` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8
+1 rows in set (0.39 sec)
+
+mysql&gt; 
+
+
+mysql&gt; desc select * from student where name = &apos;guo&apos;;
++----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
+| id | select_type | table   | type | possible_keys | key      | key_len | ref   | rows | Extra                    |
++----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
+| 1  | SIMPLE      | student | ref  | idx_name      | idx_name | 63      | const | 1    | Using where; Using index |
++----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
+1 rows in set (0.07 sec)
+
+mysql&gt; 
+</code></pre><p>即可区分大小写：</p>
+<pre><code>mysql&gt; select * from student where name = &apos;guo&apos;;
++----+------+
+| id | name |
++----+------+
+| 5  | guo  |
++----+------+
+1 rows in set (0.07 sec)
+
+mysql&gt; select * from student where name = &apos;Guo&apos;;
++----+------+
+| id | name |
++----+------+
+| 6  | Guo  |
++----+------+
+1 rows in set (0.06 sec)
+
+mysql&gt; 
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/SQL/">SQL</a><a href="/tags/BINARY/">BINARY</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2017/11/20-关于BINARY的使用.html" data-title="关于BINARY的使用 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/08/03-MySQL Insert锁机制.html" title="MySQL Insert锁机制">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MySQL Insert锁机制</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/11/17-子查询不存在字段.html"  title="子查询不存在字段">
+ <strong>下一篇：</strong><br/> 
+ <span>子查询不存在字段
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

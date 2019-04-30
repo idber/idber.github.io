@@ -1,0 +1,704 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MySQL主从同步延迟优化大全 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="MySQL主从延迟主要有以下几种原因  只读实例规格配置过小导致延迟 主库的TPS过高导致只读节点延迟 主库的DDL(alter、drop、repair、create)导致只读节点延迟 主库执行大事务导致延迟 无主键的表进行DML操作导致延迟  创建实验数据库 mysql&amp;gt; create database fafa; Query OK, 1 row affected (0.01 sec)">
+<meta name="keywords" content="MySQL,主从">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL主从同步延迟优化大全">
+<meta property="og:url" content="http://idber.github.io/2018/08/12-MySQL主从同步延迟优化大全.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="MySQL主从延迟主要有以下几种原因  只读实例规格配置过小导致延迟 主库的TPS过高导致只读节点延迟 主库的DDL(alter、drop、repair、create)导致只读节点延迟 主库执行大事务导致延迟 无主键的表进行DML操作导致延迟  创建实验数据库 mysql&amp;gt; create database fafa; Query OK, 1 row affected (0.01 sec)">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.930Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL主从同步延迟优化大全">
+<meta name="twitter:description" content="MySQL主从延迟主要有以下几种原因  只读实例规格配置过小导致延迟 主库的TPS过高导致只读节点延迟 主库的DDL(alter、drop、repair、create)导致只读节点延迟 主库执行大事务导致延迟 无主键的表进行DML操作导致延迟  创建实验数据库 mysql&amp;gt; create database fafa; Query OK, 1 row affected (0.01 sec)">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/08/12-MySQL主从同步延迟优化大全.html" title="MySQL主从同步延迟优化大全" itemprop="url">MySQL主从同步延迟优化大全</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2018-08-12T03:21:56.000Z" itemprop="datePublished"> Published 2018-08-12</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#只读实例规格配置过小导致延迟"><span class="toc-number">1.</span> <span class="toc-text">只读实例规格配置过小导致延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#主库的TPS过高导致只读节点延迟"><span class="toc-number">2.</span> <span class="toc-text">主库的TPS过高导致只读节点延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#主库的DDL-alter、drop、repair、create-导致只读节点延迟"><span class="toc-number">3.</span> <span class="toc-text">主库的DDL(alter、drop、repair、create)导致只读节点延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#主库执行大事务导致延迟"><span class="toc-number">4.</span> <span class="toc-text">主库执行大事务导致延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#无主键的表进行DML操作导致延迟"><span class="toc-number">5.</span> <span class="toc-text">无主键的表进行DML操作导致延迟</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<p>MySQL主从延迟主要有以下几种原因</p>
+<ul>
+<li>只读实例规格配置过小导致延迟</li>
+<li>主库的TPS过高导致只读节点延迟</li>
+<li>主库的DDL(alter、drop、repair、create)导致只读节点延迟</li>
+<li>主库执行大事务导致延迟</li>
+<li>无主键的表进行DML操作导致延迟</li>
+</ul>
+<p>创建实验数据库</p>
+<pre><code>mysql&gt; create database fafa;
+Query OK, 1 row affected (0.01 sec)
+
+mysql&gt; use fafa
+Database changed
+
+mysql&gt; create table test(jj int,kk varchar(10));
+Query OK, 0 rows affected (0.02 sec)
+</code></pre><p>接下来我们在主库循环插入数据实验，然后看看进程状态，和同步情况<br>创建procedure</p>
+<pre><code>delimiter //
+create procedure fafa()
+begin
+declare num int;
+set num=1;
+while num &lt; 8000000 do
+insert into test(jj,kk) values(num,&apos;fafa&apos;);
+set num=num+1;
+end while;
+end
+//
+</code></pre><p>之后我们要调用这个procedure，才会插入数据</p>
+<pre><code>call fafa();  //
+</code></pre><p>由于我没有将delimiter’改回来，所以输入‘；’后并没有执行，还需要//</p>
+<p>注意这里有一个现象，出现了主从很大的延时，这里我们进行逐个排查。总结排查方法</p>
+<h1 id="只读实例规格配置过小导致延迟"><a href="#只读实例规格配置过小导致延迟" class="headerlink" title="只读实例规格配置过小导致延迟"></a>只读实例规格配置过小导致延迟</h1><p>这类延迟场景的出现往往是主节点拥有较大规格的配置，而只读节点却购买了一个最小规格的配置（例如2G内存/200 IOPS）。<br>     原理解析：只读节点的数据为了和主节点保持同步，采用了MySQL binlog复制技术，由一个IO线程和一个SQL线程来完成，IO线程负责将主库的binlog拉取到只读节点，SQL线程负责消费这些binlog日志，这两个线程会消耗掉只读节点的IO资源，所以当只读节点IOPS配置不够的时候，则会导致只读节点的数据出现延迟</p>
+<p>解决办法：<br>      升级只读实例的规格（可以参考主库此时的IOPS的消耗情况），防止由于只读实例的规格较小导致了数据延迟。<br>具体只需只读实例节点的配置大于或者等于主节点的配置即可。</p>
+<h1 id="主库的TPS过高导致只读节点延迟"><a href="#主库的TPS过高导致只读节点延迟" class="headerlink" title="主库的TPS过高导致只读节点延迟"></a>主库的TPS过高导致只读节点延迟</h1><p>原理解析：由于只读节点与主库的同步采用的是单线程同步，而主库的压力是并发多线程写入，这样势必会导致只读节点的数据延迟<br>解决办法：<br>开启只读节点的并行复制是解决这一问题的根本方法，想彻底解决还得排查业务写入压力是否正常，适当对业务进行优化或者拆分，保证主库的TPS不会导致slave出现延迟。</p>
+<p>拓展：<br>在MySQL5.6中，引入了并发复制，这个并发复制是数据库级别的，这意味着一个SQL线程可以处理一个数据库的连续事务，而不用等待其它数据库完成。这个版本的并发复制，可以理解成一个数据库一个SQL线程。其与并发有关的参数如下：<br>slave_parallel_workers           // worker 线程个数<br>slave-checkpoint-group           // 隔多少个事务做一次 checkpoint<br>slave-checkpoint-period          // 隔多长时间做一次 checkpoint<br>slave-pending-jobs-size-max      // 分发给worker的、处于等待状态的event的大小上限</p>
+<p>MySQL5.6基于DATABASE级别的并发复制可以解决业务表放在不同的database下同步延迟的问题，但是在实际生产中大部分表还是放在同一个库中的，这种情况即使设置slave_parallel_workers大于0，也无法进行并发。在高并发的情况下，依然会造成主从复制延迟，所以说MySQL 5.7版本才真正支持“真正”的并行复制功能</p>
+<p>在MySQL5.7中，引入了新的并发复制方法，基于LOGICAL_CLOCK的并发复制，可以支持在一个database中，并发执行relaylog中的事务。<br>相同的二进制日志组在master上提交并行应用到slave节点上，没有跨数据库的限制，并且不需要把数据分割到多个数据库。<br>要实现这个功能，需要在master节点标记binlog中提交的事务哪些是可以并发执行，虽然的MySQL5.6中已经引入binarylog group commit,但是没有将可并发的事务标记出来。<br>可以通过此命令来查看：mysqlbinlog-vvv mysql-bin.000106 | grep -i last_commit<br>在MySQL5.7中，已经解决了主从复制延迟的问题，具体配置参数如下：<br>slave-parallel-type=LOGICAL_CLOCK<br>slave-parallel-workers=16<br>master_info_repository=TABLE<br>relay_log_info_repository=TABLE<br>relay_log_recovery=ON</p>
+<h1 id="主库的DDL-alter、drop、repair、create-导致只读节点延迟"><a href="#主库的DDL-alter、drop、repair、create-导致只读节点延迟" class="headerlink" title="主库的DDL(alter、drop、repair、create)导致只读节点延迟"></a>主库的DDL(alter、drop、repair、create)导致只读节点延迟</h1><p>可能1：只读节点与主库的DDL同步是串行进行的，如果DDL操作在主库执行时间很长，那么同样在备库也会消耗同样的时间，比如在主库对一张500W的表添加一个字段耗费了10分钟，那么在只读节点上也同样会耗费10分钟，所以只读节点会延迟600S，其他常见操作比如：<br>mysql&gt; alter table test add column nn varchar(10);<br>mysql&gt; alter table test add index(jj);<br>    可能2：只读节点上有一个执行时间非常长的的查询正在执行，那么这个查询会堵塞来自主库的DDL，读节点表被锁，直到查询结束为止，进而导致了只读节点的数据延迟。在只读节点上可以通过执行show processlist命令查看连接的状态处于: Waiting for table metadata lock</p>
+<p>解决办法：<br>对于可能1，只能说执行操作之前对可能带来的影响要有考量，对于情况2，可以kill掉只读节点上的大查询进行，就可以恢复只读节点与主节点的数据同步</p>
+<h1 id="主库执行大事务导致延迟"><a href="#主库执行大事务导致延迟" class="headerlink" title="主库执行大事务导致延迟"></a>主库执行大事务导致延迟</h1><p> 主库执行了一条insert … select非常大的插入操作，该操作产生了近几百G的binlog文件传输到只读节点，进而导致了只读节点出现应用binlog延迟。<br>解决办法：<br>     将大事务拆分成为小事务进行排量提交，这样只读节点就可以迅速的完成事务的执行，不会造成数据的延迟。</p>
+<h1 id="无主键的表进行DML操作导致延迟"><a href="#无主键的表进行DML操作导致延迟" class="headerlink" title="无主键的表进行DML操作导致延迟"></a>无主键的表进行DML操作导致延迟</h1><p>mysql&gt; update test set kk=’fafa01’;<br>由于表中没有主键，所以导致了每一个事务条目的更新都是全表扫描，如果表中很很多的数据，则备库执行该更新的事务条目的时候，就会出现很多的全表扫描更新；进一步说明就是，由于表中没有主键，在ROW模式下，每删一条数据都会做全表扫，也就是说一条delete，如果删了10条，会做10次全表扫，所以slave会一直卡住；<br>拓展：<br>       主键对于innodb来说，是非常重要的，每张表的设计的时候，都应该把主键默认的加上，不管你需不需要他，而且主键的设计最好选择自增型的主键，这里也可以略提一下自增主键的好处：<br>a.自增型主键以利于插入性能的提高；<br>b.自增型主键设计(int,bigint)可以降低二级索引的空间，提升二级索引的内存命中率；<br>c.自增型的主键可以减小page的碎片，提升空间和内存的使用。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/主从/">主从</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2018/08/12-MySQL主从同步延迟优化大全.html" data-title="MySQL主从同步延迟优化大全 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/08/13-Percona XtraBackup 的工作原理.html" title="Percona XtraBackup 的工作原理">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Percona XtraBackup 的工作原理</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/12-MySQL online DDL原理.html"  title="MySQL Online DDL原理">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL Online DDL原理
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#只读实例规格配置过小导致延迟"><span class="toc-number">1.</span> <span class="toc-text">只读实例规格配置过小导致延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#主库的TPS过高导致只读节点延迟"><span class="toc-number">2.</span> <span class="toc-text">主库的TPS过高导致只读节点延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#主库的DDL-alter、drop、repair、create-导致只读节点延迟"><span class="toc-number">3.</span> <span class="toc-text">主库的DDL(alter、drop、repair、create)导致只读节点延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#主库执行大事务导致延迟"><span class="toc-number">4.</span> <span class="toc-text">主库执行大事务导致延迟</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#无主键的表进行DML操作导致延迟"><span class="toc-number">5.</span> <span class="toc-text">无主键的表进行DML操作导致延迟</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

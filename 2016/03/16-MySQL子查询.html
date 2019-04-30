@@ -1,0 +1,687 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MySQL子查询 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="MySQL数据库被诟病的一个地方就是子查询。很多开发人员和DBA认为MySQL数据库只是拥有该功能，但性能很差，是一项很不实用的功能。在实际开发中开发人员很少使用子查询，因为在应用程序中使用子查询后，SQL语句的查询性能变得非常糟糕。 子查询的优点和限制子查询是指在一个SELECT语句中嵌套另一个SELECT语句。MySQL数据库从4.1版本开始支持子查询，并且支持所有SQL标准的子查询，也扩展">
+<meta name="keywords" content="MySQL,SQL编程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL子查询">
+<meta property="og:url" content="http://idber.github.io/2016/03/16-MySQL子查询.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="MySQL数据库被诟病的一个地方就是子查询。很多开发人员和DBA认为MySQL数据库只是拥有该功能，但性能很差，是一项很不实用的功能。在实际开发中开发人员很少使用子查询，因为在应用程序中使用子查询后，SQL语句的查询性能变得非常糟糕。 子查询的优点和限制子查询是指在一个SELECT语句中嵌套另一个SELECT语句。MySQL数据库从4.1版本开始支持子查询，并且支持所有SQL标准的子查询，也扩展">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.930Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL子查询">
+<meta name="twitter:description" content="MySQL数据库被诟病的一个地方就是子查询。很多开发人员和DBA认为MySQL数据库只是拥有该功能，但性能很差，是一项很不实用的功能。在实际开发中开发人员很少使用子查询，因为在应用程序中使用子查询后，SQL语句的查询性能变得非常糟糕。 子查询的优点和限制子查询是指在一个SELECT语句中嵌套另一个SELECT语句。MySQL数据库从4.1版本开始支持子查询，并且支持所有SQL标准的子查询，也扩展">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/16-MySQL子查询.html" title="MySQL子查询" itemprop="url">MySQL子查询</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-16T03:23:56.000Z" itemprop="datePublished"> Published 2016-03-16</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#子查询的优点和限制"><span class="toc-number">1.</span> <span class="toc-text">子查询的优点和限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#独立子查询"><span class="toc-number">2.</span> <span class="toc-text">独立子查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#相关子查询"><span class="toc-number">3.</span> <span class="toc-text">相关子查询</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<p>MySQL数据库被诟病的一个地方就是子查询。很多开发人员和DBA认为MySQL数据库只是拥有该功能，但性能很差，是一项很不实用的功能。在实际开发中开发人员很少使用子查询，因为在应用程序中使用子查询后，SQL语句的查询性能变得非常糟糕。</p>
+<h2 id="子查询的优点和限制"><a href="#子查询的优点和限制" class="headerlink" title="子查询的优点和限制"></a>子查询的优点和限制</h2><p>子查询是指在一个SELECT语句中嵌套另一个SELECT语句。<br>MySQL数据库从4.1版本开始支持子查询，并且支持所有SQL标准的子查询，也扩展了一些其独有的子查询标准。下面是一个子查询：<br>SELECT <em> FROM T1 WHERE COLUMN1=(SELECT COLUMN1 FROM T2);<br>在这个示例中，SELECT </em> FROM T1是外部查询（outer query),select column1 from t2是子查询。一般来说，称子查询嵌套(nested)于外部查询中。实际上也可以将两个或两个以上的子查询进行嵌套。需要注意的，子查询必须包含括号。<br>    通常来说，使用子查询的好处如下：</p>
+<ul>
+<li>子查询允许结构化的查询，这样就可以把一个查询语句的每个部分隔开。</li>
+<li>子查询提供了另一种方法来执行有些需要复杂的join和union来实现的操作。</li>
+<li>在许多人看来，子查询可读性较高。而实际上，这也是子查询的由来。</li>
+</ul>
+<p>一个子查询会返回一个标量（单一值）、一个行、一个列或一个表（一行或多行及一列或多列），这些子查询被称为标量、列、行和表子查询。可返回一个特定种类结果的子查询经常只用于特定的语境中。<br>子查询的限制是其外部语句必须是以下语句之一：SELECT、INSERT、UPDATE、DELETE、SET或DO。还有一个限制是，目前用户不能既在一个子查询中修改一个表，又在同一个表中进行选择，虽然这样的操作可用于普通的DELETE、INSERT、REPLACE和UPDATE语句，但是对其子查询不可以同时进行这样的操作。</p>
+<p>子查询中使用 IN、ANY、SOME 和 ALL 操作符</p>
+<p>由于子查询返回的结果集是 N 行一列，因此不能直接使用 = &gt; &lt; &gt;= &lt;= &lt;&gt; 这些比较标量结果的操作符。在子查询中可以使用 IN、ANY、SOME 和 ALL 操作符：</p>
+<pre><code>IN：在指定项内，同 IN(项1,项2,…)，IN是“=ANY的别名”，NOT IN 是“&lt;&gt; ALL”的别名
+ANY：与比较操作符联合使用，表示与子查询返回的任何值比较为 TRUE ，则返回 TRUE 。
+SOME：ANY 的别名，较少使用。
+ALL：与比较操作符联合使用，表示与子查询返回的所有值比较都为 TRUE ，则返回 TRUE 。
+</code></pre><h2 id="独立子查询"><a href="#独立子查询" class="headerlink" title="独立子查询"></a>独立子查询</h2><p>子查询可以按两种方式进行分类。若按照期望值的数量，可以将子查询分为标量子查询和多值子查询；若按查询对外部查询的依赖可分为独立子查询（self-contained subquery）和相关子查询（correlated subquery）。标量子查询和多值子查询可以是独立子查询，也可以是相关子查询。</p>
+<p>独立子查询是不依赖外部查询而运行的子查询。与相关子查询相比，独立子查询更便于SQL语句的调试。</p>
+<p>标量子查询可以出现在查询中希望产生标量值的任何地方，而多值子查询可以出现在查询中希望产生多值集合的任何地方。只要标量子查询返回的是单个值或NULL值，就说明该查询是有效的。如果标量子查询返回多个值，则MySQL数据库将抛出错误。如以下两句标量子查询都是正确的。</p>
+<pre><code>SELECT &apos;a&apos; = (SELECT &apos;a&apos;) AS t;
+SELECT &apos;a&apos; = (SELECT NULL) AS t;
+</code></pre><p>而下面的子查询会抛出异常：</p>
+<pre><code>mysql&gt; SELECT &apos;a&apos; = (SELECT &apos;a&apos; UNION ALL SELECT &apos;b&apos;) AS t;
+ERROR 1242 (21000): Subquery returns more than 1 row
+</code></pre><p>因为子查询产生的派生表t返回两个值（a和b），而外部查询期望的是一个标量值，因此在运行时，MySQL数据库抛出异常，提示该子查询返回多行数据。<br>目前已经介绍了独立子查询的基本使用方法，接着继续讨论更加复杂的独立子查询问题。这里将从一个属于关系分区的问题开始。关系分区问题有很多细微的差别和实际的应用，从逻辑上看，关系分区就是一个集合划分另外一个集合，并产生一个结果集。<br>例如，从tpcc数据库中返回每个美国员工至少处理过一个订单的所有客户。这里需要从所有美国员工的集合中来划分订单的集合，并得到期望匹配的客户集合。这个操作并不简单，因为需要对每一个客户检查多行以判断是否有匹配。</p>
+<font color="red">MySQL优化器对于IN子句，如果不是显式的列表定义，如IN（‘a’,’b’,’c’)，那么IN子句都会转换为EXISTS的相关子查询。</font>
+
+<h2 id="相关子查询"><a href="#相关子查询" class="headerlink" title="相关子查询"></a>相关子查询</h2><p>相关子查询（Dependent Subquery 或 Correlated Subquery）是指引用了外部查询列的子查询，即子查询会对外部查询的第行进行一次计算。但是在优化器内部，这是一个动态的过程随情况的变化会有所不同，通过不止一种优化方式来处理相关子查询。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/SQL编程/">SQL编程</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/03/16-MySQL子查询.html" data-title="MySQL子查询 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/03/18-联接与集合操作一--常见联接.html" title="联接与集合操作一--常见联接">
+  <strong>上一篇：</strong><br/>
+  <span>
+  联接与集合操作一--常见联接</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/14-MySQL服务器Linux IO调度器算法的选择.html"  title="MySQL服务器Linux IO调度器算法的选择">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL服务器Linux IO调度器算法的选择
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#子查询的优点和限制"><span class="toc-number">1.</span> <span class="toc-text">子查询的优点和限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#独立子查询"><span class="toc-number">2.</span> <span class="toc-text">独立子查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#相关子查询"><span class="toc-number">3.</span> <span class="toc-text">相关子查询</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

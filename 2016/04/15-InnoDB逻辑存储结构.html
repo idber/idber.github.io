@@ -1,0 +1,988 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>InnoDB逻辑存储结构 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="从InnoDB存储引擎的逻辑存储结构看，所有数据都被逻辑地存放在一个空间中，称之为表空间（tablespace）。表空间又由段（segment）、区（extent)、页（page）组成。页在一些文档中有时也称为块（block），InnoDB存储引擎的逻辑存储结构大致如图： 表空间表空间可以看做是InnoDB存储引擎逻辑结构的最高层，所有的数据都存放在表空间中。在默认情况下InnoDB存储引擎有一">
+<meta name="keywords" content="InnoDB">
+<meta property="og:type" content="article">
+<meta property="og:title" content="InnoDB逻辑存储结构">
+<meta property="og:url" content="http://idber.github.io/2016/04/15-InnoDB逻辑存储结构.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="从InnoDB存储引擎的逻辑存储结构看，所有数据都被逻辑地存放在一个空间中，称之为表空间（tablespace）。表空间又由段（segment）、区（extent)、页（page）组成。页在一些文档中有时也称为块（block），InnoDB存储引擎的逻辑存储结构大致如图： 表空间表空间可以看做是InnoDB存储引擎逻辑结构的最高层，所有的数据都存放在表空间中。在默认情况下InnoDB存储引擎有一">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/innodb_struct.png?raw=true">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.928Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="InnoDB逻辑存储结构">
+<meta name="twitter:description" content="从InnoDB存储引擎的逻辑存储结构看，所有数据都被逻辑地存放在一个空间中，称之为表空间（tablespace）。表空间又由段（segment）、区（extent)、页（page）组成。页在一些文档中有时也称为块（block），InnoDB存储引擎的逻辑存储结构大致如图： 表空间表空间可以看做是InnoDB存储引擎逻辑结构的最高层，所有的数据都存放在表空间中。在默认情况下InnoDB存储引擎有一">
+<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/innodb_struct.png?raw=true">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/04/15-InnoDB逻辑存储结构.html" title="InnoDB逻辑存储结构" itemprop="url">InnoDB逻辑存储结构</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-15T06:51:56.000Z" itemprop="datePublished"> Published 2016-04-15</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#表空间"><span class="toc-number">1.</span> <span class="toc-text">表空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#段（Segment）"><span class="toc-number">2.</span> <span class="toc-text">段（Segment）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区（Extent）"><span class="toc-number">3.</span> <span class="toc-text">区（Extent）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#页"><span class="toc-number">4.</span> <span class="toc-text">页</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#行"><span class="toc-number">5.</span> <span class="toc-text">行</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<p>从InnoDB存储引擎的逻辑存储结构看，所有数据都被逻辑地存放在一个空间中，称之为表空间（tablespace）。表空间又由段（segment）、区（extent)、页（page）组成。页在一些文档中有时也称为块（block），InnoDB存储引擎的逻辑存储结构大致如图：<br><img src="https://github.com/idber/idber.photo/blob/master/blog/innodb_struct.png?raw=true" alt="InnoDB存储引擎的逻辑存储结构"></p>
+<h2 id="表空间"><a href="#表空间" class="headerlink" title="表空间"></a>表空间</h2><p>表空间可以看做是InnoDB存储引擎逻辑结构的最高层，所有的数据都存放在表空间中。在默认情况下InnoDB存储引擎有一个共享表空间ibdata1，即所有数据都存放在这个表空间内。如果用户启用了参数innodb_file_per_table，则每个表内的数据可以单独放到一个表空间内。<br>如果启动了innodb_file_per_table参数，需要注意的是每张表的表空间内存放的只是数据、索引和插入缓冲Bitmap页，其他类的数据，如回滚（undo）信息，插入缓冲索引页、系统事务信息，二次写缓冲（Double write buffer）等还是存放在原来的共享表空间内。这同时也说明了另一个问题：即使在启用了参数innodb_file_per_table之后，共享表空间还是会不断地增加其大小。可以来做一个实验，在实验之前已经将innodb_file_per_table设为ON了。现在看看初始共享表空间文件的大小：</p>
+<pre><code>mysql&gt; show variables like &apos;innodb_file_per_table&apos;\G
+*************************** 1. row ***************************
+Variable_name: innodb_file_per_table
+        Value: ON
+1 row in set (0.00 sec)
+
+mysql&gt; system ls -tlhr /home/mysql/mysql/data/ibdata*
+-rw-rw----. 1 mysql mysql 204M Mar 21 05:54 /home/mysql/mysql/data/ibdata1
+mysql&gt; 
+</code></pre><p>可以看到，共享表空间ibdata1的大小为204MB，接着模拟产生undo的操作，使用表orders，并把其存储引擎更改为InnoDB，执行如下操作：</p>
+<pre><code>mysql&gt; update orders set device_number=0;
+Query OK, 3278492 rows affected (0.03 sec)
+Rows matched: 3278492  Changed: 3278492  Warnings: 0
+
+mysql&gt; system ls -tlhr /home/mysql/mysql/data/ibdata*
+-rw-rw----. 1 mysql mysql 652M Mar 21 07:38 /home/mysql/mysql/data/ibdata1
+mysql&gt;
+</code></pre><p>这里首先将自动提交设为0，即用户需要显式提交事务（注意，在上面操作结束时，并没有对该事务执行commit或rollback）。接着执行会产生大量的undo操作的语句update orders set device_number=0，完成后再观察共享表空间，会发现ibdata1已经增长到了652MB。这个例子虽然简单，但是足以说明共享表空间中还包含有undo信息。<br>有用户会问，如果对k这个事务执行rollback，ibdata1这个表空间会不会缩减至原来的大小（204MB）？这可以通过继续运行下面的语句得到验证：</p>
+<pre><code>mysql&gt; rollback;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql&gt; system ls -tlhr /home/mysql/mysql/data/ibdata*
+-rw-rw----. 1 mysql mysql 652M Mar 21 07:49 /home/mysql/mysql/data/ibdata1
+mysql&gt;
+</code></pre><p>很“可惜”，共享表空间的大小还是204MB，即InnoDB存储引擎不会在执行rollback时去收缩这个表空间。虽然InnoDB不会回收这些空间，但是会自动判断这些undo信息是否还需要，如果不需要，则会将这些空间标记为可用空间，供下次undo使用。<br>master thread每10秒会执行一次的full purge操作，很有可能的一种情况是：用户再次执行上述的update语句后，会发现ibdata1不会再变大了，那就是这个原因了。<br>使用py_innodb_page_info小工具查看表空间中各页的类型和信息，用户可以在code.google.com上搜索david-mysql-tools进行查找。使用方法如下：</p>
+<pre><code>[mysql@mysql data]$ python ~/py_innodb_page_info.py  ibdata1 
+Total number of page: 41728:
+Insert Buffer Free List: 1035
+Insert Buffer Bitmap: 3
+System Page: 131
+Transaction system Page: 2
+Freshly Allocated Page: 5074
+Undo Log Page: 33238
+File Segment inode: 5
+B-tree Node: 2235
+File Space Header: 2
+扩展描述页: 3
+</code></pre><p>可以看到共有41728个页，其中插入缓冲的空间有1035个页、5074个可用页、33238个undo页、2235个数据页等。用户可以通过添加-v参数来查看更详细的内容。</p>
+<h2 id="段（Segment）"><a href="#段（Segment）" class="headerlink" title="段（Segment）"></a>段（Segment）</h2><p>上图中显示了表空间是由各个段组成，常见的段有数据段、索引段、回滚段等。InnoDB存储引擎表是索引组织的（index organized），因此数据即索引，索引即数据。那么数据段即为B+树的叶子节点（图中Leaf of node segment），索引段即为B+树的非索引节点（图中Nonleaf node segment）。回滚段较为特殊，将会在后面进行单独的介绍。<br>在InnoDB存储引擎中，对段的管理都是由引擎自身所完成，DBA不能也没有必要对其进行控制。这和Oracle数据库中的自动段空间管理（ASSM）类似，从一定程度上简化了DBA对于段的管理。</p>
+<h2 id="区（Extent）"><a href="#区（Extent）" class="headerlink" title="区（Extent）"></a>区（Extent）</h2><p>区是由连续页组成的空间，在任何情况下每个区的大小都为1MB。为了保证区中页的连续性InnoDB存储引擎一次从磁盘申请4~5个区。在默认情况下，InnoDB存储引擎页的大小为16KB，即一个区中一共有64个连续的页。<br>InnoDB 1.0.x版本开始引入压缩页，即每个页的大小可以通过参数KEY_BLOCK_SIZE设置为2K、4K、8K，因此每个区对应页的数量就应该为512、256、128.<br>InnoDB 1.2.x版本新增了参数innodb_page_size，通过该参数可以将默认页的大小设置为4K、8K，但是页中的数据不是压缩。这时区中页的数量同样也为256、128。总之，不论页的大小怎么变化，区的大小总是为1M。<br>但是这里还有这样一个问题：在用户启用了参数innodb_file_per_table后，创建的表默认大小是96KB。区中是64个连续的页，创建的表的大小至少是1MB才对啊？其实这是因为在每个段开始时，先用32个页大小的碎片页（fragent page）来存放数据，在使用完这些页之后才是64个连续页的申请。这样做的目的是，对于一些小表，或者是undo这类的段，可以在开始申请较少的空间，节省磁盘容量的开销。这里可以通过一个很小的示例来显示InnoDB存储引擎对于区的申请方式：</p>
+<pre><code>mysql&gt; create table t1(
+    -&gt; col1 int not null auto_increment,
+    -&gt; col2 varchar(7000),
+    -&gt; primary key(col1))engine=innodb;
+Query OK, 0 rows affected (0.05 sec)
+
+mysql&gt; system ls -lh /home/mysql/mysql/data/guo/t1.ibd;
+-rw-rw----. 1 mysql mysql 96K Mar 21 12:13 /home/mysql/mysql/data/guo/t1.ibd
+</code></pre><p>上述的构架语句创建了t1表，将col2字段设为VARCHAR(7000)，这样能保证一个页最多可以存放2条记录。通过ls命令可以发现，初始化并创建t1表后，表空间默认大小为96KB，接着运行如下SQL语句：</p>
+<pre><code>mysql&gt; insert t1 select null,repeat(&apos;a&apos;,7000);  
+Query OK, 1 row affected (0.03 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+mysql&gt; insert t1 select null,repeat(&apos;a&apos;,7000);
+Query OK, 1 row affected (0.01 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+mysql&gt; system ls -lh /home/mysql/mysql/data/guo/t1.ibd;
+-rw-rw----. 1 mysql mysql 96K Mar 21 12:18 /home/mysql/mysql/data/guo/t1.ibd
+mysql&gt; 
+</code></pre><p>插入两条记录，根据之前对表的定义，这两条记录应该位于同一个页中。如果这时通过py_innodb_page_info工具来查看表空间，可以看到：</p>
+<pre><code>[mysql@mysql ~]$ python py_innodb_page_info.py -v mysql/data/guo/t1.ibd 
+page offset 00000000, page type &lt;File Space Header&gt;
+page offset 00000001, page type &lt;Insert Buffer Bitmap&gt;
+page offset 00000002, page type &lt;File Segment inode&gt;
+page offset 00000003, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+Total number of page: 6:
+Freshly Allocated Page: 2
+Insert Buffer Bitmap: 1
+File Space Header: 1
+B-tree Node: 1
+File Segment inode: 1
+[mysql@mysql ~]$ 
+</code></pre><p>这次使用-v详细模式来看表空间的内容，注意到了page offset为3的页，这个就是数据页。page level表示所在的索引层，0表示叶子节点。因为当前所有记录都在一个页中，因此没有非叶节点。但是如果这时用户再插入一条记录，就会产生一个非叶节点：</p>
+<pre><code>mysql&gt; system ls -lh /home/mysql/mysql/data/guo/t1.ibd;
+-rw-rw----. 1 mysql mysql 96K Mar 21 12:18  /home/mysql/mysql/data/guo/t1.ibd
+mysql&gt; insert t1 select null,repeat(&apos;a&apos;,7000);
+Query OK, 1 row affected (0.02 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+[mysql@mysql ~]$ python py_innodb_page_info.py -v mysql/data/guo/t1.ibd 
+page offset 00000000, page type &lt;File Space Header&gt;
+page offset 00000001, page type &lt;Insert Buffer Bitmap&gt;
+page offset 00000002, page type &lt;File Segment inode&gt;
+page offset 00000003, page type &lt;B-tree Node&gt;, page level &lt;0001&gt;
+page offset 00000004, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000005, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+Total number of page: 6:
+Insert Buffer Bitmap: 1
+File Space Header: 1
+B-tree Node: 3
+File Segment inode: 1
+</code></pre><p>现在可以看到page offset为3的页的page level由之前的0变为了1，这时虽然新插入的记录导致了B+树的分裂操作，再插入60条记录也就是说当前表t1中共有63条记录，32个页。为了导入的方便，在这之前先建立一个导入的存储过程。</p>
+<pre><code>mysql&gt; DELIMITER //
+mysql&gt; CREATE PROCEDURE load_t1(count int unsigned)
+    -&gt; BEGIN
+    -&gt; DECLARE s INT UNSIGnED DEFAULT 1;
+    -&gt; DECLARE c VARCHAR(7000) DEFAULT REPEAT(&apos;a&apos;,7000);
+    -&gt; while s &lt;= count DO
+    -&gt; insert into t1 select null,c;
+    -&gt; set s=s+1;
+    -&gt; end while;
+    -&gt; end;
+    -&gt; //
+Query OK, 0 rows affected (0.00 sec)
+
+mysql&gt; DELIMITER ;
+mysql&gt; call load_t1(60);
+Query OK, 1 row affected (0.17 sec)
+
+mysql&gt; select count(*) from t1; 
++----------+
+| count(*) |
++----------+
+|       63 |
++----------+
+1 row in set (0.00 sec)
+
+mysql&gt; 
+mysql&gt; system ls -lh /home/mysql/mysql/data/guo/t1.ibd
+-rw-rw----. 1 mysql mysql 576K Apr 14 18:08 /home/mysql/mysql/data/guo/t1.ibd
+mysql&gt; 
+</code></pre><p>可以看到，在导入了63条数据后，表空间的大小还是小于1MB，即表示数据空间的申请还是通过碎片页，而不是通过64个连续的区。这时如果通过py_innodb_page_info工具再来观察表空间t1.idb文件，可得：</p>
+<pre><code>[mysql@mysql ~]$ python py_innodb_page_info.py -v /home/mysql/mysql/data/guo/t1.ibd 
+page offset 00000000, page type &lt;File Space Header&gt;
+page offset 00000001, page type &lt;Insert Buffer Bitmap&gt;
+page offset 00000002, page type &lt;File Segment inode&gt;
+page offset 00000003, page type &lt;B-tree Node&gt;, page level &lt;0001&gt;
+page offset 00000004, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000005, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000006, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000007, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000008, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000009, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000a, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000b, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000c, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000d, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000e, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000f, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000010, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000011, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000012, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000013, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000014, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000015, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000016, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000017, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000018, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000019, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001a, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001b, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001c, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001d, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001e, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001f, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000020, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000021, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000022, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000023, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+Total number of page: 36:
+Insert Buffer Bitmap: 1
+File Space Header: 1
+B-tree Node: 33
+File Segment inode: 1
+</code></pre><p>可以观察到B-tree Node页一共有33个，除去一个page level为1的非叶节点页，一共有32个page level为0的页，也就是说，对于数据段，已经有32个碎片页了。之后用户再申请空间，则空间按连续64个页的大小开始增长了。好了，接着就这样来操作，插入一条数据，看之后表空间的大小：</p>
+<pre><code>mysql&gt; call load_t1(1);
+Query OK, 1 row affected (0.01 sec)
+
+mysql&gt; system ls -lh /home/mysql/mysql/data/guo/t1.ibd
+-rw-rw----. 1 mysql mysql 2.0M Apr 14 18:18 /home/mysql/mysql/data/guo/t1.ibd
+mysql&gt;
+</code></pre><p>已经用完了32个碎片页，新的页会采用区的方式进行空间的申请，如果此时用户再通过py_innodb_page_info工具来看表空间文件t1.idb，应该可以看到很多类型为Freshly Allocated Page的页：</p>
+<pre><code>[mysql@mysql ~]$ python py_innodb_page_info.py -v /home/mysql/mysql/data/guo/t1.ibd 
+page offset 00000000, page type &lt;File Space Header&gt;
+page offset 00000001, page type &lt;Insert Buffer Bitmap&gt;
+page offset 00000002, page type &lt;File Segment inode&gt;
+page offset 00000003, page type &lt;B-tree Node&gt;, page level &lt;0001&gt;
+page offset 00000004, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000005, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000006, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000007, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000008, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000009, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000a, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000b, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000c, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000d, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000e, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000000f, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000010, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000011, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000012, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000013, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000014, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000015, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000016, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000017, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000018, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000019, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001a, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001b, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001c, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001d, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001e, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 0000001f, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000020, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000021, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000022, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000023, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000040, page type &lt;B-tree Node&gt;, page level &lt;0000&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+page offset 00000000, page type &lt;Freshly Allocated Page&gt;
+Total number of page: 128:
+Freshly Allocated Page: 91
+Insert Buffer Bitmap: 1
+File Space Header: 1
+B-tree Node: 34
+File Segment inode: 1
+</code></pre><h2 id="页"><a href="#页" class="headerlink" title="页"></a>页</h2><p>同大多数数据库一样，InnoDB有页（Page）的概念（也可以称为块），页是InnoDB磁盘管理的最小单位。在InnoDB存储引擎中，默认每个页的大小为16KB。而从InnoDB 1.2.x版本开始，可以通过参数innodb_page_size将页的大小设置为4K、8K、16K。若设置完成，则所有表中页的大小都为innodb_page_size，不可以对其再进行修改。除非mysqldump导入和导出操作来产生新的库。</p>
+<p>在InnoDB存储引擎中，常见的页类型有：</p>
+<ul>
+<li>数据页（B-tree Node）</li>
+<li>undo页（undo Log Page）</li>
+<li>系统页（System Page）</li>
+<li>事务数据页（Transaction system Page）</li>
+<li>插入缓冲位图页（Insert Buffer Bitmap）</li>
+<li>插入缓冲空闲列表页（Insert Buffer Free List）</li>
+<li>未压缩的二进制大对象页（Uncompressed BLOB Page）</li>
+<li>压缩的二进制大对象页（compressed BLOB Page）</li>
+</ul>
+<h2 id="行"><a href="#行" class="headerlink" title="行"></a>行</h2><p>InnoDB存储引擎是面向行的（row-oriented），也就是说数据是按行进行存放的。每个页存放的行记录也是有硬性定义的，最多允许存放16KB/2-200行的记录，即7992行记录。这里提到了row-oriented的数据库，也就是说，存在有column-oriened的数据库。MySQL infobright存储引擎就是按列来存放数据的，这对于数据仓库下的分析类SQL语句的执行数据压缩非常有帮助。类似的数据库还有Sybase IQ、Google Big Table。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/InnoDB/">InnoDB</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/04/15-InnoDB逻辑存储结构.html" data-title="InnoDB逻辑存储结构 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/04/29-Xtrabackup流备份与恢复.html" title="Xtrabackup流备份与恢复">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Xtrabackup流备份与恢复</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/04/06-InnoDB存储引擎--两次写.html"  title="InnoDB存储引擎--两次写">
+ <strong>下一篇：</strong><br/> 
+ <span>InnoDB存储引擎--两次写
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#表空间"><span class="toc-number">1.</span> <span class="toc-text">表空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#段（Segment）"><span class="toc-number">2.</span> <span class="toc-text">段（Segment）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区（Extent）"><span class="toc-number">3.</span> <span class="toc-text">区（Extent）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#页"><span class="toc-number">4.</span> <span class="toc-text">页</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#行"><span class="toc-number">5.</span> <span class="toc-text">行</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

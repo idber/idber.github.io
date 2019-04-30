@@ -1,0 +1,833 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MySQL Online DDL 工具之Pt-Online-Schema-Change | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="MySQL DDL: DDL是一个令所有MySQL DBA诟病的一个功能，因为在MySQL中在对表进行DDL时，会锁表，当表比较小比如小于1W行时，对前端影响较小，当时遇到千万级别的表，就会影响前端应用对表的写操作！ InnoDB引擎是通过以下步骤来进行DDL的：1、按照原始表（original_table）的表结构和DDL语句，新建一个不可见的临时表（tmp_table）2、在原表上加writ">
+<meta name="keywords" content="MySQL,Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL Online DDL 工具之Pt-Online-Schema-Change">
+<meta property="og:url" content="http://idber.github.io/2016/06/16-MySQL Online DDL 工具之pt-online-schema-change.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="MySQL DDL: DDL是一个令所有MySQL DBA诟病的一个功能，因为在MySQL中在对表进行DDL时，会锁表，当表比较小比如小于1W行时，对前端影响较小，当时遇到千万级别的表，就会影响前端应用对表的写操作！ InnoDB引擎是通过以下步骤来进行DDL的：1、按照原始表（original_table）的表结构和DDL语句，新建一个不可见的临时表（tmp_table）2、在原表上加writ">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.929Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL Online DDL 工具之Pt-Online-Schema-Change">
+<meta name="twitter:description" content="MySQL DDL: DDL是一个令所有MySQL DBA诟病的一个功能，因为在MySQL中在对表进行DDL时，会锁表，当表比较小比如小于1W行时，对前端影响较小，当时遇到千万级别的表，就会影响前端应用对表的写操作！ InnoDB引擎是通过以下步骤来进行DDL的：1、按照原始表（original_table）的表结构和DDL语句，新建一个不可见的临时表（tmp_table）2、在原表上加writ">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/06/16-MySQL Online DDL 工具之pt-online-schema-change.html" title="MySQL Online DDL 工具之Pt-Online-Schema-Change" itemprop="url">MySQL Online DDL 工具之Pt-Online-Schema-Change</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-16T06:51:56.000Z" itemprop="datePublished"> Published 2016-06-16</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<p>MySQL DDL:</p>
+<p>DDL是一个令所有MySQL DBA诟病的一个功能，因为在MySQL中在对表进行DDL时，会锁表，当表比较小比如小于1W行时，对前端影响较小，当时遇到千万级别的表，就会影响前端应用对表的写操作！</p>
+<p>InnoDB引擎是通过以下步骤来进行DDL的：<br>1、按照原始表（original_table）的表结构和DDL语句，新建一个不可见的临时表（tmp_table）<br>2、在原表上加write lock，阻塞所有更新操作（insert、delete、update等）<br>3、执行insert into tmp_table select * from original_table<br>4、rename original_table和tmp_table，最后drop original_table<br>5、释放 write lock。<br>可以看见在InnoDB执行DDL的时候，原表是只能读不能写的。为此 Percona 推出一个工具 pt-online-schema-change，其特点是修改过程中不会造成读写阻塞。</p>
+<p>工作原理：</p>
+<p>如果表有外键，除非使用 –alter-foreign-keys-method 指定特定的值，否则工具不予执行。<br>1 创建一个和你要执行 alter 操作的表一样的空表结构。<br>2 执行表结构修改，然后从原表中的数据到copy到 表结构修改后的表，<br>3 在原表上创建触发器将 copy 数据的过程中，在原表的更新操作 更新到新表.<br>  注意:如果表中已经定义了触发器这个工具就不能工作了。<br>4 copy 完成以后，用rename table 新表代替原表，默认删除原表。</p>
+<p>用法介绍：</p>
+<p>pt-online-schema-change [OPTIONS] DSN<br>options 可以自行查看 help，DNS 为你要操作的数据库和表。这里有两个参数需要介绍一下：<br>–dry-run<br> 这个参数不建立触发器，不拷贝数据，也不会替换原表。只是创建和更改新表。<br>–execute<br>这个参数的作用和前面工作原理的介绍的一样，会建立触发器，来保证最新变更的数据会影响至新表。注意：如果不加这个参数，这个工具会在执行一些检查后退出。</p>
+<p>依赖条件:</p>
+<p>操作的表必须有主键否则 报如下错误:</p>
+<pre><code>[mysql@mysql ~]$ pt-online-schema-change -uroot -proot -h10.10.10.188 --alter=&apos;add column vname varchar(20)&apos; --execute D=test,t=michael
+Operation, tries, wait:
+  copy_rows, 10, 0.25
+  create_triggers, 10, 1
+  drop_triggers, 10, 1
+  swap_tables, 10, 1
+  update_foreign_keys, 10, 1
+Altering `test`.`michael`...
+Creating new table...
+Created new table test._michael_new OK.
+Altering new table...
+Altered `test`.`_michael_new` OK.
+Dropping new table...
+Dropped new table OK.
+`test`.`michael` was not altered.
+The new table `test`.`_michael_new` does not have a PRIMARY KEY or a unique index which is required for the DELETE trigger.
+</code></pre><p>字段vname没有添加成功！</p>
+<pre><code>mysql&gt; show create table michael\G
+*************************** 1. row ***************************
+       Table: michael
+Create Table: CREATE TABLE `michael` (
+  `id` int,
+  `region_id` bigint(20),
+  `cityCode` varchar(6),
+  `address` varchar(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+1 row in set (0.00 sec)
+
+mysql&gt; 
+</code></pre><p>添加主键：</p>
+<pre><code>mysql&gt; alter table michael modify id int unsigned primary key;
+Query OK, 0 rows affected (0.06 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+
+[mysql@mysql ~]$ pt-online-schema-change -uroot -proot -h10.10.10.188 --alter=&apos;add column vname varchar(20)&apos; --execute D=test,t=michael
+Operation, tries, wait:
+  copy_rows, 10, 0.25
+  create_triggers, 10, 1
+  drop_triggers, 10, 1
+  swap_tables, 10, 1
+  update_foreign_keys, 10, 1
+Altering `test`.`michael`...
+Creating new table...
+Created new table test._michael_new OK.
+Altering new table...
+Altered `test`.`_michael_new` OK.
+Creating triggers...
+Created triggers OK.
+Copying approximately 2993 rows...
+Copied rows OK.
+Swapping tables...
+Swapped original and new tables OK.
+Dropping old table...
+Dropped old table `test`.`_michael_old` OK.
+Dropping triggers...
+Dropped triggers OK.
+Successfully altered `test`.`michael`.
+[mysql@mysql ~]$ 
+
+
+mysql&gt; show create table michael\G
+*************************** 1. row ***************************
+       Table: michael
+Create Table: CREATE TABLE `michael` (
+  `id` int,
+  `region_id` bigint(20),
+  `cityCode` varchar(6),
+  `address` varchar(255),
+  `vname` varchar(20)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+1 row in set (0.00 sec)
+</code></pre><p>添加多个字段：</p>
+<pre><code>[mysql@mysql ~]$ pt-online-schema-change -uroot -proot -h10.10.10.188 --alter=&apos;add column vrname varchar(20)&apos;,&apos;add column aname varchar(20),add column bname varchar(30)&apos; --execute D=test,t=guoqing
+Operation, tries, wait:
+  copy_rows, 10, 0.25
+  create_triggers, 10, 1
+  drop_triggers, 10, 1
+  swap_tables, 10, 1
+  update_foreign_keys, 10, 1
+Altering `test`.`guoqing`...
+Creating new table...
+Created new table test._guoqing_new OK.
+Altering new table...
+Altered `test`.`_guoqing_new` OK.
+Creating triggers...
+Created triggers OK.
+Copying approximately 2964 rows...
+Copied rows OK.
+Swapping tables...
+Swapped original and new tables OK.
+Dropping old table...
+Dropped old table `test`.`_guoqing_old` OK.
+Dropping triggers...
+Dropped triggers OK.
+Successfully altered `test`.`guoqing`.
+[mysql@mysql ~]$ 
+
+
+mysql&gt; show create table michael\G
+*************************** 1. row ***************************
+       Table: michael
+Create Table: CREATE TABLE `michael` (
+  `id` int,
+  `region_id` bigint(20),
+  `cityCode` varchar(6),
+  `address` varchar(255),
+  `vname` varchar(20),
+  `vrname` varchar(20),
+  `aname` varchar(20),
+  `bname` varchar(20)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+1 row in set (0.00 sec)
+</code></pre><p>删除字段：</p>
+<pre><code>[mysql@mysql ~]$ pt-online-schema-change -uroot -proot -h10.10.10.188 --alter=&apos;drop column vrname&apos;,&apos;drop column aname,drop column bname&apos; --execute D=test,t=guoqing                                    
+Operation, tries, wait:
+  copy_rows, 10, 0.25
+  create_triggers, 10, 1
+  drop_triggers, 10, 1
+  swap_tables, 10, 1
+  update_foreign_keys, 10, 1
+Altering `test`.`guoqing`...
+Creating new table...
+Created new table test._guoqing_new OK.
+Altering new table...
+Altered `test`.`_guoqing_new` OK.
+Creating triggers...
+Created triggers OK.
+Copying approximately 3013 rows...
+Copied rows OK.
+Swapping tables...
+Swapped original and new tables OK.
+Dropping old table...
+Dropped old table `test`.`_guoqing_old` OK.
+Dropping triggers...
+Dropped triggers OK.
+Successfully altered `test`.`guoqing`.
+[mysql@mysql ~]$ 
+</code></pre><p>添加索引：</p>
+<pre><code>[mysql@mysql ~]$ pt-online-schema-change -uroot -proot -h10.10.10.188 --alter=&apos;add key weibo_idx(weibo)&apos; --execute D=test,t=guoqing                                            
+Operation, tries, wait:
+  copy_rows, 10, 0.25
+  create_triggers, 10, 1
+  drop_triggers, 10, 1
+  swap_tables, 10, 1
+  update_foreign_keys, 10, 1
+Altering `test`.`guoqing`...
+Creating new table...
+Created new table test._guoqing_new OK.
+Altering new table...
+Altered `test`.`_guoqing_new` OK.
+Creating triggers...
+Created triggers OK.
+Copying approximately 3013 rows...
+Copied rows OK.
+Swapping tables...
+Swapped original and new tables OK.
+Dropping old table...
+Dropped old table `test`.`_guoqing_old` OK.
+Dropping triggers...
+Dropped triggers OK.
+Successfully altered `test`.`guoqing`.
+[mysql@mysql ~]$ 
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/Linux/">Linux</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/06/16-MySQL Online DDL 工具之pt-online-schema-change.html" data-title="MySQL Online DDL 工具之Pt-Online-Schema-Change | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/12/13-聊聊Greenplum的那些事.html" title="聊聊Greenplum的那些事">
+  <strong>上一篇：</strong><br/>
+  <span>
+  聊聊Greenplum的那些事</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/05/13-常用工具.html"  title="常用工具">
+ <strong>下一篇：</strong><br/> 
+ <span>常用工具
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

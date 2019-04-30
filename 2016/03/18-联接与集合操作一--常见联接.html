@@ -1,0 +1,866 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>联接与集合操作一--常见联接 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="联接查询联接查询是一种常见的数据库操作，即在两张表（或更多表）中进行行匹配的操作。一般称之为水平操作，这是因为对几张表进行联接操作所产生的结果集可以包含这几张表中所有的列。对应于联接的水平操作，一般集合操作视为垂直操作。 MySQL数据库支持如下的联接查询：  CROSS JOIN （交叉联接） INNER JOIN （内联接） OUTER JOIN （外联接） 其他  新旧查询语法 MySQL">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="联接与集合操作一--常见联接">
+<meta property="og:url" content="http://idber.github.io/2016/03/18-联接与集合操作一--常见联接.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="联接查询联接查询是一种常见的数据库操作，即在两张表（或更多表）中进行行匹配的操作。一般称之为水平操作，这是因为对几张表进行联接操作所产生的结果集可以包含这几张表中所有的列。对应于联接的水平操作，一般集合操作视为垂直操作。 MySQL数据库支持如下的联接查询：  CROSS JOIN （交叉联接） INNER JOIN （内联接） OUTER JOIN （外联接） 其他  新旧查询语法 MySQL">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.938Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="联接与集合操作一--常见联接">
+<meta name="twitter:description" content="联接查询联接查询是一种常见的数据库操作，即在两张表（或更多表）中进行行匹配的操作。一般称之为水平操作，这是因为对几张表进行联接操作所产生的结果集可以包含这几张表中所有的列。对应于联接的水平操作，一般集合操作视为垂直操作。 MySQL数据库支持如下的联接查询：  CROSS JOIN （交叉联接） INNER JOIN （内联接） OUTER JOIN （外联接） 其他  新旧查询语法 MySQL">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/18-联接与集合操作一--常见联接.html" title="联接与集合操作一--常见联接" itemprop="url">联接与集合操作一--常见联接</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-18T09:23:56.000Z" itemprop="datePublished"> Published 2016-03-18</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#联接查询"><span class="toc-number">1.</span> <span class="toc-text">联接查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#新旧查询语法"><span class="toc-number">2.</span> <span class="toc-text">新旧查询语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CRONSS-JOIN"><span class="toc-number">3.</span> <span class="toc-text">CRONSS JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#INNER-JOIN"><span class="toc-number">4.</span> <span class="toc-text">INNER JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OUTER-JOIN"><span class="toc-number">5.</span> <span class="toc-text">OUTER JOIN</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<h2 id="联接查询"><a href="#联接查询" class="headerlink" title="联接查询"></a>联接查询</h2><p>联接查询是一种常见的数据库操作，即在两张表（或更多表）中进行行匹配的操作。一般称之为水平操作，这是因为对几张表进行联接操作所产生的结果集可以包含这几张表中所有的列。对应于联接的水平操作，一般集合操作视为垂直操作。</p>
+<p>MySQL数据库支持如下的联接查询：</p>
+<ul>
+<li>CROSS JOIN （交叉联接）</li>
+<li>INNER JOIN （内联接）</li>
+<li>OUTER JOIN （外联接）</li>
+<li>其他</li>
+</ul>
+<h2 id="新旧查询语法"><a href="#新旧查询语法" class="headerlink" title="新旧查询语法"></a>新旧查询语法</h2><hr>
+<p>MySQL数据库支持两种不同的联接操作语法。在实际使用中，很少有DBA或开发人员可以观察到或区分出两者的不同。</p>
+<table>
+<thead>
+<tr>
+<th>ANSI SQL 89</th>
+<th>ANSI SQL 92</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SELECT … FROM A,B WHERE A.X=B.X</td>
+<td>SELECT … FROM A INNER JION B ON A.X=B.X</td>
+</tr>
+</tbody>
+</table>
+<p>左边为ANSI SQL 89标准，右边为ANSI SQL 92标准，ANSI SQL 89 与新语法的区别是FROM 子句中的表名之间用逗号分隔，没有JOIN关键字，也没有ON子句。其语法格式如下：</p>
+<pre><code>FROM T1,T2 WHERE where_condition
+</code></pre><p>ANSI SQL 89 只支持CROSS JOIN和INNER JOIN ，不支持OUTER JOIN。新语法是由ANSI SQL 92 引入的，与旧语法的区别是引入了JOIN关键字和ON过滤子句，并去掉了表之间的逗号,引入了外部联接的支持，因此要严格区分ON过滤器和WHERE过滤器的作用，其语法格式如下：</p>
+<pre><code>FROM T1
+＜join_type＞ JOIN T2
+ON on_condition
+</code></pre><font color="red">对于这两种语法其逻辑查询和物理查询也是相同的。</font>
+
+<h2 id="CRONSS-JOIN"><a href="#CRONSS-JOIN" class="headerlink" title="CRONSS JOIN"></a>CRONSS JOIN</h2><p>CROSS JOIN对两个表执行笛卡儿积，返回两个表中所有列的组合。若左表有m行数据，右表有n行数据，则CROSS JOIN将返回m*n行的表。</p>
+<pre><code>mysql&gt; desc select a.customer_id,b.customer_id from customer as a cross join customer as b;
++----+-------------+-------+-------+---------------+-----------------+---------+------+------+----------------------------------------------------+
+| id | select_type | table | type  | possible_keys | key             | key_len | ref  | rows | Extra                                              |
++----+-------------+-------+-------+---------------+-----------------+---------+------+------+----------------------------------------------------+
+|  1 | SIMPLE      | a     | index | NULL          | idx_fk_store_id | 1       | NULL |  599 | Using index                                        |
+|  1 | SIMPLE      | b     | index | NULL          | idx_fk_store_id | 1       | NULL |  599 | Using index; Using join buffer (Block Nested Loop) |
++----+-------------+-------+-------+---------------+-----------------+---------+------+------+----------------------------------------------------+
+2 rows in set (0.00 sec)
+</code></pre><p>因为customer表共有599行记录，所以CROSS JOIN后共有599*599=358801条记录。<br>也可以使用ANSI SQL 89的语法来实现相同任务的查询。</p>
+<pre><code>mysql&gt; desc select * from customer as a, customer as b;                                       
++----+-------------+-------+------+---------------+------+---------+------+------+---------------------------------------+
+| id | select_type | table | type | possible_keys | key  | key_len | ref  | rows | Extra                                 |
++----+-------------+-------+------+---------------+------+---------+------+------+---------------------------------------+
+|  1 | SIMPLE      | a     | ALL  | NULL          | NULL | NULL    | NULL |  599 | NULL                                  |
+|  1 | SIMPLE      | b     | ALL  | NULL          | NULL | NULL    | NULL |  599 | Using join buffer (Block Nested Loop) |
++----+-------------+-------+------+---------------+------+---------+------+------+---------------------------------------+
+2 rows in set (0.00 sec
+</code></pre><font color="blue">对于交叉联接，ANSI SQL 89语法代码更短，语法更加易读。不必担心两者的性能，因为正如前面据说，</font><font color="red">优化器将为两者生成相同的执行计划。</font>
+
+<p>row_num行号的示例</p>
+<pre><code>mysql&gt;  select customer_id,store_id,@a:=@a+1 as row_num from customer,(select @a:=0) t;    
++-------------+----------+---------+
+| customer_id | store_id | row_num |
++-------------+----------+---------+
+|           1 |        1 |       1 |
+|           2 |        1 |       2 |
+|           3 |        1 |       3 |
+|           5 |        1 |       4 |
+|           7 |        1 |       5 |
+|          10 |        1 |       6 |
+|          12 |        1 |       7 |
+|          15 |        1 |       8 |
+|          17 |        1 |       9 |
+|          19 |        1 |      10 |
+</code></pre><h2 id="INNER-JOIN"><a href="#INNER-JOIN" class="headerlink" title="INNER JOIN"></a>INNER JOIN</h2><p>通过INNER JOIN用户可以根据一些过滤条件来匹配表之间的数据。在逻辑查询的前三个处理阶段中，INNER JOIN应用前两个阶段，即首先产生笛卡儿积的虚拟表，再按照ON过滤条件来进行数据的匹配操作。INNER JOIN没有第三步操作，即不添加外部行，这是和OUTER JOIN 最大的区别之一。也正是因为不会添加外部行，指定过滤条件在ON子句和WHERE子句是没有任何区别的。</p>
+<p>在表之间匹配记录的过滤器放在ON子句中，而只从一个表中过滤数据的条件放在WHERE子句中，下面语句实现的是找出地址ID为1的地址信息</p>
+<pre><code>select a.address,a.address_id,a.city_id 
+from address a 
+[inner] join city b 
+on a.city_id=b.city_id  
+where a.city_id=1;
+
+mysql&gt; select a.address,a.address_id,a.city_id from address a inner join city b on a.city_id=b.city_id  where a.city_id=1;
++----------------------+------------+---------+
+| address              | address_id | city_id |
++----------------------+------------+---------+
+| 939 Probolinggo Loop |         56 |       1 |
++----------------------+------------+---------+
+1 row in set (0.00 sec)
+</code></pre><p>INNER 关键字可以省略。前面说过INNER JOIN 中WHERE 的过滤条件可以写在ON子句中，因此下面的SQL查询语句得到的结果和上面是一样的。</p>
+<pre><code>select a.address,a.address_id,a.city_id 
+from address a 
+inner join city b 
+on a.city_id=b.city_id  
+and a.city_id=1;
+
+mysql&gt; select a.address,a.address_id,a.city_id  from address a  inner join city b  on a.city_id=b.city_id   and a.city_id=1;
++----------------------+------------+---------+
+| address              | address_id | city_id |
++----------------------+------------+---------+
+| 939 Probolinggo Loop |         56 |       1 |
++----------------------+------------+---------+
+1 row in set (0.00 sec)
+
+mysql&gt; 
+</code></pre><p>如果使用ANSI SQL 89语法，用户只能在WHERE条件中指定所有的过滤条件，其查询语句如下：</p>
+<pre><code>select a.address,a.address_id,a.city_id 
+from address a,city b 
+where a.city_id=b.city_id  
+and a.city_id=1;
+
+mysql&gt; select a.address,a.address_id,a.city_id  from address a,city b  where a.city_id=b.city_id   and a.city_id=1;
++----------------------+------------+---------+
+| address              | address_id | city_id |
++----------------------+------------+---------+
+| 939 Probolinggo Loop |         56 |       1 |
++----------------------+------------+---------+
+1 row in set (0.00 sec)
+
+mysql&gt;
+</code></pre><p>对于CROSS JOIN笔者更喜欢使用ANSI SQL 89语法，而对于INNER JOIN正好相反，更倾向于使用ANSI SQL 92语法。如果忘记指定联手条件，则使用ANSI SQL 89语法可能有些危险，因为可能会得到很大的笛卡积返回集。</p>
+<pre><code>mysql&gt; desc select a.address,a.address_id,a.city_id  from address a,city b where a.city_id=1;
++----+-------------+-------+-------+----------------+-------------------+---------+-------+------+----------------------------------------------------+
+| id | select_type | table | type  | possible_keys  | key               | key_len | ref   | rows | Extra                                              |
++----+-------------+-------+-------+----------------+-------------------+---------+-------+------+----------------------------------------------------+
+|  1 | SIMPLE      | a     | ref   | idx_fk_city_id | idx_fk_city_id    | 2       | const |    1 | NULL                                               |
+|  1 | SIMPLE      | b     | index | NULL           | idx_fk_country_id | 2       | NULL  |  600 | Using index; Using join buffer (Block Nested Loop) |
++----+-------------+-------+-------+----------------+-------------------+---------+-------+------+----------------------------------------------------+
+2 rows in set (0.00 sec)
+</code></pre><p><font color="red">特别注意的是，在MySQL数据库中，如果INNER JOIN后不跟ON子句，也是可以通过语法解析的，这时INNER JOIN 等于CROSS JOIN，即产生笛卡儿积</font>，示例如下</p>
+<pre><code>    mysql&gt; desc select a.customer_id,b.customer_id from customer as a inner join customer as b;     
++----+-------------+-------+-------+---------------+-----------------+---------+------+------+----------------------------------------------------+
+| id | select_type | table | type  | possible_keys | key             | key_len | ref  | rows | Extra                                              |
++----+-------------+-------+-------+---------------+-----------------+---------+------+------+----------------------------------------------------+
+|  1 | SIMPLE      | a     | index | NULL          | idx_fk_store_id | 1       | NULL |  599 | Using index                                        |
+|  1 | SIMPLE      | b     | index | NULL          | idx_fk_store_id | 1       | NULL |  599 | Using index; Using join buffer (Block Nested Loop) |
++----+-------------+-------+-------+---------------+-----------------+---------+------+------+----------------------------------------------------+
+2 rows in set (0.04 sec)
+
+mysql&gt; 
+</code></pre><p>这一点和很多其他关系数据库非常不同，例如，在Microsoft SQL Server中必须指定ON子句，否则语法解析器会抛出异常。<font color="red">而在MySQL数据库中，CROSS JOIN其实和INNER JOIN是同义词关系</font>，因此当没有ON子句时，SQL解析器会将INNER JOIN理解为CROSS JON。<br>此外，如果ON子句中的列具有相同的名称，可以使用USING子句来进行简化，得到的结果和上述两语法的语句结果是一样的：</p>
+<pre><code>mysql&gt; select a.address,a.address_id,a.city_id from address a inner join city b on a.city_id=b.city_id  where a.city_id=1;
++----------------------+------------+---------+
+| address              | address_id | city_id |
++----------------------+------------+---------+
+| 939 Probolinggo Loop |         56 |       1 |
++----------------------+------------+---------+
+1 row in set (0.00 sec)
+
+mysql&gt; select a.address,address_id,city_id from address a inner join city b using(city_id) where city_id=1;                   
++----------------------+------------+---------+
+| address              | address_id | city_id |
++----------------------+------------+---------+
+| 939 Probolinggo Loop |         56 |       1 |
++----------------------+------------+---------+
+1 row in set (0.00 sec)
+
+mysql&gt; 
+</code></pre><h2 id="OUTER-JOIN"><a href="#OUTER-JOIN" class="headerlink" title="OUTER JOIN"></a>OUTER JOIN</h2><p>通过OUTER JOIN 用户可以按照上些过滤条件来匹配表之间的数据。与INNER JOIN不同的是，在通过OUTER JOIN添加的保留表中存在未找到的匹配数据。MySQL数据库支持LEFT OUTER JOIN和RIGHT OUTER JOIN。与INNER关键字一样,可以省略OUTER关键字。</p>
+<font color="RED">注意：目前MySQL不支持FULL OUTER JOIN</font>
+
+<hr>
+<p>OUTER JOIN应用逻辑查询的前三个步骤，即产生笛卡儿积、应用ON过滤器和添加外部行。对于保留表中的行数据，如果是未找到匹配数据而被添加的记录，其值NULL进行填充。<a href="http://idber.github.io/2016/03/10-%E6%9F%A5%E8%AF%A2%E5%A4%84%E7%90%86.html">查询处理</a> 中我们已经接触过了LEFT JOIN，即返回客户信息、订单信息，同时返回没有订单的客户，因为指定了LEFT关键字，因此表customers是保留表。查询过程如下：</p>
+<pre><code>mysql&gt; select c.customer_id,o.order_id from customers as c left outer join orders as o on c.customer_id=o.customer_id;
++-------------+----------+
+| customer_id | order_id |
++-------------+----------+
+| 139         |        1 |
+| 139         |        2 |
+| guo         |        3 |
+| guo         |        4 |
+| guo         |        5 |
+| tx          |        6 |
+| baidu       |     NULL |
++-------------+----------+
+7 rows in set (0.01 sec)
+</code></pre><p>OUTER JOIN只在ANSI SQL 92 中得到支持，在其他一些数据库中可以使用（+）=、<em>=来表示LEFT JOIN，用=（+）、=</em>来扩展ANSI SQL 89语法使其支持OUTER JOIN。但是对MySQL数据库来说，只有一种OUTER JOIN的联接语法。<br>通过OUTER JOIN和IS NULL，可以返回没有用户订单的客户，例如：</p>
+<pre><code>mysql&gt; select c.customer_id,o.order_id from customers as c left outer join orders as o on c.customer_id=o.customer_id where o.order_id is null;
++-------------+----------+
+| customer_id | order_id |
++-------------+----------+
+| baidu       |     NULL |
++-------------+----------+
+1 row in set (0.00 sec)
+</code></pre><p>需要注意的是，INNER JOIN中的过滤条件都可以写在ON子句中，而OUTER JOIN的过滤条件不可以这样处理，因为可能会得到不正确的结果，例如：</p>
+<pre><code>mysql&gt; select c.customer_id,o.order_id from customers as c left outer join orders as o on c.customer_id=o.customer_id and o.order_id is null;     
++-------------+----------+
+| customer_id | order_id |
++-------------+----------+
+| 139         |     NULL |
+| baidu       |     NULL |
+| guo         |     NULL |
+| tx          |     NULL |
++-------------+----------+
+4 rows in set (0.00 sec
+</code></pre><p>这次得到了4条记录，显然不是我们想要的结果。<br>对于OUTER JOIN，同样可以使用USING来简化ON子句，因此上述的语句可以改写为：</p>
+<pre><code>mysql&gt; select c.customer_id,o.order_id from customers as c left outer join orders as o  using(customer_id);
++-------------+----------+
+| customer_id | order_id |
++-------------+----------+
+| 139         |        1 |
+| 139         |        2 |
+| guo         |        3 |
+| guo         |        4 |
+| guo         |        5 |
+| tx          |        6 |
+| baidu       |     NULL |
++-------------+----------+
+7 rows in set (0.00 sec)
+</code></pre><p>与INNER JOIN不同的是，对于OUTER JION，必须制定ON子句，否则MySQL数据库会抛出异常，例如：</p>
+<pre><code>mysql&gt; select c.customer_id,o.order_id from customers as c left outer join orders as o  ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &apos;&apos; at line 1
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/SQL编程/">SQL编程</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/03/18-联接与集合操作一--常见联接.html" data-title="联接与集合操作一--常见联接 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/03/19-联接与集合操作二--其他联接.html" title="联接与集合操作二--其他联接">
+  <strong>上一篇：</strong><br/>
+  <span>
+  联接与集合操作二--其他联接</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/16-MySQL子查询.html"  title="MySQL子查询">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL子查询
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#联接查询"><span class="toc-number">1.</span> <span class="toc-text">联接查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#新旧查询语法"><span class="toc-number">2.</span> <span class="toc-text">新旧查询语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CRONSS-JOIN"><span class="toc-number">3.</span> <span class="toc-text">CRONSS JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#INNER-JOIN"><span class="toc-number">4.</span> <span class="toc-text">INNER JOIN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OUTER-JOIN"><span class="toc-number">5.</span> <span class="toc-text">OUTER JOIN</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

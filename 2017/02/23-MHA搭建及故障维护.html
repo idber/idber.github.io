@@ -1,0 +1,882 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MHA搭建及故障维护 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="MHA是一种方便简单可靠的MySQL高可用架构，具体的介绍我在这里就不多说了，下面是我在网上找的一个教程，我在此基础上进行了一些修改： 大致步骤（一）、环境介绍 （二）、用ssh-keygen实现四台主机之间相互免密钥登录 （三）、安装MHAmha4mysql-node，mha4mysql-manager和perl环境包 （四）、建立master，slave1，slave2之间主从复制 （五）、">
+<meta name="keywords" content="MySQL,MHA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MHA搭建及故障维护">
+<meta property="og:url" content="http://idber.github.io/2017/02/23-MHA搭建及故障维护.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="MHA是一种方便简单可靠的MySQL高可用架构，具体的介绍我在这里就不多说了，下面是我在网上找的一个教程，我在此基础上进行了一些修改： 大致步骤（一）、环境介绍 （二）、用ssh-keygen实现四台主机之间相互免密钥登录 （三）、安装MHAmha4mysql-node，mha4mysql-manager和perl环境包 （四）、建立master，slave1，slave2之间主从复制 （五）、">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.928Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MHA搭建及故障维护">
+<meta name="twitter:description" content="MHA是一种方便简单可靠的MySQL高可用架构，具体的介绍我在这里就不多说了，下面是我在网上找的一个教程，我在此基础上进行了一些修改： 大致步骤（一）、环境介绍 （二）、用ssh-keygen实现四台主机之间相互免密钥登录 （三）、安装MHAmha4mysql-node，mha4mysql-manager和perl环境包 （四）、建立master，slave1，slave2之间主从复制 （五）、">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/23-MHA搭建及故障维护.html" title="MHA搭建及故障维护" itemprop="url">MHA搭建及故障维护</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-23T06:49:56.000Z" itemprop="datePublished"> Published 2017-02-23</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#大致步骤"><span class="toc-number">1.</span> <span class="toc-text">大致步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#（一）环境介绍"><span class="toc-number">1.1.</span> <span class="toc-text">（一）环境介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-主机部署"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.主机部署</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（二）用ssh-keygen实现四台主机之间相互免密钥登录"><span class="toc-number">1.2.</span> <span class="toc-text">（二）用ssh-keygen实现四台主机之间相互免密钥登录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-生成密钥"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.生成密钥</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-在主机上用cat-xxx-gt-gt-authorized-keys导入公钥到-root-ssh-authorized-keys文件中"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.在主机上用cat xxx &gt;&gt; authorized_keys导入公钥到/root/.ssh/authorized_keys文件中</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（三）安装MHAmha4mysql-node，mha4mysql-manager-软件包"><span class="toc-number">1.3.</span> <span class="toc-text">（三）安装MHAmha4mysql-node，mha4mysql-manager 软件包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-安装MHAmha4mysql-node"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.安装MHAmha4mysql-node</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-安装mha4mysql-manager"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.安装mha4mysql-manager</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（四）、建立master，slave1，slave2之间主从复制"><span class="toc-number">1.4.</span> <span class="toc-text">（四）、建立master，slave1，slave2之间主从复制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（五）、管理机manager上配置MHA文件"><span class="toc-number">1.5.</span> <span class="toc-text">（五）、管理机manager上配置MHA文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（六）、masterha-check-ssh工具验证ssh信任登录是否成功"><span class="toc-number">1.6.</span> <span class="toc-text">（六）、masterha_check_ssh工具验证ssh信任登录是否成功</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（七）、masterha-check-repl工具验证mysql复制是否成功"><span class="toc-number">1.7.</span> <span class="toc-text">（七）、masterha_check_repl工具验证mysql复制是否成功</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（八）、启动MHA-manager-并监控日志文件"><span class="toc-number">1.8.</span> <span class="toc-text">（八）、启动MHA manager,并监控日志文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（九）测试master-宕机后，是否会自动切换"><span class="toc-number">1.9.</span> <span class="toc-text">（九）测试master(宕机后，是否会自动切换</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-停掉master上的mysql服务"><span class="toc-number">1.9.1.</span> <span class="toc-text">1.停掉master上的mysql服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-宕掉master后，-masterha-app1-manager-log文件显示："><span class="toc-number">1.9.2.</span> <span class="toc-text">2.宕掉master后，/masterha/app1/manager.log文件显示：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#切换过程中需要关注的几个问题"><span class="toc-number">2.</span> <span class="toc-text">切换过程中需要关注的几个问题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#恢复集群运行"><span class="toc-number">3.</span> <span class="toc-text">恢复集群运行</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<p>MHA是一种方便简单可靠的MySQL高可用架构，具体的介绍我在这里就不多说了，下面是我在网上找的一个教程，我在此基础上进行了一些修改：</p>
+<h1 id="大致步骤"><a href="#大致步骤" class="headerlink" title="大致步骤"></a>大致步骤</h1><pre><code>（一）、环境介绍
+（二）、用ssh-keygen实现四台主机之间相互免密钥登录
+（三）、安装MHAmha4mysql-node，mha4mysql-manager和perl环境包
+（四）、建立master，slave1，slave2之间主从复制
+（五）、管理机manager上配置MHA文件
+（六）、masterha_check_ssh工具验证ssh信任登录是否成功
+（七）、masterha_check_repl工具验证mysql复制是否成功
+（八）、启动MHA manager,并监控日志文件
+（九）、测试master宕机后，是否会自动切换
+</code></pre><h2 id="（一）环境介绍"><a href="#（一）环境介绍" class="headerlink" title="（一）环境介绍"></a>（一）环境介绍</h2><h3 id="1-主机部署"><a href="#1-主机部署" class="headerlink" title="1.主机部署"></a>1.主机部署</h3><p>CentOS 7改主机名</p>
+<pre><code>hostnamectl set-hostname master
+
+192.168.56.121    master
+192.168.56.122    slave1    #备用master
+192.168.56.123    slave2    
+192.168.56.124    manager   
+</code></pre><p>将ip和域名配置到/etc/hosts文件中</p>
+<p>尝试在各主机上的防火墙上加上端口的允许</p>
+<pre><code>iptables -I INPUT -s 0/0 -p tcp --dport 3306 -j ACCEPT
+</code></pre><p>这条规则的意思是，想要在输入数据INPUT中，protocol为tcp/IP的方式，访问端口3306，都会被允许的</p>
+<pre><code>iptables -L -n|grep 3306
+ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:3306
+</code></pre><h2 id="（二）用ssh-keygen实现四台主机之间相互免密钥登录"><a href="#（二）用ssh-keygen实现四台主机之间相互免密钥登录" class="headerlink" title="（二）用ssh-keygen实现四台主机之间相互免密钥登录"></a>（二）用ssh-keygen实现四台主机之间相互免密钥登录</h2><h3 id="1-生成密钥"><a href="#1-生成密钥" class="headerlink" title="1.生成密钥"></a>1.生成密钥</h3><p>[master，slave1，slave2，manager]</p>
+<pre><code>ssh-keygen -t rsa
+</code></pre><p>[slave1,slave2,manager]</p>
+<pre><code>scp .ssh/id_rsa.pub master:/root/.ssh/slave1.pub 
+scp .ssh/id_rsa.pub master:/root/.ssh/slave2.pub
+scp .ssh/id_rsa.pub master:/root/.ssh/manager.pub
+</code></pre><h3 id="2-在主机上用cat-xxx-gt-gt-authorized-keys导入公钥到-root-ssh-authorized-keys文件中"><a href="#2-在主机上用cat-xxx-gt-gt-authorized-keys导入公钥到-root-ssh-authorized-keys文件中" class="headerlink" title="2.在主机上用cat xxx &gt;&gt; authorized_keys导入公钥到/root/.ssh/authorized_keys文件中"></a>2.在主机上用cat xxx &gt;&gt; authorized_keys导入公钥到/root/.ssh/authorized_keys文件中</h3><p>[master]</p>
+<pre><code>cat ~/.ssh/*.pub&gt;&gt;~/.ssh/authorized_keys
+scp ~/.ssh/authorized_keys slave1:/root/.ssh/authorized_keys 
+scp ~/.ssh/authorized_keys slave2:/root/.ssh/authorized_keys 
+scp ~/.ssh/authorized_keys manager:/root/.ssh/authorized_keys 
+</code></pre><h2 id="（三）安装MHAmha4mysql-node，mha4mysql-manager-软件包"><a href="#（三）安装MHAmha4mysql-node，mha4mysql-manager-软件包" class="headerlink" title="（三）安装MHAmha4mysql-node，mha4mysql-manager 软件包"></a>（三）安装MHAmha4mysql-node，mha4mysql-manager 软件包</h2><h3 id="1-安装MHAmha4mysql-node"><a href="#1-安装MHAmha4mysql-node" class="headerlink" title="1.安装MHAmha4mysql-node"></a>1.安装MHAmha4mysql-node</h3><pre><code>[manager,master,slave1,slave2]
+
+yum -y install perl-DBD-MySQL
+yum -y install perl-Config-Tiny    
+yum -y install perl-Log-Dispatch    
+yum -y install perl-Parallel-ForkManager
+mha4mysql-node-0.55-0.el6.noarch.rpm
+</code></pre><h3 id="2-安装mha4mysql-manager"><a href="#2-安装mha4mysql-manager" class="headerlink" title="2.安装mha4mysql-manager"></a>2.安装mha4mysql-manager</h3><pre><code>[manager]
+
+ yum -y install perl
+ yum -y install cpan
+ rpm -ivh mha4mysql-manager-0.55-0.el6.noarch.rpm
+</code></pre><p>缺啥，yum install <em> xxx </em> 啥就行。</p>
+<h2 id="（四）、建立master，slave1，slave2之间主从复制"><a href="#（四）、建立master，slave1，slave2之间主从复制" class="headerlink" title="（四）、建立master，slave1，slave2之间主从复制"></a>（四）、建立master，slave1，slave2之间主从复制</h2><pre><code>略
+</code></pre><h2 id="（五）、管理机manager上配置MHA文件"><a href="#（五）、管理机manager上配置MHA文件" class="headerlink" title="（五）、管理机manager上配置MHA文件"></a>（五）、管理机manager上配置MHA文件</h2><pre><code>[manager]
+</code></pre><p>1.创建目录</p>
+<pre><code>mkdir -p /masterha/app1
+mkdir /etc/masterha
+vi /etc/masterha/app1.cnf
+
+[server default]
+user=root
+password=root
+manager_workdir=/masterha/app1
+manager_log=/masterha/app1/manager.log
+remote_workdir=/masterha/app1
+ssh_user=root
+repl_user=rep
+repl_password=repl
+ping_interval=1
+[server1]
+hostname=192.168.56.122
+master_binlog_dir=/var/lib/mysql
+candidate_master=1
+#relay_log_purge=0
+[server2]
+hostname=192.168.56.121
+master_binlog_dir=/var/lib/mysql
+candidate_master=1
+[server3]
+hostname=192.168.56.123
+master_binlog_dir=/var/lib/mysql
+no_master=1
+#relay_log_purge=0
+</code></pre><h2 id="（六）、masterha-check-ssh工具验证ssh信任登录是否成功"><a href="#（六）、masterha-check-ssh工具验证ssh信任登录是否成功" class="headerlink" title="（六）、masterha_check_ssh工具验证ssh信任登录是否成功"></a>（六）、masterha_check_ssh工具验证ssh信任登录是否成功</h2><pre><code>[manager]
+
+masterha_check_ssh --conf=/etc/masterha/app1.cnf
+[root@manager ~]# masterha_check_ssh --conf=/etc/masterha/app1.cnf
+Thu Feb 23 12:00:24 2017 - [warning] Global configuration file /etc/masterha_default.cnf not found. Skipping.
+Thu Feb 23 12:00:24 2017 - [info] Reading application default configurations from /etc/masterha/app1.cnf..
+Thu Feb 23 12:00:24 2017 - [info] Reading server configurations from /etc/masterha/app1.cnf..
+Thu Feb 23 12:00:24 2017 - [info] Starting SSH connection tests..
+Thu Feb 23 12:00:25 2017 - [debug] 
+Thu Feb 23 12:00:24 2017 - [debug]  Connecting via SSH from root@192.168.56.122(192.168.56.122:22) to root@192.168.56.121(192.168.56.121:22)..
+Thu Feb 23 12:00:25 2017 - [debug]   ok.
+Thu Feb 23 12:00:25 2017 - [debug]  Connecting via SSH from root@192.168.56.122(192.168.56.122:22) to root@192.168.56.123(192.168.56.123:22)..
+Thu Feb 23 12:00:25 2017 - [debug]   ok.
+Thu Feb 23 12:00:25 2017 - [debug] 
+Thu Feb 23 12:00:25 2017 - [debug]  Connecting via SSH from root@192.168.56.121(192.168.56.121:22) to root@192.168.56.122(192.168.56.122:22)..
+Warning: Permanently added &apos;192.168.56.121&apos; (ECDSA) to the list of known hosts.
+Thu Feb 23 12:00:25 2017 - [debug]   ok.
+Thu Feb 23 12:00:25 2017 - [debug]  Connecting via SSH from root@192.168.56.121(192.168.56.121:22) to root@192.168.56.123(192.168.56.123:22)..
+Thu Feb 23 12:00:25 2017 - [debug]   ok.
+Thu Feb 23 12:00:26 2017 - [debug] 
+Thu Feb 23 12:00:25 2017 - [debug]  Connecting via SSH from root@192.168.56.123(192.168.56.123:22) to root@192.168.56.122(192.168.56.122:22)..
+Warning: Permanently added &apos;192.168.56.123&apos; (ECDSA) to the list of known hosts.
+Thu Feb 23 12:00:26 2017 - [debug]   ok.
+Thu Feb 23 12:00:26 2017 - [debug]  Connecting via SSH from root@192.168.56.123(192.168.56.123:22) to root@192.168.56.121(192.168.56.121:22)..
+Thu Feb 23 12:00:26 2017 - [debug]   ok.
+Thu Feb 23 12:00:26 2017 - [info] All SSH connection tests passed successfully.
+[root@manager ~]# 
+</code></pre><h2 id="（七）、masterha-check-repl工具验证mysql复制是否成功"><a href="#（七）、masterha-check-repl工具验证mysql复制是否成功" class="headerlink" title="（七）、masterha_check_repl工具验证mysql复制是否成功"></a>（七）、masterha_check_repl工具验证mysql复制是否成功</h2><pre><code>[manager]
+
+masterha_check_repl --conf=/etc/masterha/app1.cnf
+
+[root@manager mysql]# masterha_check_repl --conf=/etc/masterha/app1.cnf
+Thu Feb 23 14:37:05 2017 - [warning] Global configuration file /etc/masterha_default.cnf not found. Skipping.
+Thu Feb 23 14:37:05 2017 - [info] Reading application default configurations from /etc/masterha/app1.cnf..
+Thu Feb 23 14:37:05 2017 - [info] Reading server configurations from /etc/masterha/app1.cnf..
+Thu Feb 23 14:37:05 2017 - [info] MHA::MasterMonitor version 0.55.
+Thu Feb 23 14:37:05 2017 - [info] Dead Servers:
+Thu Feb 23 14:37:05 2017 - [info] Alive Servers:
+Thu Feb 23 14:37:05 2017 - [info]   master(192.168.56.121:3306)
+Thu Feb 23 14:37:05 2017 - [info]   slave1(192.168.56.122:3306)
+Thu Feb 23 14:37:05 2017 - [info]   slave2(192.168.56.123:3306)
+Thu Feb 23 14:37:05 2017 - [info] Alive Slaves:
+
+.......此处省略
+
+Thu Feb 23 14:37:08 2017 - [info]   Connecting to root@192.168.56.123(slave2:22).. 
+Creating directory /masterha/app1.. done.
+  Checking slave recovery environment settings..
+    Opening /var/lib/mysql/relay-log.info ... ok.
+    Relay log found at /tmp, up to mysql-relay-bin.000004
+    Temporary relay log file is /tmp/mysql-relay-bin.000004
+    Testing mysql connection and privileges..Warning: Using a password on the command line interface can be insecure.
+ done.
+    Testing mysqlbinlog output.. done.
+    Cleaning up test file(s).. done.
+Thu Feb 23 14:37:08 2017 - [info] Slaves settings check done.
+Thu Feb 23 14:37:08 2017 - [info] 
+master (current master)
+ +--slave1
+ +--slave2
+
+Thu Feb 23 14:37:08 2017 - [info] Checking replication health on slave1..
+Thu Feb 23 14:37:08 2017 - [info]  ok.
+Thu Feb 23 14:37:08 2017 - [info] Checking replication health on slave2..
+Thu Feb 23 14:37:08 2017 - [info]  ok.
+Thu Feb 23 14:37:08 2017 - [warning] master_ip_failover_script is not defined.
+Thu Feb 23 14:37:08 2017 - [warning] shutdown_script is not defined.
+Thu Feb 23 14:37:08 2017 - [info] Got exit code 0 (Not master dead).
+
+MySQL Replication Health is OK.
+</code></pre><h2 id="（八）、启动MHA-manager-并监控日志文件"><a href="#（八）、启动MHA-manager-并监控日志文件" class="headerlink" title="（八）、启动MHA manager,并监控日志文件"></a>（八）、启动MHA manager,并监控日志文件</h2><pre><code>[manager]
+
+masterha_manager --conf=/etc/masterha/app1.cnf 
+tail -f /masterha/app1/manager.log
+</code></pre><h2 id="（九）测试master-宕机后，是否会自动切换"><a href="#（九）测试master-宕机后，是否会自动切换" class="headerlink" title="（九）测试master(宕机后，是否会自动切换"></a>（九）测试master(宕机后，是否会自动切换</h2><h3 id="1-停掉master上的mysql服务"><a href="#1-停掉master上的mysql服务" class="headerlink" title="1.停掉master上的mysql服务"></a>1.停掉master上的mysql服务</h3><pre><code>[master]
+
+[root@master ~]# service mysql stop
+Shutting down MySQL..... SUCCESS! 
+[root@master ~]# 
+[manager]
+</code></pre><h3 id="2-宕掉master后，-masterha-app1-manager-log文件显示："><a href="#2-宕掉master后，-masterha-app1-manager-log文件显示：" class="headerlink" title="2.宕掉master后，/masterha/app1/manager.log文件显示："></a>2.宕掉master后，/masterha/app1/manager.log文件显示：</h3><pre><code>tail -f /masterha/app1/manager.log
+</code></pre><p>日志文件显示：</p>
+<pre><code>----- Failover Report -----
+
+app1: MySQL Master failover master to slave1 succeeded
+
+Master master is down!
+
+Check MHA Manager logs at manager:/masterha/app1/manager.log for details.
+
+Started automated(non-interactive) failover.
+The latest slave slave1(192.168.56.122:3306) has all relay logs for recovery.
+Selected slave1 as a new master.
+slave1: OK: Applying all logs succeeded.
+slave2: This host has the latest relay log events.
+Generating relay diff files from the latest slave succeeded.
+slave2: OK: Applying all logs succeeded. Slave started, replicating from slave1.
+slave1: Resetting slave info succeeded.
+Master failover to slave1(192.168.56.122:3306) completed successfully.
+</code></pre><p>上面的结果表明master成功切换。</p>
+<h1 id="切换过程中需要关注的几个问题"><a href="#切换过程中需要关注的几个问题" class="headerlink" title="切换过程中需要关注的几个问题"></a>切换过程中需要关注的几个问题</h1><p>1.切换过程会自动把read_only关闭</p>
+<p>2.切换之后需要删除手工删除/masterha/app1/app1.failover.complete，才能进行第二次测试</p>
+<p>3.一旦发生切换管理进程将会退出，无法进行再次测试，需将故障数据库加入到MHA环境中来</p>
+<p>4.原主节点重新加入到MHA时只能设置为slave,在</p>
+<pre><code>change master to master_host=&apos;192.168.56.122&apos;,
+master_user=&apos;repl&apos;,
+master_password=&apos;repl&apos;,
+master_log_file=&apos;mysql-bin.000010&apos;,
+master_log_pos=120;
+</code></pre><p>之前需要先 reset slave</p>
+<p>5.关于ip地址的接管有几种方式，这里采用的是MHA自动调用IP别名的方式，好处是在能够保证数据库状态与业务IP切换的一致性。启动管理节点之后 VIP会自动别名到当前主节点上，Keepalived也只能做到对3306的健康检查，但是做不到比如像MySQL复制中的Slave-SQL、Slave-IO进程的检查，容易出现对切换的误判。</p>
+<p>6.注意：二级从服务器需要将log_slave_updates打开</p>
+<p>7.手工切换需要先定义好master_ip_online_change_script脚本,不然只会切换mysql,IP地址不会绑定上去，可以根据模板来配置该脚本</p>
+<p>8.通过设置no_master=1可以让某一个节点永远不成为新的主节点</p>
+<h1 id="恢复集群运行"><a href="#恢复集群运行" class="headerlink" title="恢复集群运行"></a>恢复集群运行</h1><p>①在manager上删除app1.failover.complete文件</p>
+<pre><code>cd /masterha/app1
+rm -f app1.failover.complete
+</code></pre><p>②原master主节点服务启动</p>
+<pre><code>service mysql start
+</code></pre><p>③ manager管理节点，检查同步报错</p>
+<pre><code>masterha_check_repl --conf=/etc/masterha/app1.cnf
+Thu Feb 23 15:00:56 2017 - [error][/usr/share/perl5/vendor_perl/MHA/ServerManager.pm, ln604] There are 2 non-slave servers! MHA manages at most one non-slave server. Check configurations.
+</code></pre><p>⑤查看现在的slave1上的信息</p>
+<pre><code>mysql&gt; show master status\G
+*************************** 1. row ***************************
+             File: mysql-bin.000010
+         Position: 120
+     Binlog_Do_DB: 
+ Binlog_Ignore_DB: 
+Executed_Gtid_Set: 
+1 row in set (0.00 sec)
+</code></pre><p>④配置187节点mysql为新的slave，并启动同步进程</p>
+<pre><code>change master to master_host=&apos;192.168.56.122&apos;,
+master_user=&apos;repl&apos;,
+master_password=&apos;repl&apos;,
+master_log_file=&apos;mysql-bin.000010&apos;,
+master_log_pos=120;
+mysql&gt; start slave;
+</code></pre><p>再次在管理节点上检查同步状态成功：</p>
+<pre><code>masterha_check_repl --conf=/etc/masterha/app1.cnf
+</code></pre><p>需注意：按如上步骤操作后，此时121节点作为slaver已加入到集群中，但是宕机这段时间122、123中新产生的数据在121中没有，所以还需要先从主节点备份导入最新的数据再启动同步</p>
+<p>⑤启动MHA<br>nohup masterha_manager –conf=/etc/masterha/app1.cnf &gt; /mha/app1/mha_manager.log &amp;1 &amp;</p>
+<p>回切：<br>同样的道理，以上步骤配置无问题的话停止当前master的MySQL进程，MHA可直接切换master至原节点</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/MHA/">MHA</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2017/02/23-MHA搭建及故障维护.html" data-title="MHA搭建及故障维护 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/06/22-测试版本.html" title="SQL_MODE 设置">
+  <strong>上一篇：</strong><br/>
+  <span>
+  SQL_MODE 设置</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/10-Mycat部署与使用.html"  title="Mycat部署与使用">
+ <strong>下一篇：</strong><br/> 
+ <span>Mycat部署与使用
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#大致步骤"><span class="toc-number">1.</span> <span class="toc-text">大致步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#（一）环境介绍"><span class="toc-number">1.1.</span> <span class="toc-text">（一）环境介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-主机部署"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.主机部署</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（二）用ssh-keygen实现四台主机之间相互免密钥登录"><span class="toc-number">1.2.</span> <span class="toc-text">（二）用ssh-keygen实现四台主机之间相互免密钥登录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-生成密钥"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.生成密钥</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-在主机上用cat-xxx-gt-gt-authorized-keys导入公钥到-root-ssh-authorized-keys文件中"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.在主机上用cat xxx &gt;&gt; authorized_keys导入公钥到/root/.ssh/authorized_keys文件中</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（三）安装MHAmha4mysql-node，mha4mysql-manager-软件包"><span class="toc-number">1.3.</span> <span class="toc-text">（三）安装MHAmha4mysql-node，mha4mysql-manager 软件包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-安装MHAmha4mysql-node"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.安装MHAmha4mysql-node</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-安装mha4mysql-manager"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.安装mha4mysql-manager</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（四）、建立master，slave1，slave2之间主从复制"><span class="toc-number">1.4.</span> <span class="toc-text">（四）、建立master，slave1，slave2之间主从复制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（五）、管理机manager上配置MHA文件"><span class="toc-number">1.5.</span> <span class="toc-text">（五）、管理机manager上配置MHA文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（六）、masterha-check-ssh工具验证ssh信任登录是否成功"><span class="toc-number">1.6.</span> <span class="toc-text">（六）、masterha_check_ssh工具验证ssh信任登录是否成功</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（七）、masterha-check-repl工具验证mysql复制是否成功"><span class="toc-number">1.7.</span> <span class="toc-text">（七）、masterha_check_repl工具验证mysql复制是否成功</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（八）、启动MHA-manager-并监控日志文件"><span class="toc-number">1.8.</span> <span class="toc-text">（八）、启动MHA manager,并监控日志文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#（九）测试master-宕机后，是否会自动切换"><span class="toc-number">1.9.</span> <span class="toc-text">（九）测试master(宕机后，是否会自动切换</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-停掉master上的mysql服务"><span class="toc-number">1.9.1.</span> <span class="toc-text">1.停掉master上的mysql服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-宕掉master后，-masterha-app1-manager-log文件显示："><span class="toc-number">1.9.2.</span> <span class="toc-text">2.宕掉master后，/masterha/app1/manager.log文件显示：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#切换过程中需要关注的几个问题"><span class="toc-number">2.</span> <span class="toc-text">切换过程中需要关注的几个问题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#恢复集群运行"><span class="toc-number">3.</span> <span class="toc-text">恢复集群运行</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

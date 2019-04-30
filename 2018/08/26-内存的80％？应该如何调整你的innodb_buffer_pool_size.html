@@ -1,0 +1,731 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>内存的80％？应该如何调整你的innodb_buffer_pool_size | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。MySQL手册引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？ 什么使用服务器上的内存？在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它">
+<meta name="keywords" content="MySQL,性能">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内存的80％？应该如何调整你的innodb_buffer_pool_size">
+<meta property="og:url" content="http://idber.github.io/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。MySQL手册引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？ 什么使用服务器上的内存？在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.935Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="内存的80％？应该如何调整你的innodb_buffer_pool_size">
+<meta name="twitter:description" content="现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。MySQL手册引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？ 什么使用服务器上的内存？在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html" title="内存的80％？应该如何调整你的innodb_buffer_pool_size" itemprop="url">内存的80％？应该如何调整你的innodb_buffer_pool_size</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2018-08-26T02:01:56.000Z" itemprop="datePublished"> Published 2018-08-26</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#什么使用服务器上的内存？"><span class="toc-number">1.</span> <span class="toc-text">什么使用服务器上的内存？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#经验法则"><span class="toc-number">2.</span> <span class="toc-text">经验法则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#规则的起源"><span class="toc-number">3.</span> <span class="toc-text">规则的起源</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#你应该如何调整？"><span class="toc-number">4.</span> <span class="toc-text">你应该如何调整？</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<p>现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。<a href="https://dev.mysql.com/doc/refman/5.6/en/innodb-parameters.html#sysvar_innodb_buffer_pool_size" target="_blank" rel="noopener">MySQL手册</a>引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？</p>
+<h1 id="什么使用服务器上的内存？"><a href="#什么使用服务器上的内存？" class="headerlink" title="什么使用服务器上的内存？"></a>什么使用服务器上的内存？</h1><p>在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它概述了MySQL服务器消耗内存的大面积。</p>
+<pre><code>操作系统：内核，正在运行的进程，文件系统缓存等。
+MySQL固定使用：查询缓存，InnoDB缓冲池大小，mysqld rss等。
+基于MySQL工作负载的使用：连接，每个查询缓冲区（连接缓冲区，排序缓冲区等）
+MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索引等。
+同一服务器上的任何其他服务： Web服务器，缓存服务器，cronjobs等。
+</code></pre><p>毫无疑问，对于调优InnoDB，innodb_buffer_pool_size是最重要的变量。预计它将占用专用MySQL / Innodb服务器上的大部分RAM，但当然其他本地服务可能会影响它的调整方式。如果它（以及服务器上的其他内存消耗）太大，交换可能会启动并迅速降低性能。</p>
+<p>此外，MySQL服务器本身的工作量可能会导致很多变化。服务器是否有大量的开放连接和活动查询工作负载消耗内存？由此引起的内存消耗可能与服务器有很大不同。</p>
+<p>最后，像Galera这样的复制机制有自己的内存使用模式，可能需要对缓冲池进行一些调整。</p>
+<p>我们可以清楚地看到，80％的规则并不像现实那样微妙。</p>
+<h1 id="经验法则"><a href="#经验法则" class="headerlink" title="经验法则"></a>经验法则</h1><p>但是，为了论证，让我们说80％的规则是一个起点。根据经验，帮助我们获得快速调整数字以使服务器运行。假设我们对系统的工作负载还不知道，但我们知道该系统专用于InnoDB，我们的80％规则怎么能发挥作用呢？</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">服务器总RAM</th>
+<th style="text-align:center">具有80％规则的缓冲池</th>
+<th style="text-align:center">剩余的RAM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1G</td>
+<td style="text-align:center">800MB</td>
+<td style="text-align:center">200MB</td>
+</tr>
+<tr>
+<td style="text-align:center">16G</td>
+<td style="text-align:center">13G</td>
+<td style="text-align:center">3G</td>
+</tr>
+<tr>
+<td style="text-align:center">32G</td>
+<td style="text-align:center">26G</td>
+<td style="text-align:center">6G</td>
+</tr>
+<tr>
+<td style="text-align:center">64G</td>
+<td style="text-align:center">51G</td>
+<td style="text-align:center">13G</td>
+</tr>
+<tr>
+<td style="text-align:center">128G</td>
+<td style="text-align:center">102G</td>
+<td style="text-align:center">26G</td>
+</tr>
+<tr>
+<td style="text-align:center">256G</td>
+<td style="text-align:center">205G</td>
+<td style="text-align:center">51G</td>
+</tr>
+<tr>
+<td style="text-align:center">512G</td>
+<td style="text-align:center">409G</td>
+<td style="text-align:center">103G</td>
+</tr>
+<tr>
+<td style="text-align:center">1024G</td>
+<td style="text-align:center">819G</td>
+<td style="text-align:center">205G</td>
+</tr>
+</tbody>
+</table>
+<p>数字较低，我们的80％规则看起来很合理。然而，当我们进入大型服务器时，它似乎开始变得不那么理智了。要使规则成立，它必须意味着工作负载内存消耗与缓冲池所需大小成比例增加，但通常情况并非如此。我们的服务器具有1TB的RAM可能不需要205G来处理连接和查询之类的东西（可能MySQL无法处理那么多活动连接和查询）。</p>
+<p>那么，如果你真的把所有的钱花在了一台强大的服务器上，你是否真的想因为这个经验法则对该资源征收20％的税？</p>
+<h1 id="规则的起源"><a href="#规则的起源" class="headerlink" title="规则的起源"></a>规则的起源</h1><p>在我的第一次MySQL会议上，可能是在2006-2007我在雅虎工作时，我参加了由Heikki Tuuri（InnoDB的原作者）和Peter Zaitsev主持的InnoDB调优讲座。我清楚地记得询问80％的规则，因为当时雅虎有一些强大的64G服务器而且规则并不适合我。</p>
+<p>Heikki的答案让我印象深刻。他说了一些（不是直接引用）的结果：“好吧，我测试的服务器有1GB内存，80％似乎是正确的”。然后，如果记忆服务，他澄清了它并说它不会适用于更大的服务器。</p>
+<h1 id="你应该如何调整？"><a href="#你应该如何调整？" class="headerlink" title="你应该如何调整？"></a>你应该如何调整？</h1><p>80％可能是一个很好的开始和经验法则。您确实希望确保服务器有足够的可用RAM用于操作系统和通常未知的工作负载。但是，正如我们上面所看到的，服务器越大，规则就越有可能浪费RAM。我认为对于大多数人来说，它以经验法则开始和结束，主要是因为更改InnoDB缓冲池需要在当前版本中重新启动。</p>
+<p>那么什么是更好的经验法则？我的规则是，当系统运行生产工作负载时，您可以在不使用swap的情况下调整innodb_buffer_pool_size尽可能大。原则上听起来不错，但同样需要一堆重启，说起来容易做起来难。</p>
+<p>幸运的是，  MySQL 5.7及其在线缓冲池调整大小功能应该使这个原则更容易理解。看到大量的空闲RAM（或者文件系统缓存使用）？动态调高缓冲池。看到一些交换活动？只需将其关闭即可，无需重启。在实践中，我怀疑使用此功能会有一些与性能相关的打嗝，但这至少是朝着正确方向迈出的一大步。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/性能/">性能</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html" data-title="内存的80％？应该如何调整你的innodb_buffer_pool_size | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/08/28-ProxySQL 安装配置详解及读写分离、负载均衡.html" title="ProxySQL 安装配置详解及读写分离、负载均衡">
+  <strong>上一篇：</strong><br/>
+  <span>
+  ProxySQL 安装配置详解及读写分离、负载均衡</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/24-MySQL 5.7新特性系列二.html"  title="MySQL 5.7新特性系列二">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL 5.7新特性系列二
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#什么使用服务器上的内存？"><span class="toc-number">1.</span> <span class="toc-text">什么使用服务器上的内存？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#经验法则"><span class="toc-number">2.</span> <span class="toc-text">经验法则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#规则的起源"><span class="toc-number">3.</span> <span class="toc-text">规则的起源</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#你应该如何调整？"><span class="toc-number">4.</span> <span class="toc-text">你应该如何调整？</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

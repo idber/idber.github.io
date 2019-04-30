@@ -1,0 +1,835 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>CDH大数据集群平台搭建 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="摘要：管理、部署Hadoop集群需要工具，Cloudera Manager便是其一。本文先是简要对比了当前的类似工具，而后详细记录了以离线方式部署CDH集群的步骤。  前言以Apache Hadoop为主导的大数据技术的出现，使得中小型公司对于大数据的存储与处理也拥有了武器。目前Hadoop有不少发行版：华为发行版 收费、Intel发行版 收费、Cloudera发行版（Cloudera’s D">
+<meta name="keywords" content="大数据">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CDH大数据集群平台搭建">
+<meta property="og:url" content="http://idber.github.io/2016/03/08-CDH大数据集群平台搭建.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="摘要：管理、部署Hadoop集群需要工具，Cloudera Manager便是其一。本文先是简要对比了当前的类似工具，而后详细记录了以离线方式部署CDH集群的步骤。  前言以Apache Hadoop为主导的大数据技术的出现，使得中小型公司对于大数据的存储与处理也拥有了武器。目前Hadoop有不少发行版：华为发行版 收费、Intel发行版 收费、Cloudera发行版（Cloudera’s D">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.927Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CDH大数据集群平台搭建">
+<meta name="twitter:description" content="摘要：管理、部署Hadoop集群需要工具，Cloudera Manager便是其一。本文先是简要对比了当前的类似工具，而后详细记录了以离线方式部署CDH集群的步骤。  前言以Apache Hadoop为主导的大数据技术的出现，使得中小型公司对于大数据的存储与处理也拥有了武器。目前Hadoop有不少发行版：华为发行版 收费、Intel发行版 收费、Cloudera发行版（Cloudera’s D">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/08-CDH大数据集群平台搭建.html" title="CDH大数据集群平台搭建" itemprop="url">CDH大数据集群平台搭建</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-08T03:23:56.000Z" itemprop="datePublished"> Published 2016-03-08</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#卸载OpenJDK"><span class="toc-number">2.</span> <span class="toc-text">卸载OpenJDK</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装JDK"><span class="toc-number">3.</span> <span class="toc-text">安装JDK</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装MySQL（主节点）"><span class="toc-number">4.</span> <span class="toc-text">安装MySQL（主节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化MySQL（主节点）"><span class="toc-number">5.</span> <span class="toc-text">初始化MySQL（主节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hive"><span class="toc-number">6.</span> <span class="toc-text">hive</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Activity-Monitor使用"><span class="toc-number">7.</span> <span class="toc-text">Activity Monitor使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Navigator-Audit-Server使用"><span class="toc-number">8.</span> <span class="toc-text">Navigator Audit Server使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Navigator-Metadata-Server"><span class="toc-number">9.</span> <span class="toc-text">Navigator Metadata Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#this-user-scm-is-for-cloudera-manager"><span class="toc-number">10.</span> <span class="toc-text">this user scm is for  cloudera manager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#部署-启动CM-Server（主节点）"><span class="toc-number">11.</span> <span class="toc-text">部署/启动CM Server（主节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#停止iptables"><span class="toc-number">12.</span> <span class="toc-text">停止iptables</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#通过浏览器访问验证"><span class="toc-number">13.</span> <span class="toc-text">通过浏览器访问验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#部署-启动CM-Agent（从节点）"><span class="toc-number">14.</span> <span class="toc-text">部署/启动CM Agent（从节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#停止集群步骤"><span class="toc-number">15.</span> <span class="toc-text">停止集群步骤</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<blockquote>
+<p>摘要：管理、部署Hadoop集群需要工具，Cloudera Manager便是其一。本文先是简要对比了当前的类似工具，而后详细记录了以离线方式部署CDH集群的步骤。</p>
+</blockquote>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>以Apache Hadoop为主导的大数据技术的出现，使得中小型公司对于大数据的存储与处理也拥有了武器。目前Hadoop有不少发行版：华为发行版 收费、Intel发行版 收费、Cloudera发行版（Cloudera’s Distribution Including Apache Hadoop，简称 CDH）免费、Hortonworks发行版（Hortonworks Data Platform，简称 HDP）免费 等，所有这些发行版均是基于Apache Hadoop社区版衍生出来的。</p>
+<p>部署、管理拥有数十数百甚至更多节点的Hadoop集群，也需要先进武器。Hortonworks公司的Apache Ambari项目的目的就是通过软件来配置、监控和管理Hadoop（HDP）集群，以使Hadoop的管理更加简单。Ambari提供了一个基于它自身RESTful的api实现的直观的、简单易用的web界面。Cloudera公司也提供了类似的工具：Cloudera Manager（简称 CM）来配置、监控和管理CDH集群。</p>
+<p>需特别注意的是Cloudera Manager与操作系统的版本关系 Cloudera Manager 5.5.3版本开始支持RHEL/CentOS/Oracle 7，按照官方文档的要求来，否则安装会有问题。</p>
+<p>注意用户。<br>本文是基于操作系统CentOS 6.3, 64-bit；Cloudera Manager 5.3.9；JDK 1.7 版本进行部署的。</p>
+<p>相关包的下载地址</p>
+<p>Cloudera Manager下载地址：</p>
+<pre><code>http://www.cloudera.com/downloads/manager/5-3-9.html
+或
+http://archive.cloudera.com/cm5/cm/5/
+选择文件下载
+cloudera-manager-el6-cm5.3.9_x86_64.tar.gz，
+</code></pre><p>CDH安装包地址：</p>
+<pre><code>http://archive.cloudera.com/cdh5/parcels/latest/
+</code></pre><p>   由于笔者的操作系统为CentOS 6.3，需要下载以下文件：</p>
+<pre><code>CDH-5.3.9-1.cdh5.3.9.p0.8-el6.parcel
+CDH-5.3.9-1.cdh5.3.9.p0.8-el6.parcel.sha1
+manifest.json
+把下载的CDH-5.3.9-1.cdh5.3.9.p0.8-el6.parcel.sha1
+重命名为CDH-5.3.9-1.cdh5.3.9.p0.8-el6.parcel.sha不然会重新下载
+</code></pre><p>注意：与CDH4的不同，原来安装CDH4的时候还需要下载IMPALA、Cloudera Search(SOLR)，CDH5中将他们包含在一起了，所以只需要下载一个CDH5的包就可以了。<br>准备工作：系统环境搭建</p>
+<p>部署步骤<br>网络配置（所有节点）</p>
+<pre><code>[root@cdh-server ~]# vi /etc/sysconfig/network #修改hostname:
+NETWORKING=yes
+HOSTNAME=cdh-server
+
+[root@cdh-server ~]# vi /etc/hosts #修改ip与主机名的对应关系:
+192.168.180.185 cdh-server
+192.168.180.186 node186
+192.168.180.187 node187
+[root@cdh-server ~]# service network restart #重启网络服务生效
+</code></pre><p>安装JDK（所有节点）</p>
+<h2 id="卸载OpenJDK"><a href="#卸载OpenJDK" class="headerlink" title="卸载OpenJDK"></a>卸载OpenJDK</h2><pre><code>[root@cdh-server ~]# rpm -qa | grep java
+java-1.6.0-openjdk-1.6.0.0-1.45.1.11.1.el6.x86_64
+[root@cdh-server ~]# rpm -e --nodeps java-1.6.0-openjdk-1.6.0.0-1.45.1.11.1.el6.x86_64
+</code></pre><h2 id="安装JDK"><a href="#安装JDK" class="headerlink" title="安装JDK"></a>安装JDK</h2><pre><code>[root@cdh-server ~]# rpm -ivh jdk-7u79-linux-x64.rpm 
+[root@cdh-server ~]# echo &quot;JAVA_HOME=/usr/java/jdk1.7.0_79/&quot; &gt;&gt; /etc/profile
+[root@cdh-server ~]# . /etc/profile
+[root@cdh-server ~]# java -version
+java version &quot;1.7.0_79&quot;
+Java(TM) SE Runtime Environment (build 1.7.0_79-b15)
+Java HotSpot(TM) 64-Bit Server VM (build 24.79-b02, mixed mode)
+</code></pre><h2 id="安装MySQL（主节点）"><a href="#安装MySQL（主节点）" class="headerlink" title="安装MySQL（主节点）"></a>安装MySQL（主节点）</h2><p>mysql用户</p>
+<pre><code>[mysql@cdh-server ~]$ cd /home/mysql
+[mysql@cdh-server ~]$ tar -zxvf mysql-5.6.26-linux-glibc2.5-x86_64.tar.gz
+[mysql@cdh-server ~]$ mv mysql-5.6.26-linux-glibc2.5-x86_64 mysql
+[mysql@cdh-server ~]$ vi /etc/my.cnf 
+
+[mysqld]
+character_set_client= utf8
+character_set_filesystem= binary
+character_set_server=utf8
+binlog_format = row
+basedir=/home/mysql/mysql/
+datadir=/home/mysql/data/
+
+[mysqld__safe]
+log-error=/home/mysql/mysql/mysqld.log
+pid-file=/home/mysql/mysql/mysqld.pid
+</code></pre><h2 id="初始化MySQL（主节点）"><a href="#初始化MySQL（主节点）" class="headerlink" title="初始化MySQL（主节点）"></a>初始化MySQL（主节点）</h2><pre><code>[mysql@cdh-server ~]$ ./mysql/scripts/mysql_install_db --defaults-file=/etc/my.cnf --basedir=/home/mysql/mysql --datadir=/home/mysql/data --user=mysql
+</code></pre><p>配置mysql服务<br>root用户</p>
+<pre><code>[root@cdh-server mysql]# cp support-files/mysql.server /etc/init.d/mysql
+</code></pre><p>修改文件性性</p>
+<pre><code>[root@cdh-server mysql]# chown mysql.mysql /etc/init.d/mysql 
+[root@cdh-server mysql]# exit
+exit
+</code></pre><p>修改datadir、basedir路径</p>
+<pre><code>[mysql@cdh-server mysql]$ vi /etc/init.d/mysql 
+
+[mysql@cdh-server ~]$ vi .bash_profile #加入环境变量
+PATH=$PATH:$HOME/bin:/home/mysql/mysql/bin
+export PATH
+</code></pre><p>启动mysql</p>
+<pre><code>[mysql@cdh-server ~]$ service mysql start
+Starting MySQL.                                            [  OK  ]
+[mysql@cdh-server ~]$ mysql -uroot -p
+Enter password: #直接回车
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 2
+Server version: 5.6.26 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the current input statement.
+</code></pre><p>修改密码</p>
+<pre><code>mysql&gt; set password=password(&apos;root&apos;);
+Query OK, 0 rows affected (0.00 sec)
+</code></pre><h2 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h2><pre><code>mysql&gt; create database hive DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+Query OK, 1 row affected (0.00 sec)
+</code></pre><h2 id="Activity-Monitor使用"><a href="#Activity-Monitor使用" class="headerlink" title="Activity Monitor使用"></a>Activity Monitor使用</h2><pre><code>mysql&gt; create database amon DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+Query OK, 1 row affected (0.01 sec)
+</code></pre><h2 id="Navigator-Audit-Server使用"><a href="#Navigator-Audit-Server使用" class="headerlink" title="Navigator Audit Server使用"></a>Navigator Audit Server使用</h2><pre><code>mysql&gt; create database audit DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+Query OK, 1 row affected (0.01 sec)
+</code></pre><h2 id="Navigator-Metadata-Server"><a href="#Navigator-Metadata-Server" class="headerlink" title="Navigator Metadata Server"></a>Navigator Metadata Server</h2><pre><code>mysql&gt; create database metadata DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+Query OK, 1 row affected (0.01 sec)
+
+mysql&gt; grant all privileges on *.* to &apos;root&apos;@&apos;localhost&apos; identified by &apos;root&apos; with grant option;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql&gt; grant all privileges on *.* to &apos;root&apos;@&apos;cdh-server&apos; identified by &apos;root&apos;     with grant option;
+Query OK, 0 rows affected (0.00 sec)
+</code></pre><h2 id="this-user-scm-is-for-cloudera-manager"><a href="#this-user-scm-is-for-cloudera-manager" class="headerlink" title="this user scm is for  cloudera manager"></a>this user scm is for  cloudera manager</h2><pre><code>mysql&gt; grant all privileges on *.* to &apos;scm&apos;@&apos;localhost&apos; identified by &apos;scm&apos; with     grant option;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql&gt; grant all privileges on *.* to &apos;scm&apos;@&apos;cdh-server&apos; identified by &apos;scm&apos;        with grant option;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql&gt; flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+</code></pre><h2 id="部署-启动CM-Server（主节点）"><a href="#部署-启动CM-Server（主节点）" class="headerlink" title="部署/启动CM Server（主节点）"></a>部署/启动CM Server（主节点）</h2><pre><code>[mysql@cdh-server ~]$ tar -xvf cloudera-manager-el6-cm5.3.9_x86_64.tar.gz 
+[mysql@cdh-server ~]$ cp mysql-connector-java-5.1.38-bin.jar cm-5.3.9/share/cmf/lib/
+
+[mysql@cdh-server ~]$ su - 
+[root@cdh-server ~]# cd /home/mysql/
+
+[root@cdh-server mysql]# cp -rf cloudera /opt
+[mysql@cdh-server ~]$ mv CDH-5.3.9-1.cdh5.3.9.p0.8-el6.parcel /opt/cloudera/parcel-repo/
+[mysql@cdh-server ~]$ mv CDH-5.3.9-1.cdh5.3.9.p0.8-el6.parcel.sha1 /opt/cloudera/parcel-repo/
+[mysql@cdh-server ~]$ mv manifest.json /opt/cloudera/parcel-repo/
+[root@cdh-server mysql]# ./cm-5.3.9/share/cmf/schema/scm_prepare_database.sh mysql cm -hlocalhost:3306 -uroot -proot --scm-host localhost scm scm scm
+[root@cdh-server mysql]# ./cm-5.3.9/etc/init.d/cloudera-scm-server start
+Starting cloudera-scm-server:                              [  OK  ]
+[root@cdh-server mysql]# tail -f ./cm-5.3.9/log/cloudera-scm-server/cloudera-scm-server.log
+</code></pre><p>关闭防火墙（所有节点）</p>
+<h2 id="停止iptables"><a href="#停止iptables" class="headerlink" title="停止iptables"></a>停止iptables</h2><pre><code>[root@cdh-server mysql]# service iptables stop
+</code></pre><h2 id="通过浏览器访问验证"><a href="#通过浏览器访问验证" class="headerlink" title="通过浏览器访问验证"></a>通过浏览器访问验证</h2><pre><code>http://192.168.180.185:7180/
+</code></pre><h2 id="部署-启动CM-Agent（从节点）"><a href="#部署-启动CM-Agent（从节点）" class="headerlink" title="部署/启动CM Agent（从节点）"></a>部署/启动CM Agent（从节点）</h2><pre><code>[root@cdh-server mysql]# tar -zxvf cloudera-manager-el6-cm5.3.9_x86_64.tar.gz 
+[root@cdh-server mysql]# vi cm-5.3.9/etc/cloudera-scm-agent/config.ini
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#Hostname of the CM server.
+#server_host=localhost
+server_host=cdh-server
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+[root@cdh-server mysql]# useradd -G sys --home=/home/mysql/cm-5.3.9/run/cloudera-scm-server --no-create-home  --comment &quot;Cloudera SCM User&quot; cloudera-scm
+[root@cdh-server mysql]# useradd --comment &quot;Cloudera SCM User&quot; cloudera-scm #若上一步执行正确，则此步省略
+
+[root@cdh-server mysql]# echo 0 &gt; /proc/sys/vm/swappiness
+
+[root@cdh-server mysql]# ./cm-5.3.9/etc/init.d/cloudera-scm-agent start
+Starting cloudera-scm-agent:                               [  OK  ]
+[root@cdh-server mysql]# tail -f ./cm-5.3.9/log/cloudera-scm-agent/cloudera-scm-agent.log
+</code></pre><p>配置CDH<br>登陆Cloudera Manager </p>
+<pre><code>http://192.168.180.185:7180/
+并新建集群Cluster_mysql，进行各服务的配置启动。
+</code></pre><p>#安装配置hive出错时，在hiveServer上:</p>
+<pre><code>[root@hive-server mysql]# cp mysql-connector-java-5.1.33-bin.jar /opt/cloudera/parcels/CDH-5.3.6-1.cdh5.3.6.p0.11/lib/hive/lib/
+
+#同理：use this jar for Navigator Audit Server and Navigator Metadata Server or Activity Server
+[root@cdh-server mysql]# cp mysql-connector-java-5.1.33-bin.jar /usr/share/java/mysql-connector-java.jar
+</code></pre><h2 id="停止集群步骤"><a href="#停止集群步骤" class="headerlink" title="停止集群步骤"></a>停止集群步骤</h2><hr>
+<p>停止Cloudera Management Service和Cluster_mysql<br>从节点停止Agent</p>
+<pre><code>[root@cdh-server mysql]# ./cm-5.3.9/etc/init.d/cloudera-scm-agent stop
+</code></pre><p>主节点停止Server</p>
+<pre><code>[root@cdh-server mysql]# ./cm-5.3.9/etc/init.d/cloudera-scm-server stop
+</code></pre><p>启动集群步骤<br>主节点启动MySQL</p>
+<pre><code>[mysql@cdh-server ~ ]$ service mysql start
+[mysql@cdh-server ~ ]$ ps -a | grep mysql
+</code></pre><p>从节点启动Agent</p>
+<pre><code>[root@cdh-server mysql]# ./cm-5.3.9/etc/init.d/cloudera-scm-agent start
+Starting cloudera-scm-agent:                               [  OK  ]
+[root@cdh-server mysql]# tail -f ./cm-5.3.9/log/cloudera-scm-agent/cloudera-scm-agent.log
+</code></pre><p>主节点启动Server</p>
+<pre><code>[root@cdh-server mysql]# ./cm-5.3.9/etc/init.d/cloudera-scm-server start
+Starting cloudera-scm-server:                              [  OK  ]
+[root@cdh-server mysql]# tail -f ./cm-5.3.9/log/cloudera-scm-server/cloudera-scm-server.log
+</code></pre><p>启动各服务<br>登陆Cloudera Manager </p>
+<pre><code>http://192.168.180.173:7180/
+进行各服务的检查启动。
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/大数据/">大数据</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/03/08-CDH大数据集群平台搭建.html" data-title="CDH大数据集群平台搭建 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/03/10-查询处理.html" title="查询处理">
+  <strong>上一篇：</strong><br/>
+  <span>
+  查询处理</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/07-单节点Hive安装详细步骤.html"  title="单节点Hive安装详细步骤">
+ <strong>下一篇：</strong><br/> 
+ <span>单节点Hive安装详细步骤
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#卸载OpenJDK"><span class="toc-number">2.</span> <span class="toc-text">卸载OpenJDK</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装JDK"><span class="toc-number">3.</span> <span class="toc-text">安装JDK</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装MySQL（主节点）"><span class="toc-number">4.</span> <span class="toc-text">安装MySQL（主节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化MySQL（主节点）"><span class="toc-number">5.</span> <span class="toc-text">初始化MySQL（主节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hive"><span class="toc-number">6.</span> <span class="toc-text">hive</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Activity-Monitor使用"><span class="toc-number">7.</span> <span class="toc-text">Activity Monitor使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Navigator-Audit-Server使用"><span class="toc-number">8.</span> <span class="toc-text">Navigator Audit Server使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Navigator-Metadata-Server"><span class="toc-number">9.</span> <span class="toc-text">Navigator Metadata Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#this-user-scm-is-for-cloudera-manager"><span class="toc-number">10.</span> <span class="toc-text">this user scm is for  cloudera manager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#部署-启动CM-Server（主节点）"><span class="toc-number">11.</span> <span class="toc-text">部署/启动CM Server（主节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#停止iptables"><span class="toc-number">12.</span> <span class="toc-text">停止iptables</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#通过浏览器访问验证"><span class="toc-number">13.</span> <span class="toc-text">通过浏览器访问验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#部署-启动CM-Agent（从节点）"><span class="toc-number">14.</span> <span class="toc-text">部署/启动CM Agent（从节点）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#停止集群步骤"><span class="toc-number">15.</span> <span class="toc-text">停止集群步骤</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

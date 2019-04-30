@@ -1,0 +1,778 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MySQL 5.7新特性系列二 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="系统变量5.7以后System and status 变量需要从performance_schema中进行获取，information_schema仍然保留了GLOBAL_STATUS，GLOBAL_VARIABLES两个表做兼容。  [兼容性]如果希望沿用information_schema中进行查询的习惯，5.7提供了show_compatibility_56参数，设置为ON可以兼容5.7">
+<meta name="keywords" content="MySQL,新特性">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL 5.7新特性系列二">
+<meta property="og:url" content="http://idber.github.io/2018/08/24-MySQL 5.7新特性系列二.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="系统变量5.7以后System and status 变量需要从performance_schema中进行获取，information_schema仍然保留了GLOBAL_STATUS，GLOBAL_VARIABLES两个表做兼容。  [兼容性]如果希望沿用information_schema中进行查询的习惯，5.7提供了show_compatibility_56参数，设置为ON可以兼容5.7">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.929Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL 5.7新特性系列二">
+<meta name="twitter:description" content="系统变量5.7以后System and status 变量需要从performance_schema中进行获取，information_schema仍然保留了GLOBAL_STATUS，GLOBAL_VARIABLES两个表做兼容。  [兼容性]如果希望沿用information_schema中进行查询的习惯，5.7提供了show_compatibility_56参数，设置为ON可以兼容5.7">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/08/24-MySQL 5.7新特性系列二.html" title="MySQL 5.7新特性系列二" itemprop="url">MySQL 5.7新特性系列二</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2018-08-23T22:01:56.000Z" itemprop="datePublished"> Published 2018-08-24</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			
+		
+		</div>
+		
+		<hr>
+<ol>
+<li>系统变量<br>5.7以后System and status 变量需要从performance_schema中进行获取，information_schema仍然保留了GLOBAL_STATUS，GLOBAL_VARIABLES两个表做兼容。</li>
+</ol>
+<p>[兼容性]<br>如果希望沿用information_schema中进行查询的习惯，5.7提供了show_compatibility_56参数，设置为ON可以兼容5.7之前的用法，否则就会报错：</p>
+<pre><code>ERROR 3167 (HY000): The &apos;INFORMATION_SCHEMA.GLOBAL_STATUS&apos; feature is disabled; see the documentation for &apos;show_compatibility_56&apos;
+</code></pre><p>5.7.6之后，在performance_schema新增了如下的表：</p>
+<pre><code>performance_schema.global_variables
+performance_schema.session_variables
+performance_schema.variables_by_thread
+performance_schema.global_status
+performance_schema.session_status
+performance_schema.status_by_thread
+performance_schema.status_by_account
+performance_schema.status_by_host
+performance_schema.status_by_user
+</code></pre><p>5.7.9之前，需要有SELECT_ACL权限才能进行show查询，但5.7.9之后，默认这些表是不需要任何权限就可以访问了。</p>
+<ol start="2">
+<li>sys schema<br>新增了sys数据库，主要是performance_schema收集的信息，帮助DBA和开发人员方便诊断问题。 sys下的一共包括三种对象：1. view，2. procedure 3 function 这些对象都是基于performance_schema下的表，进行了可读性的聚合，没有真正存储数据，只存储了定义。</li>
+</ol>
+<p>[兼容性]<br>mysql_install_db可以选择–skip-sys-schema跳过安装过程， 但默认mysql_upgrade会帮你创建sys下面的对象。不存在兼容性的问题</p>
+<ol start="3">
+<li><p>异常栈<br>5.7开始支持异常诊断栈信息，通过GET STACKED DIAGNOSTICS可以获取栈内的信息。 具体的使用方法参考：<a href="https://dev.mysql.com/doc/refman/5.7/en/diagnostics-area.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/diagnostics-area.html</a></p>
+</li>
+<li><p>Triggers<br>支持在一个table对象上建多个trigger。</p>
+</li>
+<li><p>Generated Columns<br>5.7.6开始，支持生成列，这个列可以是虚拟的列，也可以是实体存储数据的列。 比如：</p>
+<p> CREATE TABLE triangle (<br>   sidea DOUBLE,<br>   sideb DOUBLE,<br>   sidec DOUBLE AS (SQRT(sidea <em> sidea + sideb </em> sideb))<br> );<br>VIRTUAL： 表示这个字段是虚拟列，并不进行存储，查询的时候，通过计算得到<br>STORED： 需要存储空间，并且可以被索引的列</p>
+</li>
+<li><p>exchange partition不验证<br>这个是在oracle分区表上支持的功能，dba在做大表维护的时候，非常有用。</p>
+</li>
+</ol>
+<p>语法： ALTER TABLE … EXCHANGE PARTITION WITHOUT VALIDATION<br>如果不验证，那么只有元数据信息的更改，就可以完成exchange，否则，就需要读取每一行数据进行验证，维护时间将根据这个表大小有关系。</p>
+<ol start="7">
+<li><p>dump线程增强<br>5.7.2之前，master dump线程需要持有LOCK_log锁去读取binlog然后发送到备库，而这时会阻塞client端去写入binlog。5.7.2之后，dump线程只需要持有LOCK_binlog_end_pos这个锁去读取binlog的当前的位置，来决定是否发送到备库去，这样就可以做到不阻塞任何binlog的写入。</p>
+</li>
+<li><p>多源复制<br>多源复制可以从多个master复制到一个slave端，在数据库集群进行扩容和缩容的时候，非常有用。我们会在后面的系列单独来介绍。</p>
+</li>
+<li><p>在线更改replication master<br>可以不用stop slave，然后在线更改replication master信息。 但这里并不是不需要slave停掉， 而是change master涉及到几个动作：</p>
+</li>
+</ol>
+<p>如果只是更改当前relay的信息，那么只需要sql线程是不工作的就可以了，IO thread可以继续<br>如果只是更改主库的信息，那么只需要IO线程不工作就可以了。 sql thread可以继续<br>如果需要重新启动主库和备库的恢复信息，比如master_auto_positioin=1，那么就需要IO和sql线程都停掉。</p>
+<ol start="10">
+<li>Group Replication<br>并行复制支持按照主库组提交的形式在备库进行回放。下一个系列进行单独来介绍</li>
+</ol>
+<p>下面单独介绍一下MySQL 5.7对临时表进行的改动。</p>
+<ol>
+<li>背景<br>MySQL包括两类临时表，一类是通过create temporary table创建的临时表，一类是在query过程中using temporary而创建的临时表。 5.7之前，using temporary创建的临时表，默认只能使用myisam引擎，而在5.7之后，可以选择InnoDB引擎来创建。</li>
+</ol>
+<p>临时表的引擎选择使用下面的这两个参数来决定：</p>
+<pre><code>mysql&gt; show global variables like &apos;%tmp%&apos;;
++----------------------------------+---------------------------------------+
+| Variable_name                    | Value                                 |
++----------------------------------+---------------------------------------+
+| default_tmp_storage_engine       | InnoDB                                |
+| internal_tmp_disk_storage_engine | InnoDB                                |
+</code></pre><ol start="2">
+<li>临时表空间<br>5.7之后，使用了独立的临时表空间来存储临时表数据，但不能是压缩表。临时表空间在实例启动的时候进行创建，shutdown的时候进行删除。</li>
+</ol>
+<p>例如如下的配置：</p>
+<pre><code>mysql&gt; show global variables like &apos;%innodb_temp%&apos;; 
++----------------------------+-----------------------+
+| Variable_name              | Value                 |
++----------------------------+-----------------------+
+| innodb_temp_data_file_path | ibtmp1:12M:autoextend |
++----------------------------+-----------------------+
+</code></pre><p>create temporary table和using temporary table将共用这个临时表空间。</p>
+<ol start="3">
+<li>临时表优化<br>临时表会伴随着大量的数据写入和读取，尤其是internal_tmp_table。所以，InnoDB专门对临时表进行了优化。<br>InnoDB使用如下两个标示临时表：</li>
+</ol>
+<p>dict_tf2_temporary： 表示普通临时表<br>dict_tf2_intrinsic： 表示内部临时表<br>这两个标示，会在IBD文件的segment header占用两个bit位。intrinsic一定是temproary，也就是temproary上进行的优化 完全适用于intrinsic表上。</p>
+<p>下面来看下具体的优化：</p>
+<p>3.1. redo<br>临时表在连接断开或者数据库实例关闭的时候，会进行删除，所以，临时表的数据不需要redo来保护，即recovery的过程中 不恢复临时表，只有临时表的metadata使用了redo保护，保护元数据的完整性，以便异常启动后进行清理工作。</p>
+<p>临时表的元数据，5.7之后，使用了一个独立的表进行保存，这样就不要使用redo保护，元数据也只保存在内存中。 但这有一个前提，必须使用共享的临时表空间，如果使用file-per-table，仍然需要持久化元数据，以便异常恢复清理。</p>
+<p>3.2 undo<br>temporary table仍然需要语句级的回滚，所以，需要为数据生成undo。但intrinsic table不需要回滚，所以，intrinsic table 减少了undo的生成，性能更高。</p>
+<p>3.3 lock<br>因为临时表只有本线程可以看见，所以减少了InnoDB的加锁过程。</p>
+<p>可以看下insert的时候，进行的分支判断：</p>
+<pre><code> row_insert_for_mysql(
+    const byte*        mysql_rec,
+    row_prebuilt_t*        prebuilt)
+{
+    /* For intrinsic tables there a lot of restrictions that can be
+    relaxed including locking of table, transaction handling, etc.
+    Use direct cursor interface for inserting to intrinsic tables. */
+    if (dict_table_is_intrinsic(prebuilt-&gt;table)) {
+        return(row_insert_for_mysql_using_cursor(mysql_rec, prebuilt));
+    } else {
+        return(row_insert_for_mysql_using_ins_graph(
+            mysql_rec, prebuilt));
+    }
+}
+row_insert_for_mysql_using_cursor直接跳过了加锁的lock_table过程。
+</code></pre><p>然后，如果是intrinsic table，就直接插入，减少了undo的生成。<br>如果不是，需要加lock，并生成undo信息。</p>
+<pre><code>if (dict_table_is_intrinsic(index-&gt;table)) {
+
+            index-&gt;rec_cache.rec_size = rec_size;
+
+            *rec = page_cur_tuple_direct_insert(
+                page_cursor, entry, index, n_ext, mtr);
+        } else {
+            /* Check locks and write to the undo log,
+            if specified */
+            err = btr_cur_ins_lock_and_undo(flags, cursor, entry,
+                            thr, mtr, &amp;inherit);
+</code></pre><p>插入的时候，如果是临时表。就关闭redo的生成。如下面的代码所示：</p>
+<pre><code>if (dict_table_is_temporary(index-&gt;table)) {
+        /* Disable REDO logging as the lifetime of temp-tables is
+        limited to server or connection lifetime and so REDO
+        information is not needed on restart for recovery.
+        Disable locking as temp-tables are local to a connection. */
+
+        ut_ad(flags &amp; BTR_NO_LOCKING_FLAG);
+        ut_ad(!dict_table_is_intrinsic(index-&gt;table)
+              || (flags &amp; BTR_NO_UNDO_LOG_FLAG));
+
+        mtr.set_log_mode(MTR_LOG_NO_REDO);
+    }
+</code></pre><p>未完待续，下一个系列，我们将介绍一下undo的新特性，包括online truncated undo。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/新特性/">新特性</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2018/08/24-MySQL 5.7新特性系列二.html" data-title="MySQL 5.7新特性系列二 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html" title="内存的80％？应该如何调整你的innodb_buffer_pool_size">
+  <strong>上一篇：</strong><br/>
+  <span>
+  内存的80％？应该如何调整你的innodb_buffer_pool_size</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2018/08/19-MySQL经典模板参数详解.html"  title="MySQL经典模板参数详解">
+ <strong>下一篇：</strong><br/> 
+ <span>MySQL经典模板参数详解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

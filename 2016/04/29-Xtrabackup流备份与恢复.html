@@ -1,0 +1,773 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Xtrabackup流备份与恢复 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="Xtrabackup是MySQL数据库的备份不可多得的工具之一。提供了全备，增备，数据库级别，表级别备份等等。最牛X的还有不落盘的备份，即流备份方式。对于服务器上空间不足，或是搭建主从，直接使用流式备份大大简化了备份后的压缩复制所带来的更多开销。Xtrabackup支持tar格式以及xbstream格式的流备份。本文即是对此展开的相关描述。 1、基于tar格式备份a、备份到本地 # innoba">
+<meta name="keywords" content="备份恢复,Xtrabackup">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Xtrabackup流备份与恢复">
+<meta property="og:url" content="http://idber.github.io/2016/04/29-Xtrabackup流备份与恢复.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="Xtrabackup是MySQL数据库的备份不可多得的工具之一。提供了全备，增备，数据库级别，表级别备份等等。最牛X的还有不落盘的备份，即流备份方式。对于服务器上空间不足，或是搭建主从，直接使用流式备份大大简化了备份后的压缩复制所带来的更多开销。Xtrabackup支持tar格式以及xbstream格式的流备份。本文即是对此展开的相关描述。 1、基于tar格式备份a、备份到本地 # innoba">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-22T01:41:16.933Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Xtrabackup流备份与恢复">
+<meta name="twitter:description" content="Xtrabackup是MySQL数据库的备份不可多得的工具之一。提供了全备，增备，数据库级别，表级别备份等等。最牛X的还有不落盘的备份，即流备份方式。对于服务器上空间不足，或是搭建主从，直接使用流式备份大大简化了备份后的压缩复制所带来的更多开销。Xtrabackup支持tar格式以及xbstream格式的流备份。本文即是对此展开的相关描述。 1、基于tar格式备份a、备份到本地 # innoba">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/04/29-Xtrabackup流备份与恢复.html" title="Xtrabackup流备份与恢复" itemprop="url">Xtrabackup流备份与恢复</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2016-04-29T00:51:56.000Z" itemprop="datePublished"> Published 2016-04-29</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1、基于tar格式备份"><span class="toc-number">1.</span> <span class="toc-text">1、基于tar格式备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2、使用xbstream格式备份"><span class="toc-number">2.</span> <span class="toc-text">2、使用xbstream格式备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3、流备份的全备与增备"><span class="toc-number">3.</span> <span class="toc-text"> 3、流备份的全备与增备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4、流备份的异机恢复"><span class="toc-number">4.</span> <span class="toc-text">4、流备份的异机恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5、其它注意事项"><span class="toc-number">5.</span> <span class="toc-text">5、其它注意事项</span></a></li></ol>
+		
+		</div>
+		
+		<hr>
+<p>Xtrabackup是MySQL数据库的备份不可多得的工具之一。提供了全备，增备，数据库级别，表级别备份等等。最牛X的还有不落盘的备份，即流备份方式。对于服务器上空间不足，或是搭建主从，直接使用流式备份大大简化了备份后的压缩复制所带来的更多开销。Xtrabackup支持tar格式以及xbstream格式的流备份。本文即是对此展开的相关描述。</p>
+<h2 id="1、基于tar格式备份"><a href="#1、基于tar格式备份" class="headerlink" title="1、基于tar格式备份"></a>1、基于tar格式备份</h2><pre><code>a、备份到本地
+# innobackupex --stream=tar /tmp &gt;/backup/bak.tar ###非压缩方式
+# innobackupex --stream=tar /tmp |gzip &gt;/backup/bakz.tar.gz ###压缩方式
+# ls -hltr
+total 42M
+-rw-r--r-- 1 root root 39M Apr 15 17:23 bak.tar
+-rw-r--r-- 1 root root 3.3M Apr 15 17:24 bakz.tar.gz
+
+###解压备份
+# mkdir bak bakz
+# tar -xivf bak.tar -C /backup/bak
+# tar -xizvf bakz.tar.gz -C /backup/bakz
+# du -sh *
+38M bak
+39M bak.tar
+38M bakz
+3.3M bakz.tar.gz
+b、备份到远程
+# innobackupex --stream=tar /tmp | ssh root@192.168.1.7 \ 
+&quot;cat - &gt; /backup/bak.tar&quot; ###非压缩方式
+# innobackupex --stream=tar /tmp | ssh root@192.168.1.7 \ 
+&quot;gzip &gt;/backup/bak.tar.gz&quot; ###压缩方式
+</code></pre><h2 id="2、使用xbstream格式备份"><a href="#2、使用xbstream格式备份" class="headerlink" title="2、使用xbstream格式备份"></a>2、使用xbstream格式备份</h2><pre><code>a、备份到本地
+# innobackupex --stream=xbstream /tmp &gt;/backup/bak.xbstream ###非压缩方式
+# innobackupex --stream=xbstream --compress /tmp &gt;/backup/bak_compress.xbstream ###压缩方式
+# ls -hltr
+total 43M
+-rw-r--r-- 1 root root 37M Apr 15 17:41 bak.xbstream
+-rw-r--r-- 1 root root 6.0M Apr 15 17:41 bak_compress.xbstream
+
+###解压备份
+# mkdir bk bk_compress
+# xbstream -x &lt; bak.xbstream -C /backup/bk ###解压xbstream格式
+
+###解压xbstream格式，compress参数的备份
+# xbstream -x &lt; bak_compress.xbstream -C /backup/bk_compress ###首先解压xbstream
+# for bf in `find . -iname &quot;*\.qp&quot;`; do qpress -d $bf $(dirname $bf) &amp;&amp; rm $bf; done ###再解压qp压缩格式
+# innobackupex --decompress /backup/bk_compress ###如果xtrabackup版本大于2.1.4，可以直接通过该方式解压
+
+b、备份到远程
+###使用压缩备份到远程并解压
+# innobackupex --stream=xbstream --compress /tmp | ssh root@192.168.1.7 &quot;xbstream -x -C /backup/stream&quot;
+</code></pre><h2 id="3、流备份的全备与增备"><a href="#3、流备份的全备与增备" class="headerlink" title=" 3、流备份的全备与增备"></a> 3、流备份的全备与增备</h2><pre><code>###全备数据库，使用--extra-lsndir参数生产checkpoints文件
+# innobackupex --stream=xbstream --compress --extra-lsndir=/backup/chkpoint /tmp &gt;/backup/bak_compress.xbstream
+# more /backup/chkpoint/xtrabackup_checkpoints
+backup_type = full-backuped
+from_lsn = 0
+to_lsn = 8408290
+last_lsn = 8408290
+compact = 0
+
+###增备数据库，如果后续还需要再次增备，则可以再次指定--extra-lsndir，如果与上次备份指定相同的位置，该文件被覆盖
+# innobackupex --compress --incremental --extra-lsndir=/backup/chkpoint --incremental-basedir=/backup/chkpoint \
+&gt; --stream=xbstream /tmp &gt;/backup/bak_compress_inc.xbstream
+</code></pre><h2 id="4、流备份的异机恢复"><a href="#4、流备份的异机恢复" class="headerlink" title="4、流备份的异机恢复"></a>4、流备份的异机恢复</h2><pre><code>###备份到异机
+# innobackupex --stream=xbstream --extra-lsndir=/backup/chkpoint /tmp | ssh root@192.168.1.7 &quot;xbstream -x -C /backup/stream&quot;
+# innobackupex --incremental --extra-lsndir=/backup/chkpoint --incremental-basedir=/backup/chkpoint --stream=xbstream \
+&gt; /tmp | ssh root@192.168.1.7 &quot;xbstream -x -C /backup/stream_inc&quot;
+
+###异机恢复，copy-back及后续步骤省略
+# innobackupex --apply-log --redo-only /backup/stream
+# innobackupex --apply-log /backup/stream --incremental-dir=/backup/stream_inc
+</code></pre><h2 id="5、其它注意事项"><a href="#5、其它注意事项" class="headerlink" title="5、其它注意事项"></a>5、其它注意事项</h2><pre><code>a、如果使用xbstream格式异机备份时，异机未安装xbstream(封装在xtrabackup中)则出现如下错误提示。
+bash: xbstream: command not found
+xtrabackup: Error writing file &apos;UNOPENED&apos; (Errcode: 32 - Broken pipe)
+xb_stream_write_data() failed.
+compress: write to the destination stream failed.
+xtrabackup: Error writing file &apos;UNOPENED&apos; (Errcode: 32 - Broken pipe)
+xb_stream_write_data() failed.
+xtrabackup: Error writing file &apos;UNOPENED&apos; (Errcode: 32 - Broken pipe)
+[01] xtrabackup: Error: xtrabackup_copy_datafile() failed.
+[01] xtrabackup: Error: failed to copy datafile.
+innobackupex: Error: The xtrabackup child process has died at /usr/bin/innobackupex line 2681.
+
+b、异机备份时需要建立等效性，如下示例
+# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+29:45:ee:8d:b3:55:f1:5f:2f:da:2a:88:0c:0d:37:9f root@vdbsrv1
+
+###copy 公钥到远程主机
+# ssh-copy-id -i ~/.ssh/id_rsa.pub root@192.168.1.7
+21
+The authenticity of host &apos;192.168.1.7 (192.168.1.7)&apos; can&apos;t be established.
+RSA key fingerprint is 1d:7c:40:98:ef:de:6f:b8:8c:b2:87:72:0e:79:db:0a.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added &apos;192.168.1.7&apos; (RSA) to the list of known hosts.
+root@192.168.1.7&apos;s password:
+Now try logging into the machine, with &quot;ssh &apos;root@192.168.1.7&apos;&quot;, and check in:
+
+.ssh/authorized_keys
+
+to make sure we haven&apos;t added extra keys that you weren&apos;t expecting.
+
+###验证等效性是否成功
+# ssh 192.168.1.7 date;
+Wed Apr 15 17:55:31 CST 2015
+
+c、使用tar格式远程增量备份时收到如下提示，即只支持xbstream
+xtrabackup: error: streaming incremental backups are incompatible with the
+&apos;tar&apos; streaming format. Use --stream=xbstream instead.
+
+d、用流备份，默认的临时目录都是系统的/tmp目录，需要保证该目录有足够的空间，或指定--tmpdir选项
+
+e、流备份日志输出
+innobackupex --stream=xbstream /tmp 2&gt;&gt;&quot;$backupLog&quot; | gzip &gt; &quot;$backup_file&quot; 2&gt;&gt;&quot;$backupLog&quot;
+</code></pre>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/备份恢复/">备份恢复</a><a href="/tags/Xtrabackup/">Xtrabackup</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2016/04/29-Xtrabackup流备份与恢复.html" data-title="Xtrabackup流备份与恢复 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/05/13-常用工具.html" title="常用工具">
+  <strong>上一篇：</strong><br/>
+  <span>
+  常用工具</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/04/15-InnoDB逻辑存储结构.html"  title="InnoDB逻辑存储结构">
+ <strong>下一篇：</strong><br/> 
+ <span>InnoDB逻辑存储结构
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1、基于tar格式备份"><span class="toc-number">1.</span> <span class="toc-text">1、基于tar格式备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2、使用xbstream格式备份"><span class="toc-number">2.</span> <span class="toc-text">2、使用xbstream格式备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3、流备份的全备与增备"><span class="toc-number">3.</span> <span class="toc-text"> 3、流备份的全备与增备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4、流备份的异机恢复"><span class="toc-number">4.</span> <span class="toc-text">4、流备份的异机恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5、其它注意事项"><span class="toc-number">5.</span> <span class="toc-text">5、其它注意事项</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>34</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/子查询/" title="子查询">子查询<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
