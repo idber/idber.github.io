@@ -11,18 +11,25 @@
     
 
     
-    <meta name="description" content="由于在写MySQL日志订阅服务时候，需要确定在什么event之后保存position，所以就开始研究MySQL的源码，刚开始采用最原始的打印输出的方式去调试，然后每次改完编译运行，效率好低，让我很绝望，然后我花了些时间研究下怎么使用CLion Debug MySQL。 获取源码 git clone https://github.com/mysql/mysql-server编译安装初始化数据库 c">
+    <meta name="description" content="源码获取git clone https://github.com/mysql/mysql-serverorhttps://dev.mysql.com/downloads/mysql/ 解压mysql-server 为源码目录新建mysql、data目录mysql为basedirdata为datadir 编译安装初始化数据库cd mysql-server cmake \-DCMAKE_INSTAL">
 <meta name="keywords" content="MySQL,源码">
 <meta property="og:type" content="article">
 <meta property="og:title" content="在Mac上使用CLion编译MySQL">
 <meta property="og:url" content="http://idber.github.io/2019/05/09-在Mac上使用CLion编译MySQL.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="由于在写MySQL日志订阅服务时候，需要确定在什么event之后保存position，所以就开始研究MySQL的源码，刚开始采用最原始的打印输出的方式去调试，然后每次改完编译运行，效率好低，让我很绝望，然后我花了些时间研究下怎么使用CLion Debug MySQL。 获取源码 git clone https://github.com/mysql/mysql-server编译安装初始化数据库 c">
+<meta property="og:description" content="源码获取git clone https://github.com/mysql/mysql-serverorhttps://dev.mysql.com/downloads/mysql/ 解压mysql-server 为源码目录新建mysql、data目录mysql为basedirdata为datadir 编译安装初始化数据库cd mysql-server cmake \-DCMAKE_INSTAL">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-05-09T04:00:34.761Z">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code01.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code02.jpeg?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code03.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code04.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code05.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code06.png?raw=true">
+<meta property="og:updated_time" content="2019-05-09T07:29:18.693Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="在Mac上使用CLion编译MySQL">
-<meta name="twitter:description" content="由于在写MySQL日志订阅服务时候，需要确定在什么event之后保存position，所以就开始研究MySQL的源码，刚开始采用最原始的打印输出的方式去调试，然后每次改完编译运行，效率好低，让我很绝望，然后我花了些时间研究下怎么使用CLion Debug MySQL。 获取源码 git clone https://github.com/mysql/mysql-server编译安装初始化数据库 c">
+<meta name="twitter:description" content="源码获取git clone https://github.com/mysql/mysql-serverorhttps://dev.mysql.com/downloads/mysql/ 解压mysql-server 为源码目录新建mysql、data目录mysql为basedirdata为datadir 编译安装初始化数据库cd mysql-server cmake \-DCMAKE_INSTAL">
+<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code01.png?raw=true">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -93,31 +100,30 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#源码获取"><span class="toc-number">1.</span> <span class="toc-text">源码获取</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#编译安装初始化数据库"><span class="toc-number">2.</span> <span class="toc-text">编译安装初始化数据库</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#初始化数据库"><span class="toc-number">3.</span> <span class="toc-text">初始化数据库</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#学习MySQL源码的文档"><span class="toc-number">4.</span> <span class="toc-text">学习MySQL源码的文档</span></a></li></ol>
 		
 		</div>
 		
 		<hr>
-<p>由于在写MySQL日志订阅服务时候，需要确定在什么event之后保存position，所以就开始研究MySQL的源码，刚开始采用最原始的打印输出的方式去调试，然后每次改完编译运行，效率好低，让我很绝望，然后我花了些时间研究下怎么使用CLion Debug MySQL。</p>
-<p>获取源码</p>
-<p>git clone <a href="https://github.com/mysql/mysql-server" target="_blank" rel="noopener">https://github.com/mysql/mysql-server</a><br>编译安装初始化数据库</p>
-<p>cd mysql-server</p>
-<p>cmake \<br>-DCMAKE_INSTALL_PREFIX=/path/mysql/install \<br>-DMYSQL_DATADIR=/path/mysql/data \<br>-DSYSCONFDIR=/path/mysql/etc \<br>-DMYSQL_UNIX_ADDR=/path/mysql/mysql.sock \<br>-DWITH_DEBUG=1  \<br>-DDOWNLOAD_BOOST=1 -DWITH_BOOST=/path/mysql-server/ -DDOWNLOAD_BOOST_TIMEOUT=60000</p>
+<h1 id="源码获取"><a href="#源码获取" class="headerlink" title="源码获取"></a>源码获取</h1><p>git clone <a href="https://github.com/mysql/mysql-server" target="_blank" rel="noopener">https://github.com/mysql/mysql-server</a><br>or<br><a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener">https://dev.mysql.com/downloads/mysql/</a></p>
+<p>解压<br>mysql-server 为源码目录<br>新建mysql、data目录<br>mysql为basedir<br>data为datadir</p>
+<h1 id="编译安装初始化数据库"><a href="#编译安装初始化数据库" class="headerlink" title="编译安装初始化数据库"></a>编译安装初始化数据库</h1><p>cd mysql-server</p>
+<p>cmake \<br>-DCMAKE_INSTALL_PREFIX=/your_path/mysql \<br>-DMYSQL_DATADIR=/your_path/mysql/data \<br>-DSYSCONFDIR=/your_path/mysql \<br>-DMYSQL_UNIX_ADDR=/your_path/mysql/mysql.sock \<br>-DWITH_DEBUG=1  \<br>-DDOWNLOAD_BOOST=1 -DWITH_BOOST=/your_path/mysql-server/ -DDOWNLOAD_BOOST_TIMEOUT=60000</p>
 <p>make -j 4 </p>
 <p>make install -j 4</p>
-<p>mysqld –initialize-insecure –user=root –datadir=/path/mysql/data</p>
-<p>启动MySQL，测试下是否安装成功 </p>
-<p>/path/install/bin/mysqld –defaults-file=/path/mysql/etc/my.cnf<br>使用CLion新建工程并打开源码目录之后，设置CLion 设置CLion CMake选项</p>
-<p>CMake Options和你编译安装时的选项一致</p>
-<p>-DCMAKE_INSTALL_PREFIX=/path/mysql/install<br>-DMYSQL_DATADIR=/path/mysql/data<br>-DSYSCONFDIR=/path/mysql/etc<br>-DMYSQL_UNIX_ADDR=/path/mysql/mysql.sock<br>-DWITH_DEBUG=1<br>然后在CLion里，Reload CMake Project</p>
-<p>Reload CMake Project</p>
-<p>在Run/Debug列表里就可以看到很多选项了</p>
-<p>Run/Debug</p>
-<p>找到mysqld配置下启动参数 mysqld配置下启动参数</p>
-<p>mysqld –defaults-file=/path/mysql/etc/my.cnf<br>然后以Debug模式启动，看下成功的效果 Debug模式启动</p>
-<p>学习MySQL源码的文档</p>
-<p><a href="https://dev.mysql.com/doc/internals/en/" target="_blank" rel="noopener">https://dev.mysql.com/doc/internals/en/</a><br>可以找到想要学习的功能的源码位置，不至于没头苍蝇，比如主从同步功能（replication） </p>
-<p><a href="https://dev.mysql.com/doc/internals/en/replication-source-code-files.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/internals/en/replication-source-code-files.html</a><br>更多架构、PHP、GO相关踩坑实践技巧请关注我的公众号：PHP架构师</p>
+<h1 id="初始化数据库"><a href="#初始化数据库" class="headerlink" title="初始化数据库"></a>初始化数据库</h1><p>/your_path/mysql/scripts/mysql_install_db –user=mysql –basedir=/your_path/mysql –datadir=/Users/xmzj/SourceCode/mysql/data<br>不同版本数据库有不同初始化方式，本文使用的是MySQL 5.6</p>
+<p>启动MySQL，测试下是否安装成功</p>
+<p>/path/mysql/bin/mysqld –defaults-file=/path/mysql/my.cnf</p>
+<p>在CLion欢迎页选择New CMake Project from Sources,选中CMakeLists.txt，Open Existing Project<br>CLion会自动Load工程<br><img src="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code01.png?raw=true" alt=""><br>然后，CLion 偏好设置，Build, Execution, Deployment 的CMake选项<br><img src="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code02.jpeg?raw=true" alt=""><br>CMake Options和你编译安装时的选项一致</p>
+<p>-DCMAKE_INSTALL_PREFIX=/path/mysql<br>-DMYSQL_DATADIR=/path/mysql/data<br>-DSYSCONFDIR=/path/mysql<br>-DMYSQL_UNIX_ADDR=/path/mysql/mysql.sock<br>-DWITH_DEBUG=1  </p>
+<p>然后在CLion里，Reload CMake Project<br><img src="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code03.png?raw=true" alt=""></p>
+<p>在Run/Debug列表里就可以看到很多选项了 Edit Configurations…</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code04.png?raw=true" alt=""><br>找到mysqld配置下启动参数 mysqld配置下启动参数</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code05.png?raw=true" alt=""></p>
+<p>mysqld –defaults-file=/path/mysql/etc/my.cnf<br>然后以Debug模式启动，看下成功的效果 Debug模式启动<br>这里故意把ib_qry_type_t改为0ib_qry_type_t 让它报错</p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/source_code/source_code06.png?raw=true" alt=""></p>
+<h1 id="学习MySQL源码的文档"><a href="#学习MySQL源码的文档" class="headerlink" title="学习MySQL源码的文档"></a>学习MySQL源码的文档</h1><p><a href="https://dev.mysql.com/doc/internals/en/" target="_blank" rel="noopener">https://dev.mysql.com/doc/internals/en/</a><br>可以找到想要学习的功能的源码位置，比如主从同步功能（replication） </p>
+<p><a href="https://dev.mysql.com/doc/internals/en/replication-source-code-files.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/internals/en/replication-source-code-files.html</a></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -180,7 +186,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#源码获取"><span class="toc-number">1.</span> <span class="toc-text">源码获取</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#编译安装初始化数据库"><span class="toc-number">2.</span> <span class="toc-text">编译安装初始化数据库</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#初始化数据库"><span class="toc-number">3.</span> <span class="toc-text">初始化数据库</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#学习MySQL源码的文档"><span class="toc-number">4.</span> <span class="toc-text">学习MySQL源码的文档</span></a></li></ol>
  
   </div>
 
