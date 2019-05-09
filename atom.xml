@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-04-30T03:17:35.940Z</updated>
+  <updated>2019-05-09T04:00:34.761Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,52 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>在Mac上使用CLion编译MySQL</title>
+    <link href="http://idber.github.io/2019/05/09-%E5%9C%A8Mac%E4%B8%8A%E4%BD%BF%E7%94%A8CLion%E7%BC%96%E8%AF%91MySQL.html"/>
+    <id>http://idber.github.io/2019/05/09-在Mac上使用CLion编译MySQL.html</id>
+    <published>2019-05-09T02:01:56.000Z</published>
+    <updated>2019-05-09T04:00:34.761Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;由于在写MySQL日志订阅服务时候，需要确定在什么event之后保存position，所以就开始研究MySQL的源码，刚开始采用最原始的打印输出的方式去调试，然后每次改完编译运行，效率好低，让我很绝望，然后我花了些时间研究下怎么使用CLion Debug MySQL。&lt;/p&gt;
+&lt;p&gt;获取源码&lt;/p&gt;
+&lt;p&gt;git clone &lt;a href=&quot;https://github.com/mysql/mysql-server&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/mysql/mysql-server&lt;/a&gt;&lt;br&gt;编译安装初始化数据库&lt;/p&gt;
+&lt;p&gt;cd mysql-server&lt;/p&gt;
+&lt;p&gt;cmake \&lt;br&gt;-DCMAKE_INSTALL_PREFIX=/path/mysql/install \&lt;br&gt;-DMYSQL_DATADIR=/path/mysql/data \&lt;br&gt;-DSYSCONFDIR=/path/mysql/etc \&lt;br&gt;-DMYSQL_UNIX_ADDR=/path/mysql/mysql.sock \&lt;br&gt;-DWITH_DEBUG=1  \&lt;br&gt;-DDOWNLOAD_BOOST=1 -DWITH_BOOST=/path/mysql-server/ -DDOWNLOAD_BOOST_TIMEOUT=60000&lt;/p&gt;
+&lt;p&gt;make -j 4 &lt;/p&gt;
+&lt;p&gt;make install -j 4&lt;/p&gt;
+&lt;p&gt;mysqld –initialize-insecure –user=root –datadir=/path/mysql/data&lt;/p&gt;
+&lt;p&gt;启动MySQL，测试下是否安装成功 &lt;/p&gt;
+&lt;p&gt;/path/install/bin/mysqld –defaults-file=/path/mysql/etc/my.cnf&lt;br&gt;使用CLion新建工程并打开源码目录之后，设置CLion 设置CLion CMake选项&lt;/p&gt;
+&lt;p&gt;CMake Options和你编译安装时的选项一致&lt;/p&gt;
+&lt;p&gt;-DCMAKE_INSTALL_PREFIX=/path/mysql/install&lt;br&gt;-DMYSQL_DATADIR=/path/mysql/data&lt;br&gt;-DSYSCONFDIR=/path/mysql/etc&lt;br&gt;-DMYSQL_UNIX_ADDR=/path/mysql/mysql.sock&lt;br&gt;-DWITH_DEBUG=1&lt;br&gt;然后在CLion里，Reload CMake Project&lt;/p&gt;
+&lt;p&gt;Reload CMake Project&lt;/p&gt;
+&lt;p&gt;在Run/Debug列表里就可以看到很多选项了&lt;/p&gt;
+&lt;p&gt;Run/Debug&lt;/p&gt;
+&lt;p&gt;找到mysqld配置下启动参数 mysqld配置下启动参数&lt;/p&gt;
+&lt;p&gt;mysqld –defaults-file=/path/mysql/etc/my.cnf&lt;br&gt;然后以Debug模式启动，看下成功的效果 Debug模式启动&lt;/p&gt;
+&lt;p&gt;学习MySQL源码的文档&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://dev.mysql.com/doc/internals/en/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/internals/en/&lt;/a&gt;&lt;br&gt;可以找到想要学习的功能的源码位置，不至于没头苍蝇，比如主从同步功能（replication） &lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://dev.mysql.com/doc/internals/en/replication-source-code-files.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/internals/en/replication-source-code-files.html&lt;/a&gt;&lt;br&gt;更多架构、PHP、GO相关踩坑实践技巧请关注我的公众号：PHP架构师&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;由于在写MySQL日志订阅服务时候，需要确定在什么event之后保存position，所以就开始研究MySQL的源码，刚开始采用最原始的打印输出的方式去调试，然后每次改完编译运行，效率好低，让我很绝望，然后我花了些时间研究下怎么使用CLion Debug MySQ
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="源码" scheme="http://idber.github.io/tags/%E6%BA%90%E7%A0%81/"/>
+    
+  </entry>
   
   <entry>
     <title>MySQL的三种排序算法</title>
@@ -3574,61 +3620,6 @@ mysql&amp;gt;
       <category term="SQL" scheme="http://idber.github.io/tags/SQL/"/>
     
       <category term="子查询" scheme="http://idber.github.io/tags/%E5%AD%90%E6%9F%A5%E8%AF%A2/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>SQL_MODE 设置</title>
-    <link href="http://idber.github.io/2017/06/22-%E6%B5%8B%E8%AF%95%E7%89%88%E6%9C%AC.html"/>
-    <id>http://idber.github.io/2017/06/22-测试版本.html</id>
-    <published>2017-06-22T03:23:56.000Z</published>
-    <updated>2019-04-22T01:41:16.937Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;测试&lt;/p&gt;
-&lt;p&gt;SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认为空。SQL_MODE的设置其实是比较冒险的一种设置，因为在这种设置下可以允许一些非法操作，比如可以将NULL插入NOT NULL的字段中，也可以插入一些非法日期中“2015-02-30”。因此在生产环境中强烈建议开发人员将这个值设为严格模式，这样有些问题可以在数据库的设计和开发限制就能发现，而如果在生产环境下运行数据库后发现这类问题，那么修改的代价将变得十分巨大。此外，正确地设置SQL_MODE还可以做一些约束（Constraint)检查的工作。&lt;br&gt;对于SQL_MODE的设置，可以在MySQL的配置文件如my.cnf和my.ini中进行，也可以在客户端工具中进行，并且可以分别进行全局的设置或当前会话的设置。下面的命令可以用来查看当前SQL_MODE的设置情况。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select @@global.sql_mode;
-+--------------------------------------------+
-| @@global.sql_mode                          |
-+--------------------------------------------+
-| STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION |
-+--------------------------------------------+
-1 row in set (0.00 sec)
-
-mysql&amp;gt; select @@session.sql_mode;      
-+--------------------------------------------+
-| @@session.sql_mode                         |
-+--------------------------------------------+
-| STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION |
-+--------------------------------------------+
-1 row in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;STRICT_TRANS_TABLES为严格模式&lt;br&gt;严格模式是指将SQL_MODE变量设置为STRICT_TRANS_TABLES或STRICT_ALL_TABLES中的至少一种。现在来看一下SQL_MODE可以设置的选项。&lt;br&gt;STRICT_TRANS_TABLES：在该模式下，如果一个值不能插入到一个事务表（例如表的存储引擎为InnoDB）中，则中断当前的操作不影响非事务表（例如表的存储引擎为MyISAM）。&lt;br&gt;ALLOW_INVALID_DATES：该选项并不完全对土匪的合法性进行检查，只检查月份是否在1~12之间，日期是否在1~31之间。该模式仅对DATE和DATATIME类型有效，而对TIMESTAMP无效，因为TIMESTAMP总是要求一个合法的输入。&lt;br&gt;ANSI_QUOTES：启用ANSI_QUOTES后，不能用双引号来引用字符串，因为它将被解释为识别符，示例如下：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; CREATE TABLE Z(A VARCHAR(10)) ENGINE=INNODB;
-Query OK, 0 rows affected (0.04 sec)
-
-mysql&amp;gt; INSERT INTO Z values(&amp;apos;aaa&amp;apos;);
-Query OK, 1 row affected (0.00 sec)
-
-mysql&amp;gt; set sql_mode=&amp;apos;ANSI_QUOTES&amp;apos;;
-Query OK, 0 rows affected (0.00 sec)
-
-mysql&amp;gt; INSERT INTO Z values(&amp;quot;aaa&amp;quot;); 
-ERROR 1054 (42S22): Unknown column &amp;apos;aaa&amp;apos; in &amp;apos;field list&amp;apos;
-mysql&amp;gt; 
-&lt;/code&gt;&lt;/pre&gt;</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;测试&lt;/p&gt;
-&lt;p&gt;SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认为空。SQL_MODE的设置其实是比较冒险的一种设置，因为在这种设置下可以允许一些非法操作，比如可以将NULL插入NOT NULL的字段中，也可以插入一些非法日期中“2015-
-    
-    </summary>
-    
-      <category term="SQL编程" scheme="http://idber.github.io/categories/SQL%E7%BC%96%E7%A8%8B/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
   </entry>
   
