@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-05-09T07:29:18.693Z</updated>
+  <updated>2019-05-10T10:40:12.767Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,90 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>MySQL的伪utf8字符集</title>
+    <link href="http://idber.github.io/2019/05/10-MySQL%E7%9A%84%E4%BC%AAutf8%E5%AD%97%E7%AC%A6%E9%9B%86.html"/>
+    <id>http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html</id>
+    <published>2019-05-10T02:01:56.000Z</published>
+    <updated>2019-05-10T10:40:12.767Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;h1 id=&quot;标准UTF-8&quot;&gt;&lt;a href=&quot;#标准UTF-8&quot; class=&quot;headerlink&quot; title=&quot;标准UTF-8&quot;&gt;&lt;/a&gt;标准UTF-8&lt;/h1&gt;&lt;p&gt;UTF-8（8-bit Unicode Transformation Format）8位Unicode转换格式，是一种针对Unicode的可变长度字符编码，也是一种前缀码。它可以用来表示Unicode标准中的任何字符，且其编码中的第一个字节仍与ASCII兼容，这使得原来处理ASCII字符的软件无须或只须做少部分修改，即可继续使用。因此，它逐渐成为电子邮件、网页及其他存储或发送文字优先采用的编码。&lt;/p&gt;
+&lt;p&gt;UTF-8使用一至六个字节为每个字符编码（尽管如此，2003年11月UTF-8被RFC 3629重新规范，只能使用原来Unicode定义的区域，U+0000到U+10FFFF，也就是说最多&lt;font color=&quot;red&quot;&gt;四个字节&lt;/font&gt;）：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;128个US-ASCII字符只需一个字节编码（Unicode范围由U+0000至U+007F）。&lt;/li&gt;
+&lt;li&gt;带有附加符号的拉丁文、希腊文、西里尔字母、亚美尼亚语、希伯来文、阿拉伯文、叙利亚文及它拿字母则需要两个字节编码（Unicode范围由U+0080至U+07FF）。&lt;/li&gt;
+&lt;li&gt;其他基本多文种平面（BMP）中的字符（这包含了大部分常用字，如大部分的汉字）使用三个字节编码（Unicode范围由U+0800至U+FFFF）。&lt;/li&gt;
+&lt;li&gt;其他极少使用的Unicode 辅助平面的字符使用四至六字节编码（Unicode范围由U+10000至U+1FFFFF使用四字节，Unicode范围由U+200000至U+3FFFFFF使用五字节，Unicode范围由U+4000000至U+7FFFFFFF使用六字节）。&lt;br&gt;对上述提及的第四种字符而言，UTF-8使用四至六个字节来编码似乎太耗费资源了。但UTF-8对所有常用的字符都可以用三个字节表示，而且它的另一种选择，UTF-16编码，对前述的第四种字符同样需要四个字节来编码，所以要决定UTF-8或UTF-16哪种编码比较有效率，还要视所使用的字符的分布范围而定。不过，如果使用一些传统的压缩系统，比如DEFLATE，则这些不同编码系统间的的差异就变得微不足道了。若顾及传统压缩算法在压缩较短文字上的效果不大，可以考虑使用Unicode标准压缩格式（SCSU）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;互联网工程工作小组（IETF）要求所有互联网协议都必须支持UTF-8编码[2]。互联网邮件联盟（IMC）建议所有电子邮件软件都支持UTF-8编码。[3]&lt;/p&gt;
+&lt;h1 id=&quot;MySQL的utf8&quot;&gt;&lt;a href=&quot;#MySQL的utf8&quot; class=&quot;headerlink&quot; title=&quot;MySQL的utf8&quot;&gt;&lt;/a&gt;MySQL的utf8&lt;/h1&gt;&lt;p&gt;官方手册 &lt;a href=&quot;https://dev.mysql.com/doc/refman/5.6/en/charset-unicode-sets.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/refman/5.6/en/charset-unicode-sets.html&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;utf8mb4: A UTF-8 encoding of the Unicode character set using one to four bytes per character.&lt;/p&gt;
+&lt;p&gt;utf8mb3: A UTF-8 encoding of the Unicode character set using one to three bytes per character.&lt;/p&gt;
+&lt;p&gt;utf8: An alias for utf8mb3.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://dev.mysql.com/doc/refman/5.6/en/charset-unicode-conversion.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/refman/5.6/en/charset-unicode-conversion.html&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;utf8mb3 supports only characters in the Basic Multilingual Plane (BMP). utf8mb4 additionally supports supplementary characters that lie outside the BMP.&lt;/p&gt;
+&lt;p&gt;utf8mb3 uses a maximum of three bytes per character. utf8mb4 uses a maximum of four bytes per character.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;从手册中可以看到，utf8实际上是utf8mb3的别名，即maximum of three bytes per character最大只支持3个字节，MySQL官方并未直接修复这个问题，而是在5.5.3之后增加了utf8mb4字符编码，mb4即 maximum of four bytes。简单说 utf8mb4 是 utf8 的超集并完全兼容utf8，能够用四个字节存储更多的字符。&lt;/p&gt;
+&lt;p&gt;但抛开数据库，标准的 UTF-8 字符集编码是可以用 1~4 个字节去编码21位字符，这几乎包含了是世界上所有能看见的语言了。然而在MySQL里实现的utf8最长使用3个字节，也就是上面提到的标准UTF-8中“基本多文种平面（BMP）中的字符（这包含了大部分常用字，如大部分的汉字）使用三个字节编码（Unicode范围由U+0800至U+FFFF）。”但并不是所有，最常见的就算现在手机端常用的表情字符emoji，需要四个字节才能编码出来。&lt;/p&gt;
+&lt;p&gt;注：QQ里面的内置的表情不算，它是通过特殊映射到的一个gif图片。一般输入法自带的才是emoji。&lt;/p&gt;
+&lt;p&gt;也就是当你的数据库里要求能够存入这些表情或宽字符时，可以把字段定义为 utf8mb4，同时要注意连接字符集也要设置为utf8mb4，否则在 严格模式 下会出现 Incorrect string value: \xF0\x9F\x98\x84… for column ‘content’这样的错误，非严格模式下此后的数据会被截断。&lt;/p&gt;
+&lt;p&gt;关于latin1、gbk也支持emoji，后面单独探讨。&lt;/p&gt;
+&lt;p&gt;以下为引用 &lt;a href=&quot;http://seanlook.com/2016/10/23/mysql-utf8mb4/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;via&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&quot;utf8mb4-unicode-ci-与-utf8mb4-general-ci-如何选择&quot;&gt;&lt;a href=&quot;#utf8mb4-unicode-ci-与-utf8mb4-general-ci-如何选择&quot; class=&quot;headerlink&quot; title=&quot;utf8mb4_unicode_ci 与 utf8mb4_general_ci 如何选择&quot;&gt;&lt;/a&gt;utf8mb4_unicode_ci 与 utf8mb4_general_ci 如何选择&lt;/h1&gt;&lt;p&gt;字符除了需要存储，还需要排序或比较大小，涉及到与编码字符集对应的排序字符集（collation）。ut8mb4对应的排序字符集常用的有 utf8mb4_unicode_ci、utf8mb4_general_ci，到底采用哪个在 stackoverflow 上有个讨论，&lt;a href=&quot;http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;What’s the difference between utf8_general_ci and utf8_unicode_ci&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;主要从排序准确性和性能两方面看：&lt;/p&gt;
+&lt;p&gt;准确性&lt;br&gt;utf8mb4_unicode_ci 是基于标准的Unicode来排序和比较，能够在各种语言之间精确排序&lt;br&gt;utf8mb4_general_ci 没有实现Unicode排序规则，在遇到某些特殊语言或字符是，排序结果可能不是所期望的。&lt;br&gt;但是在绝大多数情况下，这种特殊字符的顺序一定要那么精确吗。比如Unicode把ß、Œ当成ss和OE来看；而general会把它们当成s、e，再如ÀÁÅåāă各自都与 A 相等。&lt;br&gt;性能&lt;br&gt;utf8mb4_general_ci 在比较和排序的时候更快&lt;br&gt;utf8mb4_unicode_ci 在特殊情况下，Unicode排序规则为了能够处理特殊字符的情况，实现了略微复杂的排序算法。&lt;br&gt;但是在绝大多数情况下，不会发生此类复杂比较。general理论上比Unicode可能快些，但相比现在的CPU来说，它远远不足以成为考虑性能的因素，索引涉及、SQL设计才是。 我个人推荐是 utf8mb4_unicode_ci，将来 8.0 里也极有可能使用变为默认的规则。相比选择哪一种collation，使用者应该更关心字符集与排序规则在db里要统一就好。&lt;br&gt;这也从另一个角度告诉我们，不要可能产生乱码的字段作为主键或唯一索引。我遇到过一例，以 url 来作为唯一索引，但是它记录的有可能是乱码，导致后来想把它们修复就特别麻烦。&lt;/p&gt;
+&lt;h1 id=&quot;怎么从utf8转换为utf8mb4&quot;&gt;&lt;a href=&quot;#怎么从utf8转换为utf8mb4&quot; class=&quot;headerlink&quot; title=&quot;怎么从utf8转换为utf8mb4&quot;&gt;&lt;/a&gt;怎么从utf8转换为utf8mb4&lt;/h1&gt;&lt;h2 id=&quot;“伪”转换&quot;&gt;&lt;a href=&quot;#“伪”转换&quot; class=&quot;headerlink&quot; title=&quot;“伪”转换&quot;&gt;&lt;/a&gt;“伪”转换&lt;/h2&gt;&lt;p&gt;如果你的表定义和连接字符集都是utf8，那么直接在你的表上执行&lt;/p&gt;
+&lt;p&gt;ALTER TABLE tbl_name CONVERT TO CHARACTER SET utf8mb4;&lt;br&gt;则能够该表上所有的列的character类型变成 utf8mb4，表定义的默认字符集也会修改。连接的时候需要使用set names utf8mb4便可以插入四字节字符。（如果依然使用 utf8 连接，只要不出现四字节字符则完全没问题）。&lt;/p&gt;
+&lt;p&gt;上面的 convert 有两个问题，一是它不能ONLINE，也就是执行之后全表禁止修改，有关这方面的讨论见 mysql 5.6 原生Online DDL解析；二是，它可能会自动该表字段类型定义，如 VARCHAR 被转成 MEDIUMTEXT，可以通过 MODIFY 指定类型为原类型。&lt;/p&gt;
+&lt;p&gt;另外 ALTER TABLE tbl_name DEFAULT CHARACTER SET utf8mb4 这样的语句就不要随便执行了，特别是当表原本不是utf8时，除非表是空的或者你确认表里只有拉丁字符，否则正常和乱的就混在一起了。&lt;/p&gt;
+&lt;p&gt;最重要的是，你连接时使用的latin1字符集写入了历史数据，表定义是latin1或utf8，不要期望通过 ALTER … CONVERT … 能够让你达到用utf8读取历史中文数据的目的，没卵用，老老实实做逻辑dump。所以我才叫它“伪”转换&lt;/p&gt;
+&lt;h2 id=&quot;character-set-server&quot;&gt;&lt;a href=&quot;#character-set-server&quot; class=&quot;headerlink&quot; title=&quot;character-set-server&quot;&gt;&lt;/a&gt;character-set-server&lt;/h2&gt;&lt;p&gt;一旦你决定使用utf8mb4，强烈建议你要修改服务端 character-set-server=utf8mb4，不同的语言对它的处理方法不一样，c++, php, python可以设置character-set，但java驱动依赖于 character-set-server 选项，后面有介绍。&lt;/p&gt;
+&lt;p&gt;同时还要谨慎一些特殊选项，如 遇到腾讯云CDB连接字符集设置一个坑。个人不建议设置全局 init_connect。&lt;/p&gt;
+&lt;h1 id=&quot;key-767-bytes-错误&quot;&gt;&lt;a href=&quot;#key-767-bytes-错误&quot; class=&quot;headerlink&quot; title=&quot;key 767 bytes 错误&quot;&gt;&lt;/a&gt;key 767 bytes 错误&lt;/h1&gt;&lt;p&gt;字符集从utf8转到utf8mb4之后，最容易引起的就是索引键超长的问题。&lt;/p&gt;
+&lt;p&gt;对于表行格式是 COMPACT或 REDUNDANT，InnoDB有单个索引最大字节数 768 的限制，而字段定义的是能存储的字符数，比如 VARCHAR(200) 代表能够存200个汉字，索引定义是字符集类型最大长度算的，即 utf8 maxbytes=3, utf8mb4 maxbytes=4，算下来utf8和utf8mb4两种情况的索引长度分别为600 bytes和800bytes，后者超过了767，导致出错：Error 1071: Specified key was too long; max key length is 767 bytes。&lt;/p&gt;
+&lt;p&gt;COMPRESSED和DYNAMIC格式不受限制，但也依然不建议索引太长，太浪费空间和cpu搜索资源。&lt;/p&gt;
+&lt;p&gt;如果已有定义超过这个长度的，可加上前缀索引，如果暂不能加上前缀索引（像唯一索引），可把该字段的字符集改回utf8或latin1。&lt;br&gt;但是，（ 敲黑板啦，很重要 ），要防止出现 Illegal mix of collations (utf8_general_ci,IMPLICIT) and (utf8mb4_general_ci,COERCIBLE) for operation ‘=’ 错误：连接字符集使用utf8mb4，但 SELECT/UPDATE where条件有utf8类型的列，且条件右边存在不属于utf8字符，就会触发该异常。表示踩过这个坑。&lt;/p&gt;
+&lt;p&gt;再多加一个友好提示：EXPLAIN 结果里面的 key_len 指的搜索索引长度，单位是bytes，而且是以字符集支持的单字符最大字节数算的，这也是为什么 INDEX_LENGTH 膨胀厉害的一个原因。&lt;/p&gt;
+&lt;h1 id=&quot;C-C-内存空间分配问题&quot;&gt;&lt;a href=&quot;#C-C-内存空间分配问题&quot; class=&quot;headerlink&quot; title=&quot;C/C++ 内存空间分配问题&quot;&gt;&lt;/a&gt;C/C++ 内存空间分配问题&lt;/h1&gt;&lt;p&gt;这是我们这边的开发遇到的一个棘手的问题。C或C++连接MySQL使用的是linux系统上的 libmysqlclient 动态库，程序获取到数据之后根据自定义的一个网络协议，按照mysql字段定义的固定字节数来传输数据。从utf8转utf8mb4之后，c++里面针对character单字符内存空间分配，从3个增加到4个，引起异常。&lt;/p&gt;
+&lt;p&gt;这个问题其实是想说明，使用utf8mb4之后，官方建议尽量用 varchar 代替 char，这样可以减少固定存储空间浪费（关于char与varchar的选择，可参考 这里）。但开发设计表时 varchar 的大小不能随意加大，它虽然是变长的，但客户端在定义变量来获取数据时，是以定义的为准，而非实际长度。按需分配，避免程序使用过多的内存。&lt;/p&gt;
+&lt;h1 id=&quot;java驱动使用&quot;&gt;&lt;a href=&quot;#java驱动使用&quot; class=&quot;headerlink&quot; title=&quot;java驱动使用&quot;&gt;&lt;/a&gt;java驱动使用&lt;/h1&gt;&lt;p&gt;Java语言里面所实现的UTF-8编码就是支持4字节的，所以不需要配置 mb4 这样的字眼，但如果从MySQL读写emoji，MySQL驱动版本要在 5.1.13 及以上版本，数据库连接依然是 characterEncoding=UTF-8 。&lt;/p&gt;
+&lt;p&gt;但还没完，遇到一个大坑。官方手册 里还有这么一段话：&lt;/p&gt;
+&lt;p&gt;Connector/J did not support utf8mb4 for servers 5.5.2 and newer.&lt;/p&gt;
+&lt;p&gt;Connector/J now auto-detects servers configured with character_set_server=utf8mb4 or treats the Java encoding utf-8 passed&lt;br&gt;  using characterEncoding=… as utf8mb4 in the SET NAMES= calls it makes when establishing the connection. (Bug #54175)&lt;br&gt;意思是，java驱动会自动检测服务端 character_set_server 的配置，如果为utf8mb4，驱动在建立连接的时候设置 SET NAMES utf8mb4。然而其他语言没有依赖于这样的特性。&lt;/p&gt;
+&lt;h1 id=&quot;主从复制报错&quot;&gt;&lt;a href=&quot;#主从复制报错&quot; class=&quot;headerlink&quot; title=&quot;主从复制报错&quot;&gt;&lt;/a&gt;主从复制报错&lt;/h1&gt;&lt;p&gt;这个问题没有遇到，只是看官方文档有提到，曾经也看到过类似的技术文章。&lt;br&gt;大概就是从库的版本比主库的版本低，导致有些字符集不支持；或者人工修改了从库上的表或字段的字符集定义，都有可能引起异常。&lt;/p&gt;
+&lt;h1 id=&quot;join-查询问题&quot;&gt;&lt;a href=&quot;#join-查询问题&quot; class=&quot;headerlink&quot; title=&quot;join 查询问题&quot;&gt;&lt;/a&gt;join 查询问题&lt;/h1&gt;&lt;p&gt;这个问题是之前在姜承尧老师公众号看到的一篇文章 MySQL表字段字符集不同导致的索引失效问题，自己也验证了一下，的确会有问题：&lt;/p&gt;
+&lt;p&gt;CREATE TABLE t1 (&lt;br&gt;  f_id varchar(20) NOT NULL,&lt;br&gt;  f_action char(25) NOT NULL DEFAULT ‘’ COMMENT ‘’,&lt;br&gt;  PRIMARY KEY (&lt;code&gt;f_id&lt;/code&gt;),&lt;br&gt;) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;&lt;/p&gt;
+&lt;p&gt;CREATE TABLE t1_copy_mb4 (&lt;br&gt;  f_id varchar(20) CHARACTER SET utf8mb4 NOT NULL,&lt;br&gt;  f_action char(25) NOT NULL DEFAULT ‘’ COMMENT ‘’,&lt;br&gt;  PRIMARY KEY (&lt;code&gt;f_id&lt;/code&gt;),&lt;br&gt;) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;&lt;/p&gt;
+&lt;p&gt;1.&lt;br&gt;EXPLAIN extended select * from t1 INNER JOIN t1_copy_mb4 t2 on t1.f_id=t2.f_id where t1.f_id=’421036’;&lt;/p&gt;
+&lt;p&gt;2.&lt;br&gt;EXPLAIN extended select * from t1 INNER JOIN t1_copy_mb4 t2 on t1.f_id=t2.f_id where t2.f_id=’421036’;&lt;br&gt;对应上面1,2 的截图：&lt;/p&gt;
+&lt;p&gt;其中 2 的warnings 有convert:&lt;/p&gt;
+&lt;p&gt;(convert(t1.f_id using utf8mb4) = ‘421036’)&lt;br&gt;官网能找到这一点解释的还是开头那个地址：&lt;/p&gt;
+&lt;p&gt;Similarly, the following comparison in the WHERE clause works according to the collation of utf8mb4_col:&lt;/p&gt;
+&lt;p&gt;  SELECT * FROM utf8_tbl, utf8mb4_tbl&lt;br&gt;  WHERE utf8_tbl.utf8_col = utf8mb4_tbl.utf8mb4_col;&lt;br&gt;只是索引失效发生在utf8mb4列 在条件左边。（关于MySQL的隐式类型转换，见这里）。&lt;/p&gt;
+&lt;p&gt;参考&lt;br&gt;&lt;a href=&quot;https://dev.mysql.com/doc/refman/8.0/en/charset-unicode-conversion.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/refman/8.0/en/charset-unicode-conversion.html&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://forums.mysql.com/read.php?103,187048,188748#msg-188748&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://forums.mysql.com/read.php?103,187048,188748#msg-188748&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://drupal.stackexchange.com/questions/166405/why-are-we-using-utf8mb4-general-ci-and-not-utf8mb4-unicode-ci&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Why are we using utf8mb4_general_ci and not utf8mb4_unicode_ci?&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://mathiasbynens.be/notes/mysql-utf8mb4&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;How to support full Unicode in MySQL databases&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://cenalulu.github.io/mysql/mysql-mojibake/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;10分钟学会理解和解决MySQL乱码问题&lt;/a&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;h1 id=&quot;标准UTF-8&quot;&gt;&lt;a href=&quot;#标准UTF-8&quot; class=&quot;headerlink&quot; title=&quot;标准UTF-8&quot;&gt;&lt;/a&gt;标准UTF-8&lt;/h1&gt;&lt;p&gt;UTF-8（8-bit Unicode Transformation Format）8位U
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="字符集" scheme="http://idber.github.io/tags/%E5%AD%97%E7%AC%A6%E9%9B%86/"/>
+    
+  </entry>
   
   <entry>
     <title>在Mac上使用CLion编译MySQL</title>
@@ -3569,56 +3653,6 @@ mysql&amp;gt;
       <category term="SQL" scheme="http://idber.github.io/tags/SQL/"/>
     
       <category term="BINARY" scheme="http://idber.github.io/tags/BINARY/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>子查询不存在字段</title>
-    <link href="http://idber.github.io/2017/11/17-%E5%AD%90%E6%9F%A5%E8%AF%A2%E4%B8%8D%E5%AD%98%E5%9C%A8%E5%AD%97%E6%AE%B5.html"/>
-    <id>http://idber.github.io/2017/11/17-子查询不存在字段.html</id>
-    <published>2017-11-17T06:49:56.000Z</published>
-    <updated>2019-04-22T01:41:16.935Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;数据库版本&lt;br&gt;MySQL 5.6.26&lt;/p&gt;
-&lt;p&gt;1、先看两个表的数据&lt;/p&gt;
-&lt;figure class=&quot;highlight plain&quot;&gt;&lt;figcaption&gt;&lt;span&gt;TABLE IF EXISTS `course`;&lt;/span&gt;&lt;/figcaption&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;13&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;14&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;15&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;16&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;17&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;18&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;19&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;CREATE TABLE `course` (&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  `student_id` int(11),&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  `course` varchar(20)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;) ENGINE=MyISAM DEFAULT CHARSET=utf8;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;INSERT INTO `course` VALUES (&amp;apos;1&amp;apos;, &amp;apos;标题&amp;apos;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;INSERT INTO `course` VALUES (&amp;apos;2&amp;apos;, &amp;apos;标题&amp;apos;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;INSERT INTO `course` VALUES (&amp;apos;3&amp;apos;, &amp;apos;标题&amp;apos;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;DROP TABLE IF EXISTS `student`;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;CREATE TABLE `student` (&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  `id` int(11),&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  `name` varchar(20)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;) ENGINE=MyISAM DEFAULT CHARSET=utf8;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;INSERT INTO `student` VALUES (&amp;apos;1&amp;apos;, &amp;apos;lily&amp;apos;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;INSERT INTO `student` VALUES (&amp;apos;2&amp;apos;, &amp;apos;lucy&amp;apos;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;INSERT INTO `student` VALUES (&amp;apos;3&amp;apos;, &amp;apos;nacy&amp;apos;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;INSERT INTO `student` VALUES (&amp;apos;4&amp;apos;, &amp;apos;hanmeimei&amp;apos;);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;2、奇怪的sql查询结果&lt;/p&gt;
-&lt;p&gt;3、为什么course中不存在id或者name字段，子查询不报错；&lt;/p&gt;
-&lt;p&gt;4、实际上是不是这样的&lt;/p&gt;
-&lt;p&gt;5、整条语句中子查询返回的是什么？&lt;/p&gt;
-&lt;p&gt;Mysql 子查询的实现并不是我们想象的那样。&lt;/p&gt;
-&lt;figure class=&quot;highlight sql&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; * &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; student &lt;span class=&quot;keyword&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;in&lt;/span&gt; (&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; student_id &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; course);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;对于上面的sql，我们一般会认为是这样执行:&lt;br&gt;猜想1:&lt;/p&gt;
-&lt;figure class=&quot;highlight sql&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; student_id &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; course;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;result: 1,2,3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; * &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; student &lt;span class=&quot;keyword&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;in&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;number&quot;&gt;2&lt;/span&gt;,&lt;span class=&quot;number&quot;&gt;3&lt;/span&gt;)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;事实上不是这样，Mysql会把外层表压入到子查询中，具体的执行计划可以使用&lt;/p&gt;
-&lt;p&gt;explain extended查看：&lt;/p&gt;
-&lt;figure class=&quot;highlight n1ql&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;EXPLAIN&lt;/span&gt; EXTENDED&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; * &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; student &lt;span class=&quot;keyword&quot;&gt;where&lt;/span&gt; id &lt;span class=&quot;keyword&quot;&gt;in&lt;/span&gt; (&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; student_id &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; course);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;SHOW WARNINGS;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;symbol&quot;&gt;`test`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`student`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`id`&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;AS&lt;/span&gt; &lt;span class=&quot;symbol&quot;&gt;`id`&lt;/span&gt;,&lt;span class=&quot;symbol&quot;&gt;`test`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`student`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`name`&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;AS&lt;/span&gt; &lt;span class=&quot;symbol&quot;&gt;`name`&lt;/span&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;symbol&quot;&gt;`test`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`student`&lt;/span&gt; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;where&lt;/span&gt; &amp;lt;in_optimizer&amp;gt;(&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;symbol&quot;&gt;`test`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`student`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`id`&lt;/span&gt;,&amp;lt;&lt;span class=&quot;keyword&quot;&gt;exists&lt;/span&gt;&amp;gt;(&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;symbol&quot;&gt;`test`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`course`&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;where&lt;/span&gt; (&amp;lt;cache&amp;gt;(&lt;span class=&quot;symbol&quot;&gt;`test`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`student`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`id`&lt;/span&gt;) = &lt;span class=&quot;symbol&quot;&gt;`test`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`course`&lt;/span&gt;.&lt;span class=&quot;symbol&quot;&gt;`student_id`&lt;/span&gt;)));&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;Mysql处理后等价于：&lt;/p&gt;
-&lt;figure class=&quot;highlight n1ql&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; * &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; student &lt;span class=&quot;keyword&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;exists&lt;/span&gt; (&lt;span class=&quot;keyword&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;from&lt;/span&gt; course &lt;span class=&quot;keyword&quot;&gt;where&lt;/span&gt; course.student_id = student.id);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;查看执行计划，可以看到mysql对于student表全表扫描，然后按照id逐条执行子查询。这和我们的猜想1完全相反。&lt;/p&gt;
-&lt;p&gt;到现在并没有解释LZ的问题，我们可以猜想下。&lt;br&gt;猜想2:既然是先全表扫描然后逐条子查询，是不是子查询的变量都是来自全表扫描时的局部变量？我们再看一下执行计划：&lt;/p&gt;
-&lt;figure class=&quot;highlight plain&quot;&gt;&lt;figcaption&gt;&lt;span&gt;EXTENDED&lt;/span&gt;&lt;/figcaption&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;select * from student where id in (select id from course);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;show WARNINGS;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;select `test`.`student`.`id` AS `id`,`test`.`student`.`name` AS `name` from `test`.`student` where &amp;lt;in_optimizer&amp;gt;(`test`.`student`.`id`,&amp;lt;exists&amp;gt;(select 1 from `test`.`course` where (&amp;lt;cache&amp;gt;(`test`.`student`.`id`) = `test`.`student`.`id`)));&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;通过查询计划可以清晰的看到，真正执行的时候，子查询的变量都是全表扫描时的局部变量&lt;cache&gt;student.id，这也就解释了“为什么course中不存在id或者name字段，子查询不报错”，是因为查询的优化，导致根本不是使用的course的id或者name字段。&lt;/cache&gt;&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;数据库版本&lt;br&gt;MySQL 5.6.26&lt;/p&gt;
-&lt;p&gt;1、先看两个表的数据&lt;/p&gt;
-&lt;figure class=&quot;highlight plain&quot;&gt;&lt;figcaption&gt;&lt;span&gt;TABLE IF EXISTS `course`;&lt;/span&gt;&lt;/figc
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="SQL" scheme="http://idber.github.io/tags/SQL/"/>
-    
-      <category term="子查询" scheme="http://idber.github.io/tags/%E5%AD%90%E6%9F%A5%E8%AF%A2/"/>
     
   </entry>
   
