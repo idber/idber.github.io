@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-05-10T10:40:12.767Z</updated>
+  <updated>2019-05-11T08:59:50.637Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -16,14 +16,53 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>计算机原理之编码</title>
+    <link href="http://idber.github.io/2019/05/11-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E7%90%86%E4%B9%8B%E7%BC%96%E7%A0%81.html"/>
+    <id>http://idber.github.io/2019/05/11-计算机原理之编码.html</id>
+    <published>2019-05-11T02:01:56.000Z</published>
+    <updated>2019-05-11T08:59:50.637Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;h1 id=&quot;编码与加密&quot;&gt;&lt;a href=&quot;#编码与加密&quot; class=&quot;headerlink&quot; title=&quot;编码与加密&quot;&gt;&lt;/a&gt;编码与加密&lt;/h1&gt;&lt;h2 id=&quot;加密&quot;&gt;&lt;a href=&quot;#加密&quot; class=&quot;headerlink&quot; title=&quot;加密&quot;&gt;&lt;/a&gt;加密&lt;/h2&gt;&lt;p&gt;什么是编码？他与加密有什么区别？&lt;br&gt;在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。&lt;/p&gt;
+&lt;h2 id=&quot;编码&quot;&gt;&lt;a href=&quot;#编码&quot; class=&quot;headerlink&quot; title=&quot;编码&quot;&gt;&lt;/a&gt;编码&lt;/h2&gt;&lt;p&gt;那么什么是编码呢？&lt;br&gt;编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观上有意义的体验，是信息从一种形式或格式转换为另一种形式的过程。&lt;br&gt;解码，是编码的逆过程。&lt;/p&gt;
+&lt;h2 id=&quot;加密与编码的关系&quot;&gt;&lt;a href=&quot;#加密与编码的关系&quot; class=&quot;headerlink&quot; title=&quot;加密与编码的关系&quot;&gt;&lt;/a&gt;加密与编码的关系&lt;/h2&gt;&lt;p&gt;从概念上可以看出，编码只是表现形式的转换，没有保密的作用，因为编码和解码的算法是公开的，只要知道是什么编码的内容，任何人都可以轻松地解码。从这个角度看加密也一种编码，只是解密算法是非公开的。&lt;/p&gt;
+&lt;h1 id=&quot;字符编码&quot;&gt;&lt;a href=&quot;#字符编码&quot; class=&quot;headerlink&quot; title=&quot;字符编码&quot;&gt;&lt;/a&gt;字符编码&lt;/h1&gt;&lt;p&gt;字符编码（英语：Character encoding）、字集码是把字符集中的字符编码为指定集合中某一对象（例如：比特模式、自然数序列、8位组或者电脉冲），以便文本在计算机中存储和通过通信网络的传递。常见的例子包括将拉丁字母表编码成摩斯电码和ASCII。其中，ASCII将字母、数字和其它符号编号，并用7比特的二进制来表示这个整数。通常会额外使用一个扩充的比特，以便于以1个字节的方式存储。&lt;/p&gt;
+&lt;p&gt;在计算机技术发展的早期，如ASCII（1963年）和EBCDIC（1964年）这样的字符集逐渐成为标准。但这些字符集的局限很快就变得明显，于是人们开发了许多方法来扩展它们。对于支持包括东亚CJK字符家族在内的写作系统的要求能支持更大量的字符，并且需要一种系统而不是临时的方法实现这些字符的编码。&lt;/p&gt;
+&lt;p&gt;为了弄懂计算机是怎么实现编码的，就要先理解计算机如何存储数据的。&lt;/p&gt;
+&lt;h1 id=&quot;数据在计算机中的存储&quot;&gt;&lt;a href=&quot;#数据在计算机中的存储&quot; class=&quot;headerlink&quot; title=&quot;数据在计算机中的存储&quot;&gt;&lt;/a&gt;数据在计算机中的存储&lt;/h1&gt;&lt;p&gt;我们知道数据在计算机中是以二进制的形式存储的，那么有没有想过01这些数据是怎么存在计算机当中的呢？&lt;/p&gt;
+&lt;h2 id=&quot;第一步-如何存储0和1&quot;&gt;&lt;a href=&quot;#第一步-如何存储0和1&quot; class=&quot;headerlink&quot; title=&quot;第一步 如何存储0和1&quot;&gt;&lt;/a&gt;第一步 如何存储0和1&lt;/h2&gt;&lt;p&gt;不知道你们有没有听过一个东西，叫做——电容器。顾名思义，这是一种能容纳电荷的容器。与普通的电池不同的是，它的充电速度很快，并且因为不会转化为化学能所以电量流失的也很快。因此需要经常刷新。在我们的计算机中，CPU有一个参数是Hz，便是指每秒钟能充多少次电。数据在内存中以二进制的方式存储，事实上是通过对小电容器的充放电来完成的。 &lt;/p&gt;
+&lt;h2 id=&quot;第二步-如何存储数字&quot;&gt;&lt;a href=&quot;#第二步-如何存储数字&quot; class=&quot;headerlink&quot; title=&quot;第二步 如何存储数字&quot;&gt;&lt;/a&gt;第二步 如何存储数字&lt;/h2&gt;&lt;p&gt;当然是把数字转化成二进制啦&lt;/p&gt;
+&lt;h2 id=&quot;第三步-如何存储字符&quot;&gt;&lt;a href=&quot;#第三步-如何存储字符&quot; class=&quot;headerlink&quot; title=&quot;第三步 如何存储字符&quot;&gt;&lt;/a&gt;第三步 如何存储字符&lt;/h2&gt;&lt;p&gt;既然能够存储0和1，那存储字符也就不是什么难事了吧。我们只需要把字符和二进制一一对应起来，然后责令计算机来记住它，就万事大吉了。ASCII美国信息交换标准码就是干这件事。&lt;/p&gt;
+&lt;h2 id=&quot;第四步-如何存储汉字&quot;&gt;&lt;a href=&quot;#第四步-如何存储汉字&quot; class=&quot;headerlink&quot; title=&quot;第四步 如何存储汉字&quot;&gt;&lt;/a&gt;第四步 如何存储汉字&lt;/h2&gt;&lt;p&gt;当然，早期的时候计算机并没有在中国兴起，所以中文并不能被计算机所识别，直到1980年GB2312（信息交换用汉字编码字符集）横空出世。功能与ASCII相似。当然，后来又有了GBK（国际标准扩展），我们暂且不提。 &lt;/p&gt;
+&lt;h2 id=&quot;第五步-如何存储所有字符&quot;&gt;&lt;a href=&quot;#第五步-如何存储所有字符&quot; class=&quot;headerlink&quot; title=&quot;第五步 如何存储所有字符&quot;&gt;&lt;/a&gt;第五步 如何存储所有字符&lt;/h2&gt;&lt;p&gt;照葫芦画瓢，将所有的字符进行编号，所以有了Unicode字符集。但是这里有一个问题，虽然它可以存储世界上所有的字符，但是如果你的编码是000000000000001，它是不会自动给你简化成1的。由此直接导致了所有的文字存储代价都会翻倍，而这样的代价，是很多人都不愿意看见的。&lt;/p&gt;
+&lt;h2 id=&quot;第六步-如何将Unicode存到计算机里&quot;&gt;&lt;a href=&quot;#第六步-如何将Unicode存到计算机里&quot; class=&quot;headerlink&quot; title=&quot;第六步 如何将Unicode存到计算机里&quot;&gt;&lt;/a&gt;第六步 如何将Unicode存到计算机里&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;br&gt;这里稍微解释一下最后一行，第一块的两个11是指后边有两串跟着，紧接着的10是指两串开头两个标志位是10。上边的Unicode编码中截取后两个字节放到下边utf-8中除标志位之外的地方，也就是说，除了第一块开头的1110，第二块和第三块开头的10，我们有4+6+6=16位来依次存储上边的8+8=16位字符串。&lt;br&gt;如你所见，这就是UTF-8，一种编码方式。它采用了变长存储的形式来表示Unicode字符集。&lt;br&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;h1 id=&quot;编码与加密&quot;&gt;&lt;a href=&quot;#编码与加密&quot; class=&quot;headerlink&quot; title=&quot;编码与加密&quot;&gt;&lt;/a&gt;编码与加密&lt;/h1&gt;&lt;h2 id=&quot;加密&quot;&gt;&lt;a href=&quot;#加密&quot; class=&quot;headerlink&quot; title=&quot;加密&quot;&gt;
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="字符集" scheme="http://idber.github.io/tags/%E5%AD%97%E7%AC%A6%E9%9B%86/"/>
+    
+  </entry>
+  
+  <entry>
     <title>MySQL的伪utf8字符集</title>
     <link href="http://idber.github.io/2019/05/10-MySQL%E7%9A%84%E4%BC%AAutf8%E5%AD%97%E7%AC%A6%E9%9B%86.html"/>
     <id>http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html</id>
     <published>2019-05-10T02:01:56.000Z</published>
-    <updated>2019-05-10T10:40:12.767Z</updated>
+    <updated>2019-05-11T01:51:55.061Z</updated>
     
     <content type="html">&lt;hr&gt;
-&lt;h1 id=&quot;标准UTF-8&quot;&gt;&lt;a href=&quot;#标准UTF-8&quot; class=&quot;headerlink&quot; title=&quot;标准UTF-8&quot;&gt;&lt;/a&gt;标准UTF-8&lt;/h1&gt;&lt;p&gt;UTF-8（8-bit Unicode Transformation Format）8位Unicode转换格式，是一种针对Unicode的可变长度字符编码，也是一种前缀码。它可以用来表示Unicode标准中的任何字符，且其编码中的第一个字节仍与ASCII兼容，这使得原来处理ASCII字符的软件无须或只须做少部分修改，即可继续使用。因此，它逐渐成为电子邮件、网页及其他存储或发送文字优先采用的编码。&lt;/p&gt;
+&lt;h1 id=&quot;标准UTF-8字符集&quot;&gt;&lt;a href=&quot;#标准UTF-8字符集&quot; class=&quot;headerlink&quot; title=&quot;标准UTF-8字符集&quot;&gt;&lt;/a&gt;标准UTF-8字符集&lt;/h1&gt;&lt;p&gt;UTF-8（8-bit Unicode Transformation Format）即8位Unicode转换格式，是一种针对Unicode的可变长度字符编码，也是一种前缀码。它可以用来表示Unicode标准中的任何字符，且其编码中的第一个字节仍与ASCII兼容，这使得原来处理ASCII字符的软件无须或只须做少部分修改，即可继续使用。因此，它逐渐成为电子邮件、网页及其他存储或发送文字优先采用的编码。&lt;/p&gt;
 &lt;p&gt;UTF-8使用一至六个字节为每个字符编码（尽管如此，2003年11月UTF-8被RFC 3629重新规范，只能使用原来Unicode定义的区域，U+0000到U+10FFFF，也就是说最多&lt;font color=&quot;red&quot;&gt;四个字节&lt;/font&gt;）：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;128个US-ASCII字符只需一个字节编码（Unicode范围由U+0000至U+007F）。&lt;/li&gt;
@@ -48,10 +87,10 @@
 &lt;p&gt;注：QQ里面的内置的表情不算，它是通过特殊映射到的一个gif图片。一般输入法自带的才是emoji。&lt;/p&gt;
 &lt;p&gt;也就是当你的数据库里要求能够存入这些表情或宽字符时，可以把字段定义为 utf8mb4，同时要注意连接字符集也要设置为utf8mb4，否则在 严格模式 下会出现 Incorrect string value: \xF0\x9F\x98\x84… for column ‘content’这样的错误，非严格模式下此后的数据会被截断。&lt;/p&gt;
 &lt;p&gt;关于latin1、gbk也支持emoji，后面单独探讨。&lt;/p&gt;
-&lt;p&gt;以下为引用 &lt;a href=&quot;http://seanlook.com/2016/10/23/mysql-utf8mb4/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;via&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&quot;utf8mb4-unicode-ci-与-utf8mb4-general-ci-如何选择&quot;&gt;&lt;a href=&quot;#utf8mb4-unicode-ci-与-utf8mb4-general-ci-如何选择&quot; class=&quot;headerlink&quot; title=&quot;utf8mb4_unicode_ci 与 utf8mb4_general_ci 如何选择&quot;&gt;&lt;/a&gt;utf8mb4_unicode_ci 与 utf8mb4_general_ci 如何选择&lt;/h1&gt;&lt;p&gt;字符除了需要存储，还需要排序或比较大小，涉及到与编码字符集对应的排序字符集（collation）。ut8mb4对应的排序字符集常用的有 utf8mb4_unicode_ci、utf8mb4_general_ci，到底采用哪个在 stackoverflow 上有个讨论，&lt;a href=&quot;http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;What’s the difference between utf8_general_ci and utf8_unicode_ci&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;主要从排序准确性和性能两方面看：&lt;/p&gt;
-&lt;p&gt;准确性&lt;br&gt;utf8mb4_unicode_ci 是基于标准的Unicode来排序和比较，能够在各种语言之间精确排序&lt;br&gt;utf8mb4_general_ci 没有实现Unicode排序规则，在遇到某些特殊语言或字符是，排序结果可能不是所期望的。&lt;br&gt;但是在绝大多数情况下，这种特殊字符的顺序一定要那么精确吗。比如Unicode把ß、Œ当成ss和OE来看；而general会把它们当成s、e，再如ÀÁÅåāă各自都与 A 相等。&lt;br&gt;性能&lt;br&gt;utf8mb4_general_ci 在比较和排序的时候更快&lt;br&gt;utf8mb4_unicode_ci 在特殊情况下，Unicode排序规则为了能够处理特殊字符的情况，实现了略微复杂的排序算法。&lt;br&gt;但是在绝大多数情况下，不会发生此类复杂比较。general理论上比Unicode可能快些，但相比现在的CPU来说，它远远不足以成为考虑性能的因素，索引涉及、SQL设计才是。 我个人推荐是 utf8mb4_unicode_ci，将来 8.0 里也极有可能使用变为默认的规则。相比选择哪一种collation，使用者应该更关心字符集与排序规则在db里要统一就好。&lt;br&gt;这也从另一个角度告诉我们，不要可能产生乱码的字段作为主键或唯一索引。我遇到过一例，以 url 来作为唯一索引，但是它记录的有可能是乱码，导致后来想把它们修复就特别麻烦。&lt;/p&gt;
+&lt;!--以下为引用 [via](http://seanlook.com/2016/10/23/mysql-utf8mb4/)
+--&gt;
+&lt;h1 id=&quot;utf8-unicode-ci和utf8-general-ci区别&quot;&gt;&lt;a href=&quot;#utf8-unicode-ci和utf8-general-ci区别&quot; class=&quot;headerlink&quot; title=&quot;utf8_unicode_ci和utf8_general_ci区别&quot;&gt;&lt;/a&gt;utf8_unicode_ci和utf8_general_ci区别&lt;/h1&gt;&lt;p&gt;字符除了需要存储，还需要排序或比较大小，涉及到与编码字符集对应的排序字符集（collation）。ut8mb4对应的排序字符集常用的有 utf8mb4_unicode_ci、utf8mb4_general_ci，到底采用哪个在 stackoverflow 上有个讨论，&lt;a href=&quot;http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;What’s the difference between utf8_general_ci and utf8_unicode_ci&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;在数据库系统MySQL或MariaDB中有多种字符集，其中utf8_unicode_ci和utf8_general_ci是最常用的，但是utf8_general_ci对某些语言的支持有一些小问题，如果可以接受，那最好使用utf8_general_ci，因为它速度快。否则，请使用较为精确的utf8_unicode_ci，不过速度会慢一些。&lt;/p&gt;
 &lt;h1 id=&quot;怎么从utf8转换为utf8mb4&quot;&gt;&lt;a href=&quot;#怎么从utf8转换为utf8mb4&quot; class=&quot;headerlink&quot; title=&quot;怎么从utf8转换为utf8mb4&quot;&gt;&lt;/a&gt;怎么从utf8转换为utf8mb4&lt;/h1&gt;&lt;h2 id=&quot;“伪”转换&quot;&gt;&lt;a href=&quot;#“伪”转换&quot; class=&quot;headerlink&quot; title=&quot;“伪”转换&quot;&gt;&lt;/a&gt;“伪”转换&lt;/h2&gt;&lt;p&gt;如果你的表定义和连接字符集都是utf8，那么直接在你的表上执行&lt;/p&gt;
 &lt;p&gt;ALTER TABLE tbl_name CONVERT TO CHARACTER SET utf8mb4;&lt;br&gt;则能够该表上所有的列的character类型变成 utf8mb4，表定义的默认字符集也会修改。连接的时候需要使用set names utf8mb4便可以插入四字节字符。（如果依然使用 utf8 连接，只要不出现四字节字符则完全没问题）。&lt;/p&gt;
 &lt;p&gt;上面的 convert 有两个问题，一是它不能ONLINE，也就是执行之后全表禁止修改，有关这方面的讨论见 mysql 5.6 原生Online DDL解析；二是，它可能会自动该表字段类型定义，如 VARCHAR 被转成 MEDIUMTEXT，可以通过 MODIFY 指定类型为原类型。&lt;/p&gt;
@@ -86,7 +125,7 @@
     <summary type="html">
     
       &lt;hr&gt;
-&lt;h1 id=&quot;标准UTF-8&quot;&gt;&lt;a href=&quot;#标准UTF-8&quot; class=&quot;headerlink&quot; title=&quot;标准UTF-8&quot;&gt;&lt;/a&gt;标准UTF-8&lt;/h1&gt;&lt;p&gt;UTF-8（8-bit Unicode Transformation Format）8位U
+&lt;h1 id=&quot;标准UTF-8字符集&quot;&gt;&lt;a href=&quot;#标准UTF-8字符集&quot; class=&quot;headerlink&quot; title=&quot;标准UTF-8字符集&quot;&gt;&lt;/a&gt;标准UTF-8字符集&lt;/h1&gt;&lt;p&gt;UTF-8（8-bit Unicode Transformatio
     
     </summary>
     
@@ -3483,176 +3522,6 @@ select * from information_schema.innodb_trx;
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="锁" scheme="http://idber.github.io/tags/%E9%94%81/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>关于BINARY的使用</title>
-    <link href="http://idber.github.io/2017/11/20-%E5%85%B3%E4%BA%8EBINARY%E7%9A%84%E4%BD%BF%E7%94%A8.html"/>
-    <id>http://idber.github.io/2017/11/20-关于BINARY的使用.html</id>
-    <published>2017-11-20T02:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.935Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;数据库版本:&lt;br&gt;MySQL 5.6.26&lt;/p&gt;
-&lt;p&gt;线上某业务表为了区分大小写，使用BINARY关键字，正常来说使用这个关键字是走索引的，测试过程如下：&lt;/p&gt;
-&lt;p&gt;创建测试表，插入数据：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;drop table  if EXISTS student;
-
-CREATE TABLE `student` (
-  `id` int(11) PRIMARY key auto_increment,
-  `name` varchar(20) DEFAULT NULL,
-key `idx_name`(`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ; 
-
-insert into `student` ( `id`, `name`) values ( &amp;apos;1&amp;apos;, &amp;apos;michael&amp;apos;);
-insert into `student` ( `id`, `name`) values ( &amp;apos;2&amp;apos;, &amp;apos;lucy&amp;apos;);
-insert into `student` ( `id`, `name`) values ( &amp;apos;3&amp;apos;, &amp;apos;nacy&amp;apos;);
-insert into `student` ( `id`, `name`) values ( &amp;apos;4&amp;apos;, &amp;apos;mike&amp;apos;);
-insert into `student` ( `id`, `name`) values ( null, &amp;apos;guo&amp;apos;);
-insert into `student` ( `id`, `name`) values ( &amp;apos;6&amp;apos;, &amp;apos;Guo&amp;apos;);
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;不加BINARY关键字可以走索引：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; desc select * from student where name = &amp;apos;guo&amp;apos;;
-+----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
-| id | select_type | table   | type | possible_keys | key      | key_len | ref   | rows | Extra                    |
-+----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
-| 1  | SIMPLE      | student | ref  | idx_name      | idx_name | 63      | const | 2    | Using where; Using index |
-+----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
-1 rows in set (0.03 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;正常来说BINARY关键字是可以走索引的：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; desc select * from student where BINARY name = &amp;apos;guo&amp;apos;;
-+----+-------------+---------+-------+---------------+----------+---------+------+------+--------------------------+
-| id | select_type | table   | type  | possible_keys | key      | key_len | ref  | rows | Extra                    |
-+----+-------------+---------+-------+---------------+----------+---------+------+------+--------------------------+
-| 1  | SIMPLE      | student | index | NULL          | idx_name | 63      | NULL | 6    | Using where; Using index |
-+----+-------------+---------+-------+---------------+----------+---------+------+------+--------------------------+
-1 rows in set (0.04 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;不使用BINARY关键字默认不会区分大小写：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select * from student where name = &amp;apos;guo&amp;apos;;
-+----+------+
-| id | name |
-+----+------+
-| 5  | guo  |
-| 6  | Guo  |
-+----+------+
-2 rows in set (0.03 sec)
-
-mysql&amp;gt; select * from student where name = &amp;apos;Guo&amp;apos;;
-+----+------+
-| id | name |
-+----+------+
-| 5  | guo  |
-| 6  | Guo  |
-+----+------+
-2 rows in set (0.03 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;使用BINARY关键字可以区分大小写：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt;  select * from student where BINARY name = &amp;apos;guo&amp;apos;;
-+----+------+
-| id | name |
-+----+------+
-| 5  | guo  |
-+----+------+
-1 rows in set (0.04 sec)
-
-mysql&amp;gt;  select * from student where BINARY name = &amp;apos;Guo&amp;apos;;
-+----+------+
-| id | name |
-+----+------+
-| 6  | Guo  |
-+----+------+
-1 rows in set (0.03 sec)
-
-mysql&amp;gt; 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;到这里以上都没问题，但关键在于，业务的表结构大于索引的最大长度即字串长度超过255。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;CREATE TABLE `student` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(2000) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_name` (`name`(255))
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8
-
-mysql&amp;gt; desc select * from student where name = &amp;apos;guo&amp;apos;;
-+----+-------------+---------+------+---------------+----------+---------+-------+------+-------------+
-| id | select_type | table   | type | possible_keys | key      | key_len | ref   | rows | Extra       |
-+----+-------------+---------+------+---------------+----------+---------+-------+------+-------------+
-| 1  | SIMPLE      | student | ref  | idx_name      | idx_name | 768     | const | 2    | Using where |
-+----+-------------+---------+------+---------------+----------+---------+-------+------+-------------+
-1 rows in set (0.04 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;加上BINARY关键字不再走索引：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; desc select * from student where BINARY name = &amp;apos;guo&amp;apos;;
-+----+-------------+---------+------+---------------+------+---------+------+------+-------------+
-| id | select_type | table   | type | possible_keys | key  | key_len | ref  | rows | Extra       |
-+----+-------------+---------+------+---------------+------+---------+------+------+-------------+
-| 1  | SIMPLE      | student | ALL  | NULL          | NULL | NULL    | NULL | 6    | Using where |
-+----+-------------+---------+------+---------------+------+---------+------+------+-------------+
-1 rows in set (0.05 sec)
-
-mysql&amp;gt; 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这时需要在表结构里加上BINARY&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt;ALTER TABLE student MODIFY COLUMN name VARCHAR(20) BINARY;
-Query OK, 6 rows affected (0.06 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;数据库会自动转换成COLLATE utf8_bin&lt;br&gt;collate关键字为校对集，主要是对字符集之间的比较和排序，可以通过 show collation查看所有的校对集&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show create table student\G
-*************************** 1. row ***************************
-Table       : student
-Create Table: CREATE TABLE `student` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8
-1 rows in set (0.39 sec)
-
-mysql&amp;gt; 
-
-
-mysql&amp;gt; desc select * from student where name = &amp;apos;guo&amp;apos;;
-+----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
-| id | select_type | table   | type | possible_keys | key      | key_len | ref   | rows | Extra                    |
-+----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
-| 1  | SIMPLE      | student | ref  | idx_name      | idx_name | 63      | const | 1    | Using where; Using index |
-+----+-------------+---------+------+---------------+----------+---------+-------+------+--------------------------+
-1 rows in set (0.07 sec)
-
-mysql&amp;gt; 
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;即可区分大小写：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select * from student where name = &amp;apos;guo&amp;apos;;
-+----+------+
-| id | name |
-+----+------+
-| 5  | guo  |
-+----+------+
-1 rows in set (0.07 sec)
-
-mysql&amp;gt; select * from student where name = &amp;apos;Guo&amp;apos;;
-+----+------+
-| id | name |
-+----+------+
-| 6  | Guo  |
-+----+------+
-1 rows in set (0.06 sec)
-
-mysql&amp;gt; 
-&lt;/code&gt;&lt;/pre&gt;</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;数据库版本:&lt;br&gt;MySQL 5.6.26&lt;/p&gt;
-&lt;p&gt;线上某业务表为了区分大小写，使用BINARY关键字，正常来说使用这个关键字是走索引的，测试过程如下：&lt;/p&gt;
-&lt;p&gt;创建测试表，插入数据：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;drop table  if EX
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="SQL" scheme="http://idber.github.io/tags/SQL/"/>
-    
-      <category term="BINARY" scheme="http://idber.github.io/tags/BINARY/"/>
     
   </entry>
   

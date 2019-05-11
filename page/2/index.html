@@ -74,6 +74,26 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2018/08/18-MySQL 5.7中InnoDB事务隔离模式的影响.html" title="【译】MySQL 5.7中InnoDB事务隔离模式的影响" itemprop="url">
+  
+    <h1 itemprop="name">【译】MySQL 5.7中InnoDB事务隔离模式的影响</h1>
+    
+     
+           <p itemprop="description" >via过去几年，其他人已经写了很多有价值的文章，解释了InnoDB事务隔离级别的所有细节以及如何解决这个问题。因此，我将避免重复已经说过的内容; 我的注意力吸引了PeterZ的性能研究并发表在以下文章中：https://www.percona.com/blog/2015/01/1</p>
+        
+    
+    <time datetime="2018-08-17T22:01:56.000Z" itemprop="datePublished">2018-08-18</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2018/08/17-MySQL 5.7新特性系列一.html" title="MySQL 5.7新特性系列一" itemprop="url">
   
     <h1 itemprop="name">MySQL 5.7新特性系列一</h1>
@@ -274,32 +294,6 @@ Otter目前支持了什么
 
 
 
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2017/11/20-关于BINARY的使用.html" title="关于BINARY的使用" itemprop="url">
-  
-    <h1 itemprop="name">关于BINARY的使用</h1>
-    
-     
-           <p itemprop="description" >数据库版本:MySQL 5.6.26
-线上某业务表为了区分大小写，使用BINARY关键字，正常来说使用这个关键字是走索引的，测试过程如下：
-创建测试表，插入数据：
-drop table  if EXISTS student;
-
-CREATE TABLE `student` (
- </p>
-        
-    
-    <time datetime="2017-11-20T02:01:56.000Z" itemprop="datePublished">2017-11-20</time>
-  </a>
-</section>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix unexpand">
     <a class="extend prev" rel="prev" href="/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/">Next<span></span></a>
@@ -329,7 +323,7 @@ CREATE TABLE `student` (
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>36</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>37</sup></a></li>
 		  
 		
 		  
@@ -378,7 +372,7 @@ CREATE TABLE `student` (
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>42</sup></a></li>
 			
 		
 			
@@ -390,15 +384,11 @@ CREATE TABLE `student` (
 			
 		
 			
+				<li><a href="/tags/字符集/" title="字符集">字符集<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
 			
 		
 			
@@ -406,11 +396,7 @@ CREATE TABLE `student` (
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
 			
 		
 			
@@ -418,7 +404,15 @@ CREATE TABLE `student` (
 			
 		
 			
-				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
@@ -426,7 +420,11 @@ CREATE TABLE `student` (
 			
 		
 			
-				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/MHA/" title="MHA">MHA<sup>1</sup></a></li>
 			
 		
 			
@@ -434,19 +432,15 @@ CREATE TABLE `student` (
 			
 		
 			
-				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/主从/" title="主从">主从<sup>1</sup></a></li>
+				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/SQL编程/" title="SQL编程">SQL编程<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 			

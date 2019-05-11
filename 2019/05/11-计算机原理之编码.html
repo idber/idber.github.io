@@ -4,25 +4,28 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>业务评估 | 似水年华--沉浮</title>
+    <title>计算机原理之编码 | 似水年华--沉浮</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Michael Guo">
     
 
     
-    <meta name="description" content="业务一   需求 指标     响应时间 查询和操作请求ms级返回。   数据总量 1年内数据量大约1T数据量。   每秒请求量 每秒有1w次请求。   读写比 读写比是4:1。   重要程度 核心系统，P1级故障。   其他说明 数据具有时效性，历史数据访问较少，一般会处理最近15天内的数据。数据记录总体长度大约为1KB。    Step1：1年内数据量大约1T结果：每秒产生的数据量为1＊10">
-<meta name="keywords" content="MySQL">
+    <meta name="description" content="编码与加密加密什么是编码？他与加密有什么区别？在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。 编码那么什么是编码呢？编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观">
+<meta name="keywords" content="MySQL,字符集">
 <meta property="og:type" content="article">
-<meta property="og:title" content="业务评估">
-<meta property="og:url" content="http://idber.github.io/2016/03/11-业务评估.html">
+<meta property="og:title" content="计算机原理之编码">
+<meta property="og:url" content="http://idber.github.io/2019/05/11-计算机原理之编码.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="业务一   需求 指标     响应时间 查询和操作请求ms级返回。   数据总量 1年内数据量大约1T数据量。   每秒请求量 每秒有1w次请求。   读写比 读写比是4:1。   重要程度 核心系统，P1级故障。   其他说明 数据具有时效性，历史数据访问较少，一般会处理最近15天内的数据。数据记录总体长度大约为1KB。    Step1：1年内数据量大约1T结果：每秒产生的数据量为1＊10">
+<meta property="og:description" content="编码与加密加密什么是编码？他与加密有什么区别？在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。 编码那么什么是编码呢？编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-22T01:41:16.934Z">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true">
+<meta property="og:updated_time" content="2019-05-11T08:59:50.637Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="业务评估">
-<meta name="twitter:description" content="业务一   需求 指标     响应时间 查询和操作请求ms级返回。   数据总量 1年内数据量大约1T数据量。   每秒请求量 每秒有1w次请求。   读写比 读写比是4:1。   重要程度 核心系统，P1级故障。   其他说明 数据具有时效性，历史数据访问较少，一般会处理最近15天内的数据。数据记录总体长度大约为1KB。    Step1：1年内数据量大约1T结果：每秒产生的数据量为1＊10">
+<meta name="twitter:title" content="计算机原理之编码">
+<meta name="twitter:description" content="编码与加密加密什么是编码？他与加密有什么区别？在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。 编码那么什么是编码呢？编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观">
+<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -77,14 +80,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/03/11-业务评估.html" title="业务评估" itemprop="url">业务评估</a>
+      <a href="/2019/05/11-计算机原理之编码.html" title="计算机原理之编码" itemprop="url">计算机原理之编码</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
 		
   <p class="article-time">
-    <time datetime="2016-03-11T03:23:56.000Z" itemprop="datePublished"> Published 2016-03-11</time>
+    <time datetime="2019-05-11T02:01:56.000Z" itemprop="datePublished"> Published 2019-05-11</time>
     
   </p>
 </header>
@@ -93,81 +96,24 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#业务一"><span class="toc-number">1.</span> <span class="toc-text">业务一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#业务二"><span class="toc-number">2.</span> <span class="toc-text">业务二</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#编码与加密"><span class="toc-number">1.</span> <span class="toc-text">编码与加密</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#加密"><span class="toc-number">1.1.</span> <span class="toc-text">加密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编码"><span class="toc-number">1.2.</span> <span class="toc-text">编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加密与编码的关系"><span class="toc-number">1.3.</span> <span class="toc-text">加密与编码的关系</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#字符编码"><span class="toc-number">2.</span> <span class="toc-text">字符编码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#数据在计算机中的存储"><span class="toc-number">3.</span> <span class="toc-text">数据在计算机中的存储</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#第一步-如何存储0和1"><span class="toc-number">3.1.</span> <span class="toc-text">第一步 如何存储0和1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二步-如何存储数字"><span class="toc-number">3.2.</span> <span class="toc-text">第二步 如何存储数字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第三步-如何存储字符"><span class="toc-number">3.3.</span> <span class="toc-text">第三步 如何存储字符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第四步-如何存储汉字"><span class="toc-number">3.4.</span> <span class="toc-text">第四步 如何存储汉字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第五步-如何存储所有字符"><span class="toc-number">3.5.</span> <span class="toc-text">第五步 如何存储所有字符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第六步-如何将Unicode存到计算机里"><span class="toc-number">3.6.</span> <span class="toc-text">第六步 如何将Unicode存到计算机里</span></a></li></ol></li></ol>
 		
 		</div>
 		
 		<hr>
-<h2 id="业务一"><a href="#业务一" class="headerlink" title="业务一"></a>业务一</h2><table>
-<thead>
-<tr>
-<th>需求</th>
-<th>指标</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>响应时间</td>
-<td>查询和操作请求ms级返回。</td>
-</tr>
-<tr>
-<td>数据总量</td>
-<td>1年内数据量大约1T数据量。</td>
-</tr>
-<tr>
-<td>每秒请求量</td>
-<td>每秒有1w次请求。</td>
-</tr>
-<tr>
-<td>读写比</td>
-<td>读写比是4:1。</td>
-</tr>
-<tr>
-<td>重要程度</td>
-<td>核心系统，P1级故障。</td>
-</tr>
-<tr>
-<td>其他说明</td>
-<td>数据具有时效性，历史数据访问较少，一般会处理最近15天内的数据。数据记录总体长度大约为1KB。</td>
-</tr>
-</tbody>
-</table>
-<p>Step1：1年内数据量大约1T<br>结果：每秒产生的数据量为1＊1024＊1024＊1024/(365＊24＊60＊60) = 34KB/s<br>Step2：每秒1w次请求；读写比是4:1<br>结果：每秒读请求10000/5＊4 = 8000/s；每秒写请求数10000/5＊1 = 2000/s<br>Step3：记录长度大约为1KB<br>结果：根据Step1得出的结果，每秒insert的数据写入大约为34/s；根据Step2得到的每秒写2000/s，可知1966/s为update和delete操作。由于MySQL数据读写操作按照页来处理，页大小为16KB，假设每次操作的页都不相同。那么每秒写操作数据量为：16KB＊2000/s = 32M/s，每秒读操作数据量为：16KB＊8000/s = 128M/s。<br>Step4：处理最近15天内的数据<br>结果：热数据量为：(1＊1024/365)＊15 = 42GB。<br>Step5：操作ms级返回<br>结果：操作ms级别返回，并且读压力更大，那么需要尽可能的将热数据加载到内存。按照内存命中率接近100%计算的话，那么Innodb buffer大约为42GB，而其他内存需求大概为1~2GB，因此内存超配大约为45GB。按照超配原则，写带宽（wBPS）限制为50MB/s；读带宽（rBPS）限制为150MB/s。</p>
-<h2 id="业务二"><a href="#业务二" class="headerlink" title="业务二"></a>业务二</h2><table>
-<thead>
-<tr>
-<th>需求</th>
-<th>指标</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>响应时间</td>
-<td>查询和操作请求ms级返回。</td>
-</tr>
-<tr>
-<td>数据总量</td>
-<td>1年内数据量大约500G数据量。</td>
-</tr>
-<tr>
-<td>每秒请求量</td>
-<td>每秒有3w次请求。</td>
-</tr>
-<tr>
-<td>读写比</td>
-<td>读写比是1:1。</td>
-</tr>
-<tr>
-<td>重要程度</td>
-<td>核心系统，P1级故障。</td>
-</tr>
-<tr>
-<td>其他说明</td>
-<td>数据记录长度约为1KB，数据1周内数据操作频繁</td>
-</tr>
-</tbody>
-</table>
-<p>Step1：1年内数据量大约500G<br>结果：每秒产生的数据量为 500＊1024＊1024／(365＊24＊60 ＊60)=17k/s<br>Step2：每秒1W次请求；读写比是1:1<br>结果：每秒读请求30000/2＊1 = 15000/s;每秒写请求数30000/2＊1=15000/s<br>Step3：记录长度大约为1KB<br>结 果：根据Step1得出的结果，每秒insert的数据写入大约为17/s；根据Step2得到的每秒写15000/s，可知14983为update为 update和delete操作。由于MySQL数据读写操作按照页来处理，页大小为16KB，假设每次操作的页都不相同。那么每秒写操作数据量为 16KB＊15000/s=240M/s,每秒读操作数据量为：16KB＊15000/s=240M/s。<br>Step4：处理最近1周内的数据<br>结果：热数据为：(500/365)＊7=10GB。<br>Step5：操作ms级返回<br>结 果：操作ms级别返回，并且读压力更大，那么需要尽可能的将热数据加载到内存。按照内存命中率接近100%计算的话，那么Innodb buffer大约为10GB，而其他内存需求大概为1~2GB，因此内存超配大约为12GB。按照超配原则，写带宽（wBPS）限制为250MB/s；读 带宽（rBPS）限制为250MB/s。</p>
+<h1 id="编码与加密"><a href="#编码与加密" class="headerlink" title="编码与加密"></a>编码与加密</h1><h2 id="加密"><a href="#加密" class="headerlink" title="加密"></a>加密</h2><p>什么是编码？他与加密有什么区别？<br>在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。</p>
+<h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>那么什么是编码呢？<br>编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观上有意义的体验，是信息从一种形式或格式转换为另一种形式的过程。<br>解码，是编码的逆过程。</p>
+<h2 id="加密与编码的关系"><a href="#加密与编码的关系" class="headerlink" title="加密与编码的关系"></a>加密与编码的关系</h2><p>从概念上可以看出，编码只是表现形式的转换，没有保密的作用，因为编码和解码的算法是公开的，只要知道是什么编码的内容，任何人都可以轻松地解码。从这个角度看加密也一种编码，只是解密算法是非公开的。</p>
+<h1 id="字符编码"><a href="#字符编码" class="headerlink" title="字符编码"></a>字符编码</h1><p>字符编码（英语：Character encoding）、字集码是把字符集中的字符编码为指定集合中某一对象（例如：比特模式、自然数序列、8位组或者电脉冲），以便文本在计算机中存储和通过通信网络的传递。常见的例子包括将拉丁字母表编码成摩斯电码和ASCII。其中，ASCII将字母、数字和其它符号编号，并用7比特的二进制来表示这个整数。通常会额外使用一个扩充的比特，以便于以1个字节的方式存储。</p>
+<p>在计算机技术发展的早期，如ASCII（1963年）和EBCDIC（1964年）这样的字符集逐渐成为标准。但这些字符集的局限很快就变得明显，于是人们开发了许多方法来扩展它们。对于支持包括东亚CJK字符家族在内的写作系统的要求能支持更大量的字符，并且需要一种系统而不是临时的方法实现这些字符的编码。</p>
+<p>为了弄懂计算机是怎么实现编码的，就要先理解计算机如何存储数据的。</p>
+<h1 id="数据在计算机中的存储"><a href="#数据在计算机中的存储" class="headerlink" title="数据在计算机中的存储"></a>数据在计算机中的存储</h1><p>我们知道数据在计算机中是以二进制的形式存储的，那么有没有想过01这些数据是怎么存在计算机当中的呢？</p>
+<h2 id="第一步-如何存储0和1"><a href="#第一步-如何存储0和1" class="headerlink" title="第一步 如何存储0和1"></a>第一步 如何存储0和1</h2><p>不知道你们有没有听过一个东西，叫做——电容器。顾名思义，这是一种能容纳电荷的容器。与普通的电池不同的是，它的充电速度很快，并且因为不会转化为化学能所以电量流失的也很快。因此需要经常刷新。在我们的计算机中，CPU有一个参数是Hz，便是指每秒钟能充多少次电。数据在内存中以二进制的方式存储，事实上是通过对小电容器的充放电来完成的。 </p>
+<h2 id="第二步-如何存储数字"><a href="#第二步-如何存储数字" class="headerlink" title="第二步 如何存储数字"></a>第二步 如何存储数字</h2><p>当然是把数字转化成二进制啦</p>
+<h2 id="第三步-如何存储字符"><a href="#第三步-如何存储字符" class="headerlink" title="第三步 如何存储字符"></a>第三步 如何存储字符</h2><p>既然能够存储0和1，那存储字符也就不是什么难事了吧。我们只需要把字符和二进制一一对应起来，然后责令计算机来记住它，就万事大吉了。ASCII美国信息交换标准码就是干这件事。</p>
+<h2 id="第四步-如何存储汉字"><a href="#第四步-如何存储汉字" class="headerlink" title="第四步 如何存储汉字"></a>第四步 如何存储汉字</h2><p>当然，早期的时候计算机并没有在中国兴起，所以中文并不能被计算机所识别，直到1980年GB2312（信息交换用汉字编码字符集）横空出世。功能与ASCII相似。当然，后来又有了GBK（国际标准扩展），我们暂且不提。 </p>
+<h2 id="第五步-如何存储所有字符"><a href="#第五步-如何存储所有字符" class="headerlink" title="第五步 如何存储所有字符"></a>第五步 如何存储所有字符</h2><p>照葫芦画瓢，将所有的字符进行编号，所以有了Unicode字符集。但是这里有一个问题，虽然它可以存储世界上所有的字符，但是如果你的编码是000000000000001，它是不会自动给你简化成1的。由此直接导致了所有的文字存储代价都会翻倍，而这样的代价，是很多人都不愿意看见的。</p>
+<h2 id="第六步-如何将Unicode存到计算机里"><a href="#第六步-如何将Unicode存到计算机里" class="headerlink" title="第六步 如何将Unicode存到计算机里"></a>第六步 如何将Unicode存到计算机里</h2><p><img src="https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true" alt=""><br>这里稍微解释一下最后一行，第一块的两个11是指后边有两串跟着，紧接着的10是指两串开头两个标志位是10。上边的Unicode编码中截取后两个字节放到下边utf-8中除标志位之外的地方，也就是说，除了第一块开头的1110，第二块和第三块开头的10，我们有4+6+6=16位来依次存储上边的8+8=16位字符串。<br>如你所见，这就是UTF-8，一种编码方式。它采用了变长存储的形式来表示Unicode字符集。<br><img src="https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true" alt=""></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -181,7 +127,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/MySQL/">MySQL</a>
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/字符集/">字符集</a>
   </div>
 
 </div>
@@ -190,7 +136,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://idber.github.io/2016/03/11-业务评估.html" data-title="业务评估 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  <div data-url="http://idber.github.io/2019/05/11-计算机原理之编码.html" data-title="计算机原理之编码 | 似水年华--沉浮" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -203,19 +149,11 @@
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2016/03/14-MySQL服务器Linux IO调度器算法的选择.html" title="MySQL服务器Linux IO调度器算法的选择">
-  <strong>上一篇：</strong><br/>
-  <span>
-  MySQL服务器Linux IO调度器算法的选择</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2016/03/10-查询处理.html"  title="查询处理">
+<a href="/2019/05/10-MySQL的伪utf8字符集.html"  title="MySQL的伪utf8字符集">
  <strong>下一篇：</strong><br/> 
- <span>查询处理
+ <span>MySQL的伪utf8字符集
 </span>
 </a>
 </div>
@@ -238,7 +176,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#业务一"><span class="toc-number">1.</span> <span class="toc-text">业务一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#业务二"><span class="toc-number">2.</span> <span class="toc-text">业务二</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#编码与加密"><span class="toc-number">1.</span> <span class="toc-text">编码与加密</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#加密"><span class="toc-number">1.1.</span> <span class="toc-text">加密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编码"><span class="toc-number">1.2.</span> <span class="toc-text">编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加密与编码的关系"><span class="toc-number">1.3.</span> <span class="toc-text">加密与编码的关系</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#字符编码"><span class="toc-number">2.</span> <span class="toc-text">字符编码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#数据在计算机中的存储"><span class="toc-number">3.</span> <span class="toc-text">数据在计算机中的存储</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#第一步-如何存储0和1"><span class="toc-number">3.1.</span> <span class="toc-text">第一步 如何存储0和1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第二步-如何存储数字"><span class="toc-number">3.2.</span> <span class="toc-text">第二步 如何存储数字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第三步-如何存储字符"><span class="toc-number">3.3.</span> <span class="toc-text">第三步 如何存储字符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第四步-如何存储汉字"><span class="toc-number">3.4.</span> <span class="toc-text">第四步 如何存储汉字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第五步-如何存储所有字符"><span class="toc-number">3.5.</span> <span class="toc-text">第五步 如何存储所有字符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第六步-如何将Unicode存到计算机里"><span class="toc-number">3.6.</span> <span class="toc-text">第六步 如何将Unicode存到计算机里</span></a></li></ol></li></ol>
  
   </div>
 
