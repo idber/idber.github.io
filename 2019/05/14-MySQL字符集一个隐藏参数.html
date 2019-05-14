@@ -4,25 +4,25 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Welcome | 似水年华--沉浮</title>
+    <title>MySQL字符集一个隐藏参数 | 似水年华--沉浮</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Michael Guo">
     
 
     
-    <meta name="description" content="Welcome to 沉浮的BLOG!  大部分内容直接搬迁于原Blog建这个Blog的时候正在看《似水年华》，故引用之">
-<meta name="keywords" content="Welcome">
+    <meta name="description" content="最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数 --character-set-client-handshake Do not ignore character set information sent by the client. To ignore client information and use the default server character set,">
+<meta name="keywords" content="MySQL,字符集">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Welcome">
-<meta property="og:url" content="http://idber.github.io/2015/01/26-Welcome.html">
+<meta property="og:title" content="MySQL字符集一个隐藏参数">
+<meta property="og:url" content="http://idber.github.io/2019/05/14-MySQL字符集一个隐藏参数.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="Welcome to 沉浮的BLOG!  大部分内容直接搬迁于原Blog建这个Blog的时候正在看《似水年华》，故引用之">
+<meta property="og:description" content="最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数 --character-set-client-handshake Do not ignore character set information sent by the client. To ignore client information and use the default server character set,">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-22T01:41:16.933Z">
+<meta property="og:updated_time" content="2019-05-14T03:47:18.292Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Welcome">
-<meta name="twitter:description" content="Welcome to 沉浮的BLOG!  大部分内容直接搬迁于原Blog建这个Blog的时候正在看《似水年华》，故引用之">
+<meta name="twitter:title" content="MySQL字符集一个隐藏参数">
+<meta name="twitter:description" content="最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数 --character-set-client-handshake Do not ignore character set information sent by the client. To ignore client information and use the default server character set,">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -77,14 +77,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2015/01/26-Welcome.html" title="Welcome" itemprop="url">Welcome</a>
+      <a href="/2019/05/14-MySQL字符集一个隐藏参数.html" title="MySQL字符集一个隐藏参数" itemprop="url">MySQL字符集一个隐藏参数</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
 		
   <p class="article-time">
-    <time datetime="2015-01-26T08:05:40.000Z" itemprop="datePublished"> Published 2015-01-26</time>
+    <time datetime="2019-05-14T02:01:56.000Z" itemprop="datePublished"> Published 2019-05-14</time>
     
   </p>
 </header>
@@ -97,8 +97,72 @@
 		
 		</div>
 		
-		<p>Welcome to <a href="http://idber.github.io/">沉浮的BLOG</a>! </p>
-<p>大部分内容直接搬迁于原<a href="http://blog.itpub.net/24742969/" target="_blank" rel="noopener">Blog</a><br>建这个Blog的时候正在看《似水年华》，故引用之</p>
+		<hr>
+<p>最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数</p>
+<pre><code>--character-set-client-handshake
+Do not ignore character set information sent by the client. To ignore client information and use the default server character set, use --skip-character-set-client-handshake; this makes MySQL behave like MySQL 4.0.
+</code></pre><p>为了兼容 mysql 4.0 的习惯增加的这个参数，character-set-client-handshake默认为1，读取default_character_set里设置的值。如果忽略客户端字符集设置，mysqld启动时加上 –skip-character-set-client-handshake </p>
+<p>验证：<br>my.cnf参数设置<br>default_character_set = latin1<br>character_set_server = utf8mb4</p>
+<p>启动不读取default_character_set的值设置</p>
+<pre><code>character-set-client-handshake=0
+or
+skip-character-set-client-handshake=1
+</code></pre><p>重启mysql让配置生效，查看结果</p>
+<pre><code>show variables like &apos;character%&apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | utf8mb4                           |
+| character_set_connection | utf8mb4                           |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | utf8mb4                           |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.01 sec)
+</code></pre><p>可以看到character_set_client，character_set_connection，character_set_results读取的是character_set_server的值utf8mb4</p>
+<p>如果启动读取default_character_set的值设置</p>
+<pre><code>character-set-client-handshake=1
+or
+skip-character-set-client-handshake=0
+</code></pre><p>重启mysql让配置生效，查看结果</p>
+<pre><code>show variables like &apos;character%&apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | latin1                            |
+| character_set_connection | latin1                            |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | latin1                            |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.13 sec)
+</code></pre><p>可以看到character_set_client，character_set_connection，character_set_results读取的是default_character_set的值latin1</p>
+<p>这时需要手工设置<br>set names xxx;<br>，才会将client、connection、results的字符集改过来。</p>
+<pre><code>set names utf8;
+Query OK, 0 rows affected (0.02 sec)
+
+show variables like &apos;character%&apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | utf8                              |
+| character_set_connection | utf8                              |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | utf8                              |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+</code></pre><p>其实这个参数也是有好处的。比如启用 skip-character-set-client-handshake 选项后，就可以避免客户端程序误操作，使用其他字符集连接进来并写入数据，从而引发乱码问题。</p>
+<p>参考：<br><a href="http://imysql.com/2013/10/29/misunderstand-about-charset-handshake.shtml" target="_blank" rel="noopener">http://imysql.com/2013/10/29/misunderstand-about-charset-handshake.shtml</a><br><a href="https://www.cnblogs.com/cchust/p/4327019.html" target="_blank" rel="noopener">https://www.cnblogs.com/cchust/p/4327019.html</a><br><a href="http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html">http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html</a></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -106,13 +170,13 @@
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/Welcome/">Welcome</a>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
 </div>
 
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Welcome/">Welcome</a>
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/字符集/">字符集</a>
   </div>
 
 </div>
@@ -121,7 +185,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://idber.github.io/2015/01/26-Welcome.html" data-title="Welcome | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  <div data-url="http://idber.github.io/2019/05/14-MySQL字符集一个隐藏参数.html" data-title="MySQL字符集一个隐藏参数 | 似水年华--沉浮" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -134,14 +198,14 @@
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2015/09/11-MySQL基于binlog主从复制配置.html" title="MySQL基于binlog主从复制配置">
-  <strong>上一篇：</strong><br/>
-  <span>
-  MySQL基于binlog主从复制配置</span>
+
+<div class="next">
+<a href="/2019/05/11-计算机原理之编码.html"  title="计算机原理之编码">
+ <strong>下一篇：</strong><br/> 
+ <span>计算机原理之编码
+</span>
 </a>
 </div>
-
 
 </nav>
 

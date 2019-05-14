@@ -12,20 +12,21 @@
 
     
     <meta name="description" content="编码与加密加密什么是编码？他与加密有什么区别？在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。 编码那么什么是编码呢？编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观">
-<meta name="keywords" content="MySQL,字符集">
+<meta name="keywords" content="计算机原理,编码">
 <meta property="og:type" content="article">
 <meta property="og:title" content="计算机原理之编码">
 <meta property="og:url" content="http://idber.github.io/2019/05/11-计算机原理之编码.html">
 <meta property="og:site_name" content="似水年华--沉浮">
 <meta property="og:description" content="编码与加密加密什么是编码？他与加密有什么区别？在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。 编码那么什么是编码呢？编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观">
 <meta property="og:locale" content="en">
+<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset000%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A80%E5%92%8C1.png?raw=true">
 <meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true">
 <meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true">
-<meta property="og:updated_time" content="2019-05-11T08:59:50.637Z">
+<meta property="og:updated_time" content="2019-05-11T09:19:52.154Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="计算机原理之编码">
 <meta name="twitter:description" content="编码与加密加密什么是编码？他与加密有什么区别？在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。 编码那么什么是编码呢？编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观">
-<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true">
+<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/charset000%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A80%E5%92%8C1.png?raw=true">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -108,12 +109,15 @@
 <p>在计算机技术发展的早期，如ASCII（1963年）和EBCDIC（1964年）这样的字符集逐渐成为标准。但这些字符集的局限很快就变得明显，于是人们开发了许多方法来扩展它们。对于支持包括东亚CJK字符家族在内的写作系统的要求能支持更大量的字符，并且需要一种系统而不是临时的方法实现这些字符的编码。</p>
 <p>为了弄懂计算机是怎么实现编码的，就要先理解计算机如何存储数据的。</p>
 <h1 id="数据在计算机中的存储"><a href="#数据在计算机中的存储" class="headerlink" title="数据在计算机中的存储"></a>数据在计算机中的存储</h1><p>我们知道数据在计算机中是以二进制的形式存储的，那么有没有想过01这些数据是怎么存在计算机当中的呢？</p>
-<h2 id="第一步-如何存储0和1"><a href="#第一步-如何存储0和1" class="headerlink" title="第一步 如何存储0和1"></a>第一步 如何存储0和1</h2><p>不知道你们有没有听过一个东西，叫做——电容器。顾名思义，这是一种能容纳电荷的容器。与普通的电池不同的是，它的充电速度很快，并且因为不会转化为化学能所以电量流失的也很快。因此需要经常刷新。在我们的计算机中，CPU有一个参数是Hz，便是指每秒钟能充多少次电。数据在内存中以二进制的方式存储，事实上是通过对小电容器的充放电来完成的。 </p>
+<h2 id="第一步-如何存储0和1"><a href="#第一步-如何存储0和1" class="headerlink" title="第一步 如何存储0和1"></a>第一步 如何存储0和1</h2><p><img src="https://github.com/idber/idber.photo/blob/master/blog/charset000%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A80%E5%92%8C1.png?raw=true" alt=""></p>
+<p>不知道你们有没有听过一个东西，叫做——电容器。顾名思义，这是一种能容纳电荷的容器。与普通的电池不同的是，它的充电速度很快，并且因为不会转化为化学能所以电量流失的也很快。因此需要经常刷新。在我们的计算机中，CPU有一个参数是Hz，便是指每秒钟能充多少次电。数据在内存中以二进制的方式存储，事实上是通过对小电容器的充放电来完成的。 </p>
 <h2 id="第二步-如何存储数字"><a href="#第二步-如何存储数字" class="headerlink" title="第二步 如何存储数字"></a>第二步 如何存储数字</h2><p>当然是把数字转化成二进制啦</p>
 <h2 id="第三步-如何存储字符"><a href="#第三步-如何存储字符" class="headerlink" title="第三步 如何存储字符"></a>第三步 如何存储字符</h2><p>既然能够存储0和1，那存储字符也就不是什么难事了吧。我们只需要把字符和二进制一一对应起来，然后责令计算机来记住它，就万事大吉了。ASCII美国信息交换标准码就是干这件事。</p>
 <h2 id="第四步-如何存储汉字"><a href="#第四步-如何存储汉字" class="headerlink" title="第四步 如何存储汉字"></a>第四步 如何存储汉字</h2><p>当然，早期的时候计算机并没有在中国兴起，所以中文并不能被计算机所识别，直到1980年GB2312（信息交换用汉字编码字符集）横空出世。功能与ASCII相似。当然，后来又有了GBK（国际标准扩展），我们暂且不提。 </p>
 <h2 id="第五步-如何存储所有字符"><a href="#第五步-如何存储所有字符" class="headerlink" title="第五步 如何存储所有字符"></a>第五步 如何存储所有字符</h2><p>照葫芦画瓢，将所有的字符进行编号，所以有了Unicode字符集。但是这里有一个问题，虽然它可以存储世界上所有的字符，但是如果你的编码是000000000000001，它是不会自动给你简化成1的。由此直接导致了所有的文字存储代价都会翻倍，而这样的代价，是很多人都不愿意看见的。</p>
-<h2 id="第六步-如何将Unicode存到计算机里"><a href="#第六步-如何将Unicode存到计算机里" class="headerlink" title="第六步 如何将Unicode存到计算机里"></a>第六步 如何将Unicode存到计算机里</h2><p><img src="https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true" alt=""><br>这里稍微解释一下最后一行，第一块的两个11是指后边有两串跟着，紧接着的10是指两串开头两个标志位是10。上边的Unicode编码中截取后两个字节放到下边utf-8中除标志位之外的地方，也就是说，除了第一块开头的1110，第二块和第三块开头的10，我们有4+6+6=16位来依次存储上边的8+8=16位字符串。<br>如你所见，这就是UTF-8，一种编码方式。它采用了变长存储的形式来表示Unicode字符集。<br><img src="https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true" alt=""></p>
+<h2 id="第六步-如何将Unicode存到计算机里"><a href="#第六步-如何将Unicode存到计算机里" class="headerlink" title="第六步 如何将Unicode存到计算机里"></a>第六步 如何将Unicode存到计算机里</h2><p><img src="https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true" alt=""></p>
+<p>这里稍微解释一下最后一行，第一块的两个11是指后边有两串跟着，紧接着的10是指两串开头两个标志位是10。上边的Unicode编码中截取后两个字节放到下边utf-8中除标志位之外的地方，也就是说，除了第一块开头的1110，第二块和第三块开头的10，我们有4+6+6=16位来依次存储上边的8+8=16位字符串。<br>如你所见，这就是UTF-8，一种编码方式。它采用了变长存储的形式来表示Unicode字符集。 </p>
+<p><img src="https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true" alt=""></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -127,7 +131,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/字符集/">字符集</a>
+  <span></span> <a href="/tags/计算机原理/">计算机原理</a><a href="/tags/编码/">编码</a>
   </div>
 
 </div>
@@ -149,6 +153,14 @@
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev" >
+ <a href="/2019/05/14-MySQL字符集一个隐藏参数.html" title="MySQL字符集一个隐藏参数">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MySQL字符集一个隐藏参数</span>
+</a>
+</div>
+
 
 <div class="next">
 <a href="/2019/05/10-MySQL的伪utf8字符集.html"  title="MySQL的伪utf8字符集">
@@ -201,7 +213,7 @@
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>37</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>38</sup></a></li>
 		  
 		
 		  
@@ -262,11 +274,15 @@
 			
 		
 			
-				<li><a href="/tags/字符集/" title="字符集">字符集<sup>2</sup></a></li>
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/字符集/" title="字符集">字符集<sup>2</sup></a></li>
 			
 		
 			
@@ -282,15 +298,11 @@
 			
 		
 			
-				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
 			
 		
 			
@@ -302,7 +314,7 @@
 			
 		
 			
-				<li><a href="/tags/MHA/" title="MHA">MHA<sup>1</sup></a></li>
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
 			
 		
 			
@@ -314,11 +326,11 @@
 			
 		
 			
-				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
+				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
 			
 		
 			
@@ -326,7 +338,7 @@
 			
 		
 			
-				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 		</ul>

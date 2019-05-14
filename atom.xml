@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-05-11T08:59:50.637Z</updated>
+  <updated>2019-05-14T03:47:18.292Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -16,32 +16,86 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>计算机原理之编码</title>
-    <link href="http://idber.github.io/2019/05/11-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E7%90%86%E4%B9%8B%E7%BC%96%E7%A0%81.html"/>
-    <id>http://idber.github.io/2019/05/11-计算机原理之编码.html</id>
-    <published>2019-05-11T02:01:56.000Z</published>
-    <updated>2019-05-11T08:59:50.637Z</updated>
+    <title>MySQL字符集一个隐藏参数</title>
+    <link href="http://idber.github.io/2019/05/14-MySQL%E5%AD%97%E7%AC%A6%E9%9B%86%E4%B8%80%E4%B8%AA%E9%9A%90%E8%97%8F%E5%8F%82%E6%95%B0.html"/>
+    <id>http://idber.github.io/2019/05/14-MySQL字符集一个隐藏参数.html</id>
+    <published>2019-05-14T02:01:56.000Z</published>
+    <updated>2019-05-14T03:47:18.292Z</updated>
     
     <content type="html">&lt;hr&gt;
-&lt;h1 id=&quot;编码与加密&quot;&gt;&lt;a href=&quot;#编码与加密&quot; class=&quot;headerlink&quot; title=&quot;编码与加密&quot;&gt;&lt;/a&gt;编码与加密&lt;/h1&gt;&lt;h2 id=&quot;加密&quot;&gt;&lt;a href=&quot;#加密&quot; class=&quot;headerlink&quot; title=&quot;加密&quot;&gt;&lt;/a&gt;加密&lt;/h2&gt;&lt;p&gt;什么是编码？他与加密有什么区别？&lt;br&gt;在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。&lt;/p&gt;
-&lt;h2 id=&quot;编码&quot;&gt;&lt;a href=&quot;#编码&quot; class=&quot;headerlink&quot; title=&quot;编码&quot;&gt;&lt;/a&gt;编码&lt;/h2&gt;&lt;p&gt;那么什么是编码呢？&lt;br&gt;编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观上有意义的体验，是信息从一种形式或格式转换为另一种形式的过程。&lt;br&gt;解码，是编码的逆过程。&lt;/p&gt;
-&lt;h2 id=&quot;加密与编码的关系&quot;&gt;&lt;a href=&quot;#加密与编码的关系&quot; class=&quot;headerlink&quot; title=&quot;加密与编码的关系&quot;&gt;&lt;/a&gt;加密与编码的关系&lt;/h2&gt;&lt;p&gt;从概念上可以看出，编码只是表现形式的转换，没有保密的作用，因为编码和解码的算法是公开的，只要知道是什么编码的内容，任何人都可以轻松地解码。从这个角度看加密也一种编码，只是解密算法是非公开的。&lt;/p&gt;
-&lt;h1 id=&quot;字符编码&quot;&gt;&lt;a href=&quot;#字符编码&quot; class=&quot;headerlink&quot; title=&quot;字符编码&quot;&gt;&lt;/a&gt;字符编码&lt;/h1&gt;&lt;p&gt;字符编码（英语：Character encoding）、字集码是把字符集中的字符编码为指定集合中某一对象（例如：比特模式、自然数序列、8位组或者电脉冲），以便文本在计算机中存储和通过通信网络的传递。常见的例子包括将拉丁字母表编码成摩斯电码和ASCII。其中，ASCII将字母、数字和其它符号编号，并用7比特的二进制来表示这个整数。通常会额外使用一个扩充的比特，以便于以1个字节的方式存储。&lt;/p&gt;
-&lt;p&gt;在计算机技术发展的早期，如ASCII（1963年）和EBCDIC（1964年）这样的字符集逐渐成为标准。但这些字符集的局限很快就变得明显，于是人们开发了许多方法来扩展它们。对于支持包括东亚CJK字符家族在内的写作系统的要求能支持更大量的字符，并且需要一种系统而不是临时的方法实现这些字符的编码。&lt;/p&gt;
-&lt;p&gt;为了弄懂计算机是怎么实现编码的，就要先理解计算机如何存储数据的。&lt;/p&gt;
-&lt;h1 id=&quot;数据在计算机中的存储&quot;&gt;&lt;a href=&quot;#数据在计算机中的存储&quot; class=&quot;headerlink&quot; title=&quot;数据在计算机中的存储&quot;&gt;&lt;/a&gt;数据在计算机中的存储&lt;/h1&gt;&lt;p&gt;我们知道数据在计算机中是以二进制的形式存储的，那么有没有想过01这些数据是怎么存在计算机当中的呢？&lt;/p&gt;
-&lt;h2 id=&quot;第一步-如何存储0和1&quot;&gt;&lt;a href=&quot;#第一步-如何存储0和1&quot; class=&quot;headerlink&quot; title=&quot;第一步 如何存储0和1&quot;&gt;&lt;/a&gt;第一步 如何存储0和1&lt;/h2&gt;&lt;p&gt;不知道你们有没有听过一个东西，叫做——电容器。顾名思义，这是一种能容纳电荷的容器。与普通的电池不同的是，它的充电速度很快，并且因为不会转化为化学能所以电量流失的也很快。因此需要经常刷新。在我们的计算机中，CPU有一个参数是Hz，便是指每秒钟能充多少次电。数据在内存中以二进制的方式存储，事实上是通过对小电容器的充放电来完成的。 &lt;/p&gt;
-&lt;h2 id=&quot;第二步-如何存储数字&quot;&gt;&lt;a href=&quot;#第二步-如何存储数字&quot; class=&quot;headerlink&quot; title=&quot;第二步 如何存储数字&quot;&gt;&lt;/a&gt;第二步 如何存储数字&lt;/h2&gt;&lt;p&gt;当然是把数字转化成二进制啦&lt;/p&gt;
-&lt;h2 id=&quot;第三步-如何存储字符&quot;&gt;&lt;a href=&quot;#第三步-如何存储字符&quot; class=&quot;headerlink&quot; title=&quot;第三步 如何存储字符&quot;&gt;&lt;/a&gt;第三步 如何存储字符&lt;/h2&gt;&lt;p&gt;既然能够存储0和1，那存储字符也就不是什么难事了吧。我们只需要把字符和二进制一一对应起来，然后责令计算机来记住它，就万事大吉了。ASCII美国信息交换标准码就是干这件事。&lt;/p&gt;
-&lt;h2 id=&quot;第四步-如何存储汉字&quot;&gt;&lt;a href=&quot;#第四步-如何存储汉字&quot; class=&quot;headerlink&quot; title=&quot;第四步 如何存储汉字&quot;&gt;&lt;/a&gt;第四步 如何存储汉字&lt;/h2&gt;&lt;p&gt;当然，早期的时候计算机并没有在中国兴起，所以中文并不能被计算机所识别，直到1980年GB2312（信息交换用汉字编码字符集）横空出世。功能与ASCII相似。当然，后来又有了GBK（国际标准扩展），我们暂且不提。 &lt;/p&gt;
-&lt;h2 id=&quot;第五步-如何存储所有字符&quot;&gt;&lt;a href=&quot;#第五步-如何存储所有字符&quot; class=&quot;headerlink&quot; title=&quot;第五步 如何存储所有字符&quot;&gt;&lt;/a&gt;第五步 如何存储所有字符&lt;/h2&gt;&lt;p&gt;照葫芦画瓢，将所有的字符进行编号，所以有了Unicode字符集。但是这里有一个问题，虽然它可以存储世界上所有的字符，但是如果你的编码是000000000000001，它是不会自动给你简化成1的。由此直接导致了所有的文字存储代价都会翻倍，而这样的代价，是很多人都不愿意看见的。&lt;/p&gt;
-&lt;h2 id=&quot;第六步-如何将Unicode存到计算机里&quot;&gt;&lt;a href=&quot;#第六步-如何将Unicode存到计算机里&quot; class=&quot;headerlink&quot; title=&quot;第六步 如何将Unicode存到计算机里&quot;&gt;&lt;/a&gt;第六步 如何将Unicode存到计算机里&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;br&gt;这里稍微解释一下最后一行，第一块的两个11是指后边有两串跟着，紧接着的10是指两串开头两个标志位是10。上边的Unicode编码中截取后两个字节放到下边utf-8中除标志位之外的地方，也就是说，除了第一块开头的1110，第二块和第三块开头的10，我们有4+6+6=16位来依次存储上边的8+8=16位字符串。&lt;br&gt;如你所见，这就是UTF-8，一种编码方式。它采用了变长存储的形式来表示Unicode字符集。&lt;br&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;--character-set-client-handshake
+Do not ignore character set information sent by the client. To ignore client information and use the default server character set, use --skip-character-set-client-handshake; this makes MySQL behave like MySQL 4.0.
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;为了兼容 mysql 4.0 的习惯增加的这个参数，character-set-client-handshake默认为1，读取default_character_set里设置的值。如果忽略客户端字符集设置，mysqld启动时加上 –skip-character-set-client-handshake &lt;/p&gt;
+&lt;p&gt;验证：&lt;br&gt;my.cnf参数设置&lt;br&gt;default_character_set = latin1&lt;br&gt;character_set_server = utf8mb4&lt;/p&gt;
+&lt;p&gt;启动不读取default_character_set的值设置&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;character-set-client-handshake=0
+or
+skip-character-set-client-handshake=1
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;重启mysql让配置生效，查看结果&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | utf8mb4                           |
+| character_set_connection | utf8mb4                           |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | utf8mb4                           |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.01 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看到character_set_client，character_set_connection，character_set_results读取的是character_set_server的值utf8mb4&lt;/p&gt;
+&lt;p&gt;如果启动读取default_character_set的值设置&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;character-set-client-handshake=1
+or
+skip-character-set-client-handshake=0
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;重启mysql让配置生效，查看结果&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | latin1                            |
+| character_set_connection | latin1                            |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | latin1                            |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.13 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看到character_set_client，character_set_connection，character_set_results读取的是default_character_set的值latin1&lt;/p&gt;
+&lt;p&gt;这时需要手工设置&lt;br&gt;set names xxx;&lt;br&gt;，才会将client、connection、results的字符集改过来。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;set names utf8;
+Query OK, 0 rows affected (0.02 sec)
+
+show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | utf8                              |
+| character_set_connection | utf8                              |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | utf8                              |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;其实这个参数也是有好处的。比如启用 skip-character-set-client-handshake 选项后，就可以避免客户端程序误操作，使用其他字符集连接进来并写入数据，从而引发乱码问题。&lt;/p&gt;
+&lt;p&gt;参考：&lt;br&gt;&lt;a href=&quot;http://imysql.com/2013/10/29/misunderstand-about-charset-handshake.shtml&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://imysql.com/2013/10/29/misunderstand-about-charset-handshake.shtml&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/p/4327019.html&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html&quot;&gt;http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html&lt;/a&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
     
       &lt;hr&gt;
-&lt;h1 id=&quot;编码与加密&quot;&gt;&lt;a href=&quot;#编码与加密&quot; class=&quot;headerlink&quot; title=&quot;编码与加密&quot;&gt;&lt;/a&gt;编码与加密&lt;/h1&gt;&lt;h2 id=&quot;加密&quot;&gt;&lt;a href=&quot;#加密&quot; class=&quot;headerlink&quot; title=&quot;加密&quot;&gt;
+&lt;p&gt;最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;--character-set-client-handshake
+Do not ignore character set information sent by 
     
     </summary>
     
@@ -55,11 +109,53 @@
   </entry>
   
   <entry>
+    <title>计算机原理之编码</title>
+    <link href="http://idber.github.io/2019/05/11-%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E7%90%86%E4%B9%8B%E7%BC%96%E7%A0%81.html"/>
+    <id>http://idber.github.io/2019/05/11-计算机原理之编码.html</id>
+    <published>2019-05-11T02:01:56.000Z</published>
+    <updated>2019-05-11T09:19:52.154Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;h1 id=&quot;编码与加密&quot;&gt;&lt;a href=&quot;#编码与加密&quot; class=&quot;headerlink&quot; title=&quot;编码与加密&quot;&gt;&lt;/a&gt;编码与加密&lt;/h1&gt;&lt;h2 id=&quot;加密&quot;&gt;&lt;a href=&quot;#加密&quot; class=&quot;headerlink&quot; title=&quot;加密&quot;&gt;&lt;/a&gt;加密&lt;/h2&gt;&lt;p&gt;什么是编码？他与加密有什么区别？&lt;br&gt;在密码学中，加密（英语：Encryption）是将明文信息改变为难以读取的密文内容，使之不可读的过程。只有拥有解密方法的对象，经由解密过程，才能将密文还原为正常可读的内容。&lt;/p&gt;
+&lt;h2 id=&quot;编码&quot;&gt;&lt;a href=&quot;#编码&quot; class=&quot;headerlink&quot; title=&quot;编码&quot;&gt;&lt;/a&gt;编码&lt;/h2&gt;&lt;p&gt;那么什么是编码呢？&lt;br&gt;编码（Encoding）在认知上是解释传入的刺激的一种基本知觉的过程。技术上来说，这是一个复杂的、多阶段的转换过程，从较为客观的感觉输入（例如光、声）到主观上有意义的体验，是信息从一种形式或格式转换为另一种形式的过程。&lt;br&gt;解码，是编码的逆过程。&lt;/p&gt;
+&lt;h2 id=&quot;加密与编码的关系&quot;&gt;&lt;a href=&quot;#加密与编码的关系&quot; class=&quot;headerlink&quot; title=&quot;加密与编码的关系&quot;&gt;&lt;/a&gt;加密与编码的关系&lt;/h2&gt;&lt;p&gt;从概念上可以看出，编码只是表现形式的转换，没有保密的作用，因为编码和解码的算法是公开的，只要知道是什么编码的内容，任何人都可以轻松地解码。从这个角度看加密也一种编码，只是解密算法是非公开的。&lt;/p&gt;
+&lt;h1 id=&quot;字符编码&quot;&gt;&lt;a href=&quot;#字符编码&quot; class=&quot;headerlink&quot; title=&quot;字符编码&quot;&gt;&lt;/a&gt;字符编码&lt;/h1&gt;&lt;p&gt;字符编码（英语：Character encoding）、字集码是把字符集中的字符编码为指定集合中某一对象（例如：比特模式、自然数序列、8位组或者电脉冲），以便文本在计算机中存储和通过通信网络的传递。常见的例子包括将拉丁字母表编码成摩斯电码和ASCII。其中，ASCII将字母、数字和其它符号编号，并用7比特的二进制来表示这个整数。通常会额外使用一个扩充的比特，以便于以1个字节的方式存储。&lt;/p&gt;
+&lt;p&gt;在计算机技术发展的早期，如ASCII（1963年）和EBCDIC（1964年）这样的字符集逐渐成为标准。但这些字符集的局限很快就变得明显，于是人们开发了许多方法来扩展它们。对于支持包括东亚CJK字符家族在内的写作系统的要求能支持更大量的字符，并且需要一种系统而不是临时的方法实现这些字符的编码。&lt;/p&gt;
+&lt;p&gt;为了弄懂计算机是怎么实现编码的，就要先理解计算机如何存储数据的。&lt;/p&gt;
+&lt;h1 id=&quot;数据在计算机中的存储&quot;&gt;&lt;a href=&quot;#数据在计算机中的存储&quot; class=&quot;headerlink&quot; title=&quot;数据在计算机中的存储&quot;&gt;&lt;/a&gt;数据在计算机中的存储&lt;/h1&gt;&lt;p&gt;我们知道数据在计算机中是以二进制的形式存储的，那么有没有想过01这些数据是怎么存在计算机当中的呢？&lt;/p&gt;
+&lt;h2 id=&quot;第一步-如何存储0和1&quot;&gt;&lt;a href=&quot;#第一步-如何存储0和1&quot; class=&quot;headerlink&quot; title=&quot;第一步 如何存储0和1&quot;&gt;&lt;/a&gt;第一步 如何存储0和1&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/charset000%E5%A6%82%E4%BD%95%E5%AD%98%E5%82%A80%E5%92%8C1.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;不知道你们有没有听过一个东西，叫做——电容器。顾名思义，这是一种能容纳电荷的容器。与普通的电池不同的是，它的充电速度很快，并且因为不会转化为化学能所以电量流失的也很快。因此需要经常刷新。在我们的计算机中，CPU有一个参数是Hz，便是指每秒钟能充多少次电。数据在内存中以二进制的方式存储，事实上是通过对小电容器的充放电来完成的。 &lt;/p&gt;
+&lt;h2 id=&quot;第二步-如何存储数字&quot;&gt;&lt;a href=&quot;#第二步-如何存储数字&quot; class=&quot;headerlink&quot; title=&quot;第二步 如何存储数字&quot;&gt;&lt;/a&gt;第二步 如何存储数字&lt;/h2&gt;&lt;p&gt;当然是把数字转化成二进制啦&lt;/p&gt;
+&lt;h2 id=&quot;第三步-如何存储字符&quot;&gt;&lt;a href=&quot;#第三步-如何存储字符&quot; class=&quot;headerlink&quot; title=&quot;第三步 如何存储字符&quot;&gt;&lt;/a&gt;第三步 如何存储字符&lt;/h2&gt;&lt;p&gt;既然能够存储0和1，那存储字符也就不是什么难事了吧。我们只需要把字符和二进制一一对应起来，然后责令计算机来记住它，就万事大吉了。ASCII美国信息交换标准码就是干这件事。&lt;/p&gt;
+&lt;h2 id=&quot;第四步-如何存储汉字&quot;&gt;&lt;a href=&quot;#第四步-如何存储汉字&quot; class=&quot;headerlink&quot; title=&quot;第四步 如何存储汉字&quot;&gt;&lt;/a&gt;第四步 如何存储汉字&lt;/h2&gt;&lt;p&gt;当然，早期的时候计算机并没有在中国兴起，所以中文并不能被计算机所识别，直到1980年GB2312（信息交换用汉字编码字符集）横空出世。功能与ASCII相似。当然，后来又有了GBK（国际标准扩展），我们暂且不提。 &lt;/p&gt;
+&lt;h2 id=&quot;第五步-如何存储所有字符&quot;&gt;&lt;a href=&quot;#第五步-如何存储所有字符&quot; class=&quot;headerlink&quot; title=&quot;第五步 如何存储所有字符&quot;&gt;&lt;/a&gt;第五步 如何存储所有字符&lt;/h2&gt;&lt;p&gt;照葫芦画瓢，将所有的字符进行编号，所以有了Unicode字符集。但是这里有一个问题，虽然它可以存储世界上所有的字符，但是如果你的编码是000000000000001，它是不会自动给你简化成1的。由此直接导致了所有的文字存储代价都会翻倍，而这样的代价，是很多人都不愿意看见的。&lt;/p&gt;
+&lt;h2 id=&quot;第六步-如何将Unicode存到计算机里&quot;&gt;&lt;a href=&quot;#第六步-如何将Unicode存到计算机里&quot; class=&quot;headerlink&quot; title=&quot;第六步 如何将Unicode存到计算机里&quot;&gt;&lt;/a&gt;第六步 如何将Unicode存到计算机里&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/charset005%E7%AC%AC%E5%85%AD%E6%AD%A5%E5%A6%82%E4%BD%95%E5%B0%86Unicode%E5%AD%98%E5%88%B0%E8%AE%A1%E7%AE%97%E6%9C%BA%E9%87%8C.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;这里稍微解释一下最后一行，第一块的两个11是指后边有两串跟着，紧接着的10是指两串开头两个标志位是10。上边的Unicode编码中截取后两个字节放到下边utf-8中除标志位之外的地方，也就是说，除了第一块开头的1110，第二块和第三块开头的10，我们有4+6+6=16位来依次存储上边的8+8=16位字符串。&lt;br&gt;如你所见，这就是UTF-8，一种编码方式。它采用了变长存储的形式来表示Unicode字符集。 &lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/charset003UTF8.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;h1 id=&quot;编码与加密&quot;&gt;&lt;a href=&quot;#编码与加密&quot; class=&quot;headerlink&quot; title=&quot;编码与加密&quot;&gt;&lt;/a&gt;编码与加密&lt;/h1&gt;&lt;h2 id=&quot;加密&quot;&gt;&lt;a href=&quot;#加密&quot; class=&quot;headerlink&quot; title=&quot;加密&quot;&gt;
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="计算机原理" scheme="http://idber.github.io/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8E%9F%E7%90%86/"/>
+    
+      <category term="编码" scheme="http://idber.github.io/tags/%E7%BC%96%E7%A0%81/"/>
+    
+  </entry>
+  
+  <entry>
     <title>MySQL的伪utf8字符集</title>
     <link href="http://idber.github.io/2019/05/10-MySQL%E7%9A%84%E4%BC%AAutf8%E5%AD%97%E7%AC%A6%E9%9B%86.html"/>
     <id>http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html</id>
     <published>2019-05-10T02:01:56.000Z</published>
-    <updated>2019-05-11T01:51:55.061Z</updated>
+    <updated>2019-05-13T10:05:40.032Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;h1 id=&quot;标准UTF-8字符集&quot;&gt;&lt;a href=&quot;#标准UTF-8字符集&quot; class=&quot;headerlink&quot; title=&quot;标准UTF-8字符集&quot;&gt;&lt;/a&gt;标准UTF-8字符集&lt;/h1&gt;&lt;p&gt;UTF-8（8-bit Unicode Transformation Format）即8位Unicode转换格式，是一种针对Unicode的可变长度字符编码，也是一种前缀码。它可以用来表示Unicode标准中的任何字符，且其编码中的第一个字节仍与ASCII兼容，这使得原来处理ASCII字符的软件无须或只须做少部分修改，即可继续使用。因此，它逐渐成为电子邮件、网页及其他存储或发送文字优先采用的编码。&lt;/p&gt;
@@ -70,7 +166,7 @@
 &lt;li&gt;其他基本多文种平面（BMP）中的字符（这包含了大部分常用字，如大部分的汉字）使用三个字节编码（Unicode范围由U+0800至U+FFFF）。&lt;/li&gt;
 &lt;li&gt;其他极少使用的Unicode 辅助平面的字符使用四至六字节编码（Unicode范围由U+10000至U+1FFFFF使用四字节，Unicode范围由U+200000至U+3FFFFFF使用五字节，Unicode范围由U+4000000至U+7FFFFFFF使用六字节）。&lt;br&gt;对上述提及的第四种字符而言，UTF-8使用四至六个字节来编码似乎太耗费资源了。但UTF-8对所有常用的字符都可以用三个字节表示，而且它的另一种选择，UTF-16编码，对前述的第四种字符同样需要四个字节来编码，所以要决定UTF-8或UTF-16哪种编码比较有效率，还要视所使用的字符的分布范围而定。不过，如果使用一些传统的压缩系统，比如DEFLATE，则这些不同编码系统间的的差异就变得微不足道了。若顾及传统压缩算法在压缩较短文字上的效果不大，可以考虑使用Unicode标准压缩格式（SCSU）。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;互联网工程工作小组（IETF）要求所有互联网协议都必须支持UTF-8编码[2]。互联网邮件联盟（IMC）建议所有电子邮件软件都支持UTF-8编码。[3]&lt;/p&gt;
+&lt;p&gt;互联网工程工作小组（IETF）要求所有互联网协议都必须支持UTF-8编码。互联网邮件联盟（IMC）建议所有电子邮件软件都支持UTF-8编码。&lt;/p&gt;
 &lt;h1 id=&quot;MySQL的utf8&quot;&gt;&lt;a href=&quot;#MySQL的utf8&quot; class=&quot;headerlink&quot; title=&quot;MySQL的utf8&quot;&gt;&lt;/a&gt;MySQL的utf8&lt;/h1&gt;&lt;p&gt;官方手册 &lt;a href=&quot;https://dev.mysql.com/doc/refman/5.6/en/charset-unicode-sets.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/refman/5.6/en/charset-unicode-sets.html&lt;/a&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;utf8mb4: A UTF-8 encoding of the Unicode character set using one to four bytes per character.&lt;/p&gt;
@@ -83,12 +179,12 @@
 &lt;p&gt;utf8mb3 uses a maximum of three bytes per character. utf8mb4 uses a maximum of four bytes per character.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;从手册中可以看到，utf8实际上是utf8mb3的别名，即maximum of three bytes per character最大只支持3个字节，MySQL官方并未直接修复这个问题，而是在5.5.3之后增加了utf8mb4字符编码，mb4即 maximum of four bytes。简单说 utf8mb4 是 utf8 的超集并完全兼容utf8，能够用四个字节存储更多的字符。&lt;/p&gt;
-&lt;p&gt;但抛开数据库，标准的 UTF-8 字符集编码是可以用 1~4 个字节去编码21位字符，这几乎包含了是世界上所有能看见的语言了。然而在MySQL里实现的utf8最长使用3个字节，也就是上面提到的标准UTF-8中“基本多文种平面（BMP）中的字符（这包含了大部分常用字，如大部分的汉字）使用三个字节编码（Unicode范围由U+0800至U+FFFF）。”但并不是所有，最常见的就算现在手机端常用的表情字符emoji，需要四个字节才能编码出来。&lt;/p&gt;
+&lt;p&gt;但抛开数据库，标准的 UTF-8 字符集编码是可以用 1~4 个字节去编码21位字符，这几乎包含了是世界上所有能看见的语言了。然而在MySQL里实现的utf8最长使用3个字节，也就是上面提到的标准UTF-8中“基本多文种平面（BMP）中的字符（这包含了大部分常用字，如大部分的汉字）使用三个字节编码（Unicode范围由U+0800至U+FFFF）。”但并不是所有，最常见的就算现在手机端常用的表情字符emoji，需要四个字节（Unicode范围由U+10000至U+1FFFFF）才能编码出来。&lt;/p&gt;
 &lt;p&gt;注：QQ里面的内置的表情不算，它是通过特殊映射到的一个gif图片。一般输入法自带的才是emoji。&lt;/p&gt;
 &lt;p&gt;也就是当你的数据库里要求能够存入这些表情或宽字符时，可以把字段定义为 utf8mb4，同时要注意连接字符集也要设置为utf8mb4，否则在 严格模式 下会出现 Incorrect string value: \xF0\x9F\x98\x84… for column ‘content’这样的错误，非严格模式下此后的数据会被截断。&lt;/p&gt;
-&lt;p&gt;关于latin1、gbk也支持emoji，后面单独探讨。&lt;/p&gt;
-&lt;!--以下为引用 [via](http://seanlook.com/2016/10/23/mysql-utf8mb4/)
---&gt;
+&lt;p&gt;关于网上流传的latin1也支持emoji，&lt;a href=&quot;https://stackoverflow.com/questions/30187853/does-mysql-latin1-also-support-emoji-character&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Does mysql latin1 also support emoji character?&lt;/a&gt;。&lt;br&gt;这里有一个问题就是，输入源要支持标准的UTF-8，操作系统的字符集为utf8（LANG=en_US.UTF-8）目前大部分系统都支持, 而client、connection、database均为latin1, 于是这一路（从终端界面执行insert到保存数据到表中）都没有编码转换，直接传输的是utf8编码后的二进制流。&lt;br&gt;latin1字符集的表，用户写入和读取汉字、emoji是否有问题？答案是只要设置合理，是没有问题的。假设SecureCRT为UTF8，character_set_client和表字符集均设置为latin1，那么用户读取和写入数据的过程中，并不涉及字符集编码转换的过程，将UTF8的汉字或emoji字符转为二进制流写入database，提取出来后，secureCRT再将对应的二进制解码为对应的汉字或emoji，所以不影响用户的使用。&lt;/p&gt;
+&lt;p&gt;，&lt;br&gt;&lt;!--以下为引用 [via](http://seanlook.com/2016/10/23/mysql-utf8mb4/)
+--&gt;&lt;/p&gt;
 &lt;h1 id=&quot;utf8-unicode-ci和utf8-general-ci区别&quot;&gt;&lt;a href=&quot;#utf8-unicode-ci和utf8-general-ci区别&quot; class=&quot;headerlink&quot; title=&quot;utf8_unicode_ci和utf8_general_ci区别&quot;&gt;&lt;/a&gt;utf8_unicode_ci和utf8_general_ci区别&lt;/h1&gt;&lt;p&gt;字符除了需要存储，还需要排序或比较大小，涉及到与编码字符集对应的排序字符集（collation）。ut8mb4对应的排序字符集常用的有 utf8mb4_unicode_ci、utf8mb4_general_ci，到底采用哪个在 stackoverflow 上有个讨论，&lt;a href=&quot;http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;What’s the difference between utf8_general_ci and utf8_unicode_ci&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;在数据库系统MySQL或MariaDB中有多种字符集，其中utf8_unicode_ci和utf8_general_ci是最常用的，但是utf8_general_ci对某些语言的支持有一些小问题，如果可以接受，那最好使用utf8_general_ci，因为它速度快。否则，请使用较为精确的utf8_unicode_ci，不过速度会慢一些。&lt;/p&gt;
 &lt;h1 id=&quot;怎么从utf8转换为utf8mb4&quot;&gt;&lt;a href=&quot;#怎么从utf8转换为utf8mb4&quot; class=&quot;headerlink&quot; title=&quot;怎么从utf8转换为utf8mb4&quot;&gt;&lt;/a&gt;怎么从utf8转换为utf8mb4&lt;/h1&gt;&lt;h2 id=&quot;“伪”转换&quot;&gt;&lt;a href=&quot;#“伪”转换&quot; class=&quot;headerlink&quot; title=&quot;“伪”转换&quot;&gt;&lt;/a&gt;“伪”转换&lt;/h2&gt;&lt;p&gt;如果你的表定义和连接字符集都是utf8，那么直接在你的表上执行&lt;/p&gt;
@@ -97,7 +193,7 @@
 &lt;p&gt;另外 ALTER TABLE tbl_name DEFAULT CHARACTER SET utf8mb4 这样的语句就不要随便执行了，特别是当表原本不是utf8时，除非表是空的或者你确认表里只有拉丁字符，否则正常和乱的就混在一起了。&lt;/p&gt;
 &lt;p&gt;最重要的是，你连接时使用的latin1字符集写入了历史数据，表定义是latin1或utf8，不要期望通过 ALTER … CONVERT … 能够让你达到用utf8读取历史中文数据的目的，没卵用，老老实实做逻辑dump。所以我才叫它“伪”转换&lt;/p&gt;
 &lt;h2 id=&quot;character-set-server&quot;&gt;&lt;a href=&quot;#character-set-server&quot; class=&quot;headerlink&quot; title=&quot;character-set-server&quot;&gt;&lt;/a&gt;character-set-server&lt;/h2&gt;&lt;p&gt;一旦你决定使用utf8mb4，强烈建议你要修改服务端 character-set-server=utf8mb4，不同的语言对它的处理方法不一样，c++, php, python可以设置character-set，但java驱动依赖于 character-set-server 选项，后面有介绍。&lt;/p&gt;
-&lt;p&gt;同时还要谨慎一些特殊选项，如 遇到腾讯云CDB连接字符集设置一个坑。个人不建议设置全局 init_connect。&lt;/p&gt;
+&lt;p&gt;同时还要谨慎一些特殊选项，个人不建议设置全局 init_connect。&lt;/p&gt;
 &lt;h1 id=&quot;key-767-bytes-错误&quot;&gt;&lt;a href=&quot;#key-767-bytes-错误&quot; class=&quot;headerlink&quot; title=&quot;key 767 bytes 错误&quot;&gt;&lt;/a&gt;key 767 bytes 错误&lt;/h1&gt;&lt;p&gt;字符集从utf8转到utf8mb4之后，最容易引起的就是索引键超长的问题。&lt;/p&gt;
 &lt;p&gt;对于表行格式是 COMPACT或 REDUNDANT，InnoDB有单个索引最大字节数 768 的限制，而字段定义的是能存储的字符数，比如 VARCHAR(200) 代表能够存200个汉字，索引定义是字符集类型最大长度算的，即 utf8 maxbytes=3, utf8mb4 maxbytes=4，算下来utf8和utf8mb4两种情况的索引长度分别为600 bytes和800bytes，后者超过了767，导致出错：Error 1071: Specified key was too long; max key length is 767 bytes。&lt;/p&gt;
 &lt;p&gt;COMPRESSED和DYNAMIC格式不受限制，但也依然不建议索引太长，太浪费空间和cpu搜索资源。&lt;/p&gt;
@@ -119,7 +215,7 @@
 &lt;p&gt;(convert(t1.f_id using utf8mb4) = ‘421036’)&lt;br&gt;官网能找到这一点解释的还是开头那个地址：&lt;/p&gt;
 &lt;p&gt;Similarly, the following comparison in the WHERE clause works according to the collation of utf8mb4_col:&lt;/p&gt;
 &lt;p&gt;  SELECT * FROM utf8_tbl, utf8mb4_tbl&lt;br&gt;  WHERE utf8_tbl.utf8_col = utf8mb4_tbl.utf8mb4_col;&lt;br&gt;只是索引失效发生在utf8mb4列 在条件左边。（关于MySQL的隐式类型转换，见这里）。&lt;/p&gt;
-&lt;p&gt;参考&lt;br&gt;&lt;a href=&quot;https://dev.mysql.com/doc/refman/8.0/en/charset-unicode-conversion.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/refman/8.0/en/charset-unicode-conversion.html&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://forums.mysql.com/read.php?103,187048,188748#msg-188748&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://forums.mysql.com/read.php?103,187048,188748#msg-188748&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://drupal.stackexchange.com/questions/166405/why-are-we-using-utf8mb4-general-ci-and-not-utf8mb4-unicode-ci&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Why are we using utf8mb4_general_ci and not utf8mb4_unicode_ci?&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://mathiasbynens.be/notes/mysql-utf8mb4&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;How to support full Unicode in MySQL databases&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://cenalulu.github.io/mysql/mysql-mojibake/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;10分钟学会理解和解决MySQL乱码问题&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;参考&lt;br&gt;&lt;a href=&quot;https://my.oschina.net/zhuguowei/blog/414476&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Mysql latin1也支持emoji字符的错觉分析&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Mysql字符集知识总结&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://dev.mysql.com/doc/refman/8.0/en/charset-unicode-conversion.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/refman/8.0/en/charset-unicode-conversion.html&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://forums.mysql.com/read.php?103,187048,188748#msg-188748&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://forums.mysql.com/read.php?103,187048,188748#msg-188748&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://drupal.stackexchange.com/questions/166405/why-are-we-using-utf8mb4-general-ci-and-not-utf8mb4-unicode-ci&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Why are we using utf8mb4_general_ci and not utf8mb4_unicode_ci?&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://mathiasbynens.be/notes/mysql-utf8mb4&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;How to support full Unicode in MySQL databases&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://cenalulu.github.io/mysql/mysql-mojibake/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;10分钟学会理解和解决MySQL乱码问题&lt;/a&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
@@ -3084,444 +3180,6 @@ https://github.com/alibaba/otter/wiki/Node_Quickstart
       <category term="ETL" scheme="http://idber.github.io/tags/ETL/"/>
     
       <category term="数据仓库" scheme="http://idber.github.io/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>MySQL Insert锁机制</title>
-    <link href="http://idber.github.io/2018/08/03-MySQL%20Insert%E9%94%81%E6%9C%BA%E5%88%B6.html"/>
-    <id>http://idber.github.io/2018/08/03-MySQL Insert锁机制.html</id>
-    <published>2018-08-03T02:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.929Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;h2 id=&quot;一、前言&quot;&gt;&lt;a href=&quot;#一、前言&quot; class=&quot;headerlink&quot; title=&quot;一、前言&quot;&gt;&lt;/a&gt;一、前言&lt;/h2&gt;&lt;p&gt;上周遇到一个因insert而引发的死锁问题，其成因比较令人费解。&lt;br&gt;于是想要了解一下insert加锁机制，但是发现网上介绍的文章比较少且零散，挖掘过程比较忙乱。&lt;/p&gt;
-&lt;p&gt;本以为只需要系统学习一个较完全的逻辑，但是实际牵扯很多innodb锁相关知识及加锁方式。我好像并没有那么大的能耐，把各种场景的加锁过程一一列举并加之分析；亦没有太多的精力验证网上的言论的准确性。&lt;/p&gt;
-&lt;p&gt;只好根据现在了解的内容，参考官方文档，说说自己当前的理解。&lt;br&gt;本文仅供参考，如有误导，概不负责。&lt;/p&gt;
-&lt;h2 id=&quot;二、现场状态&quot;&gt;&lt;a href=&quot;#二、现场状态&quot; class=&quot;headerlink&quot; title=&quot;二、现场状态&quot;&gt;&lt;/a&gt;二、现场状态&lt;/h2&gt;&lt;p&gt;不同的MySQL版本，不同的参数设置，都可能对加锁过程有影响。&lt;br&gt;分析加锁机制还是应当尽可能多地列举一下关键参数，例如：当前mysql版本、事务隔离级别等。&lt;br&gt;如下，仅仅只列出个别比较重要的参数。&lt;/p&gt;
-&lt;h3 id=&quot;1-数据库版本&quot;&gt;&lt;a href=&quot;#1-数据库版本&quot; class=&quot;headerlink&quot; title=&quot;1.数据库版本&quot;&gt;&lt;/a&gt;1.数据库版本&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select version();
-+------------+
-| version()  |
-+------------+
-| 5.6.26-log |
-+------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;2-数据库引擎&quot;&gt;&lt;a href=&quot;#2-数据库引擎&quot; class=&quot;headerlink&quot; title=&quot;2. 数据库引擎&quot;&gt;&lt;/a&gt;2. 数据库引擎&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show variables like &amp;apos;%engine%&amp;apos;;
-+----------------------------+--------+
-| Variable_name              | Value  |
-+----------------------------+--------+
-| default_storage_engine     | InnoDB |
-| default_tmp_storage_engine | InnoDB |
-| storage_engine             | InnoDB |
-+----------------------------+--------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;注：InnoDB支持事务，Myisam不支持事务；InnoDB支持行锁和表锁；Myisam不支持行锁。&lt;/p&gt;
-&lt;h3 id=&quot;3-事务隔离级别&quot;&gt;&lt;a href=&quot;#3-事务隔离级别&quot; class=&quot;headerlink&quot; title=&quot;3. 事务隔离级别&quot;&gt;&lt;/a&gt;3. 事务隔离级别&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select @@global.tx_isolation, @@session.tx_isolation, @@tx_isolation;
-+-----------------------+------------------------+-----------------+
-| @@global.tx_isolation | @@session.tx_isolation | @@tx_isolation  |
-+-----------------------+------------------------+-----------------+
-| REPEATABLE-READ       | REPEATABLE-READ        | REPEATABLE-READ |
-+-----------------------+------------------------+-----------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;注：几种事务隔离级别：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;4-查看gap锁开启状态&quot;&gt;&lt;a href=&quot;#4-查看gap锁开启状态&quot; class=&quot;headerlink&quot; title=&quot;4. 查看gap锁开启状态&quot;&gt;&lt;/a&gt;4. 查看gap锁开启状态&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show variables like &amp;apos;innodb_locks_unsafe_for_binlog&amp;apos;;
-+--------------------------------+-------+
-| Variable_name                  | Value |
-+--------------------------------+-------+
-| innodb_locks_unsafe_for_binlog | OFF   |
-+--------------------------------+-------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;innodb_locks_unsafe_for_binlog：默认值为0，即启用gap lock。&lt;br&gt;最主要的作用就是控制innodb是否对gap加锁。&lt;br&gt;但是，这一设置变更并不影响外键和唯一索引（含主键）对gap进行加锁的需要。&lt;br&gt;开启innodb_locks_unsafe_for_binlog的REPEATABLE-READ事务隔离级别，很大程度上已经蜕变成了READ-COMMITTED。&lt;/p&gt;
-&lt;p&gt;参见官方文档[^1]：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;By default, the value of innodb_locks_unsafe_for_binlog is 0 (disabled), which means that gap locking is enabled: InnoDB uses next-key locks for searches and index scans. To enable the variable, set it to 1. This causes gap locking to be disabled: InnoDB uses only index-record locks for searches and index scans.&lt;br&gt;Enabling innodb_locks_unsafe_for_binlog does not disable the use of gap locking for foreign-key constraint checking or duplicate-key checking.&lt;br&gt;The effect of enabling innodb_locks_unsafe_for_binlog is similar to but not identical to setting the transaction isolation level to READ COMMITTED.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h3 id=&quot;5-查看自增锁模式&quot;&gt;&lt;a href=&quot;#5-查看自增锁模式&quot; class=&quot;headerlink&quot; title=&quot;5. 查看自增锁模式&quot;&gt;&lt;/a&gt;5. 查看自增锁模式&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show variables like &amp;apos;innodb_autoinc_lock_mode&amp;apos;;
-+--------------------------+-------+
-| Variable_name            | Value |
-+--------------------------+-------+
-| innodb_autoinc_lock_mode | 1     |
-+--------------------------+-------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;innodb_autoinc_lock_mode有3种配置模式：0、1、2，分别对应”传统模式”, “连续模式”, “交错模式”。[^8]&lt;br&gt;传统模式：涉及auto-increment列的插入语句加的表级AUTO-INC锁，只有插入执行结束后才会释放锁。这是一种兼容MySQL 5.1之前版本的策略。&lt;br&gt;连续模式：可以事先确定插入行数的语句(包括单行和多行插入)，分配连续的确定的auto-increment值；对于插入行数不确定的插入语句，仍加表锁。这种模式下，事务回滚，auto-increment值不会回滚，换句话说，自增列内容会不连续。&lt;br&gt;交错模式：同一时刻多条SQL语句产生交错的auto-increment值。&lt;/p&gt;
-&lt;p&gt;由于insert语句常常涉及自增列的加锁过程，会涉及到AUTO-INC Locks加锁过程。&lt;br&gt;为了分步了解insert加锁过程，本文暂不讨论任何涉及自增列的加锁逻辑。&lt;br&gt;这一参数设置相关内容可能会出现在我的下一篇文章里。&lt;/p&gt;
-&lt;p&gt;相关的参数配置越详情越好。&lt;/p&gt;
-&lt;h2 id=&quot;三、InnoDB锁类型-2&quot;&gt;&lt;a href=&quot;#三、InnoDB锁类型-2&quot; class=&quot;headerlink&quot; title=&quot;三、InnoDB锁类型[^2]&quot;&gt;&lt;/a&gt;三、InnoDB锁类型[^2]&lt;/h2&gt;&lt;h4 id=&quot;1-基本锁&quot;&gt;&lt;a href=&quot;#1-基本锁&quot; class=&quot;headerlink&quot; title=&quot;1. 基本锁&quot;&gt;&lt;/a&gt;1. 基本锁&lt;/h4&gt;&lt;p&gt;基本锁：共享锁(Shared Locks：S锁)与排他锁(Exclusive Locks：X锁)&lt;/p&gt;
-&lt;p&gt;mysql允许拿到S锁的事务读一行，允许拿到X锁的事务更新或删除一行。&lt;br&gt;加了S锁的记录，允许其他事务再加S锁，不允许其他事务再加X锁；&lt;br&gt;加了X锁的记录，不允许其他事务再加S锁或者X锁。&lt;/p&gt;
-&lt;p&gt;mysql对外提供加这两种锁的语法如下：&lt;br&gt;加S锁：select…lock in share mode&lt;br&gt;加X锁：select…for update&lt;/p&gt;
-&lt;h4 id=&quot;2-意向锁-Intention-Locks&quot;&gt;&lt;a href=&quot;#2-意向锁-Intention-Locks&quot; class=&quot;headerlink&quot; title=&quot;2. 意向锁(Intention Locks)&quot;&gt;&lt;/a&gt;2. 意向锁(Intention Locks)&lt;/h4&gt;&lt;p&gt;InnoDB为了支持多粒度(表锁与行锁)的锁并存，引入意向锁。&lt;br&gt;意向锁是表级锁，可分为意向共享锁(IS锁)和意向排他锁(IX锁)。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;InnoDB supports multiple granularity locking which permits coexistence of row-level locks and locks on entire tables. To make locking at multiple granularity levels practical, additional types of locks called intention locks are used. Intention locks are table-level locks in InnoDB that indicate which type of lock (shared or exclusive) a transaction will require later for a row in that table. There are two types of intention locks used in InnoDB (assume that transaction T has requested a lock of the indicated type on table t):&lt;br&gt;Intention shared (IS): Transaction T intends to set S locks on individual rows in table t.&lt;br&gt;Intention exclusive (IX): Transaction T intends to set X locks on those rows.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;事务在请求S锁和X锁前，需要先获得对应的IS、IX锁。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Before a transaction can acquire an S lock on a row in table t, it must first acquire an IS or stronger lock on t. Before a transaction can acquire an X lock on a row, it must first acquire an IX lock on t.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;意向锁产生的主要目的是为了处理行锁和表锁之间的冲突，用于表明“某个事务正在某一行上持有了锁，或者准备去持有锁”。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;The main purpose of IX and IS locks is to show that someone is locking a row, or going to lock a row in the table.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;共享锁、排他锁与意向锁的兼容矩阵如下：&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;X&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;IX&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;S&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;IS&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;X&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;IX&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;S&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;IS&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;思考&lt;/p&gt;
-&lt;p&gt;从官方文档字面意思上看意向锁是表级锁，但是大牛不认为“Intention lock 是表级锁”[^5]?&lt;br&gt;另外，由于意向锁主要用于解决行锁与表锁间冲突问题，鉴于平时表级操作特别少，在分析加锁过程是否可以不用过多考虑意向锁的问题?&lt;/p&gt;
-&lt;h4 id=&quot;3-行锁&quot;&gt;&lt;a href=&quot;#3-行锁&quot; class=&quot;headerlink&quot; title=&quot;3. 行锁&quot;&gt;&lt;/a&gt;3. 行锁&lt;/h4&gt;&lt;p&gt;记录锁(Record Locks)&lt;/p&gt;
-&lt;p&gt;记录锁, 仅仅锁住索引记录的一行。&lt;br&gt;单条索引记录上加锁，record lock锁住的永远是索引，而非记录本身，即使该表上没有任何索引，那么innodb会在后台创建一个隐藏的聚集主键索引，那么锁住的就是这个隐藏的聚集主键索引。所以说当一条sql没有走任何索引时，那么将会在每一条聚集索引后面加X锁，这个类似于表锁，但原理上和表锁应该是完全不同的。&lt;/p&gt;
-&lt;p&gt;参见官方文档[^3]：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;If the table has no PRIMARY KEY or suitable UNIQUE index, InnoDB internally generates a hidden clustered index on a synthetic column containing row ID values. The rows are ordered by the ID that InnoDB assigns to the rows in such a table. The row ID is a 6-byte field that increases monotonically as new rows are inserted. Thus, the rows ordered by the row ID are physically in insertion order.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;间隙锁(Gap Locks)&lt;/p&gt;
-&lt;p&gt;区间锁, 仅仅锁住一个索引区间(开区间)。&lt;br&gt;在索引记录之间的间隙中加锁，或者是在某一条索引记录之前或者之后加锁，并不包括该索引记录本身。&lt;/p&gt;
-&lt;p&gt;next-key锁(Next-Key Locks)&lt;/p&gt;
-&lt;p&gt;record lock + gap lock, 左开右闭区间。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;A next-key lock is a combination of a record lock on the index record and a gap lock on the gap before the index record.&lt;br&gt;By default, InnoDB operates in REPEATABLE READ transaction isolation level and with the innodb_locks_unsafe_for_binlog system variable disabled. In this case, InnoDB uses next-key locks for searches and index scans, which prevents phantom rows。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;默认情况下，innodb使用next-key locks来锁定记录。&lt;br&gt;但当查询的索引含有唯一属性的时候，Next-Key Lock 会进行优化，将其降级为Record Lock，即仅锁住索引本身，不是范围。&lt;/p&gt;
-&lt;p&gt;插入意向锁(Insert Intention Locks)&lt;/p&gt;
-&lt;p&gt;Gap Lock中存在一种插入意向锁（Insert Intention Lock），在insert操作时产生。在多事务同时写入不同数据至同一索引间隙的时候，并不需要等待其他事务完成，不会发生锁等待。&lt;br&gt;假设有一个记录索引包含键值4和7，不同的事务分别插入5和6，每个事务都会产生一个加在4-7之间的插入意向锁，获取在插入行上的排它锁，但是不会被互相锁住，因为数据行并不冲突。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;An insert intention lock is a type of gap lock set by INSERT operations prior to row insertion. This lock signals the intent to insert in such a way that multiple transactions inserting into the same index gap need not wait for each other if they are not inserting at the same position within the gap. Suppose that there are index records with values of 4 and 7. Separate transactions that attempt to insert values of 5 and 6, respectively, each lock the gap between 4 and 7 with insert intention locks prior to obtaining the exclusive lock on the inserted row, but do not block each other because the rows are nonconflicting.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;注：插入意向锁并非意向锁，而是一种特殊的间隙锁。&lt;/p&gt;
-&lt;h4 id=&quot;4-行锁的兼容矩阵&quot;&gt;&lt;a href=&quot;#4-行锁的兼容矩阵&quot; class=&quot;headerlink&quot; title=&quot;4. 行锁的兼容矩阵&quot;&gt;&lt;/a&gt;4. 行锁的兼容矩阵&lt;/h4&gt;&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;Gap&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;Insert Intention&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;Record&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;Next-Key&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Gap&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Insert Intention&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Record&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Next-Key&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;兼容&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;冲突&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;表注：横向是已经持有的锁，纵向是正在请求的锁。&lt;/p&gt;
-&lt;p&gt;由于S锁和S锁是完全兼容的，因此在判别兼容性时只考虑持有的锁与请求的锁是这三种组合情形：X、S和S、X和X、X。&lt;br&gt;另外，需要提醒注意的是进行兼容判断也只是针对于加锁涉及的行有交集的情形。&lt;/p&gt;
-&lt;p&gt;分析兼容矩阵可以得出如下几个结论：&lt;/p&gt;
-&lt;p&gt;INSERT操作之间不会有冲突。&lt;br&gt;GAP,Next-Key会阻止Insert。&lt;br&gt;GAP和Record,Next-Key不会冲突&lt;br&gt;Record和Record、Next-Key之间相互冲突。&lt;br&gt;已有的Insert锁不阻止任何准备加的锁。&lt;/p&gt;
-&lt;h4 id=&quot;5-自增锁-AUTO-INC-Locks&quot;&gt;&lt;a href=&quot;#5-自增锁-AUTO-INC-Locks&quot; class=&quot;headerlink&quot; title=&quot;5. 自增锁(AUTO-INC Locks)&quot;&gt;&lt;/a&gt;5. 自增锁(AUTO-INC Locks)&lt;/h4&gt;&lt;p&gt;AUTO-INC锁是一种特殊的表级锁，发生涉及AUTO_INCREMENT列的事务性插入操作时产生。&lt;/p&gt;
-&lt;p&gt;官方解释如下[^3]：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;An AUTO-INC lock is a special table-level lock taken by transactions inserting into tables with AUTO_INCREMENT columns. In the simplest case, if one transaction is inserting values into the table, any other transactions must wait to do their own inserts into that table, so that rows inserted by the first transaction receive consecutive primary key values.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&quot;四、insert加锁过程&quot;&gt;&lt;a href=&quot;#四、insert加锁过程&quot; class=&quot;headerlink&quot; title=&quot;四、insert加锁过程&quot;&gt;&lt;/a&gt;四、insert加锁过程&lt;/h2&gt;&lt;p&gt;官方文档[^6]对于insert加锁的描述如下：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;INSERT sets an exclusive lock on the inserted row. This lock is an index-record lock, not a next-key lock (that is, there is no gap lock) and does not prevent other sessions from inserting into the gap before the inserted row.&lt;br&gt;Prior to inserting the row, a type of gap lock called an insert intention gap lock is set. This lock signals the intent to insert in such a way that multiple transactions inserting into the same index gap need not wait for each other if they are not inserting at the same position within the gap. Suppose that there are index records with values of 4 and 7. Separate transactions that attempt to insert values of 5 and 6 each lock the gap between 4 and 7 with insert intention locks prior to obtaining the exclusive lock on the inserted row, but do not block each other because the rows are nonconflicting.&lt;br&gt;If a duplicate-key error occurs, a shared lock on the duplicate index record is set. This use of a shared lock can result in deadlock should there be multiple sessions trying to insert the same row if another session already has an exclusive lock.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;简单的insert会在insert的行对应的索引记录上加一个排它锁，这是一个record lock，并没有gap，所以并不会阻塞其他session在gap间隙里插入记录。&lt;/p&gt;
-&lt;p&gt;不过在insert操作之前，还会加一种锁，官方文档称它为insertion intention gap lock，也就是意向的gap锁。这个意向gap锁的作用就是预示着当多事务并发插入相同的gap空隙时，只要插入的记录不是gap间隙中的相同位置，则无需等待其他session就可完成，这样就使得insert操作无须加真正的gap lock。&lt;br&gt;假设有一个记录索引包含键值4和7，不同的事务分别插入5和6，每个事务都会产生一个加在4-7之间的插入意向锁，获取在插入行上的排它锁，但是不会被互相锁住，因为数据行并不冲突。&lt;/p&gt;
-&lt;p&gt;假设发生了一个唯一键冲突错误，那么将会在重复的索引记录上加读锁。当有多个session同时插入相同的行记录时，如果另外一个session已经获得该行的排它锁，那么将会导致死锁。&lt;/p&gt;
-&lt;p&gt;思考：Insert Intention Locks作用&lt;/p&gt;
-&lt;p&gt;Insert Intention Locks的引入，我理解是为了提高数据插入的并发能力。&lt;br&gt;如果没有Insert Intention Locks的话，可能就需要使用Gap Locks来代替。&lt;/p&gt;
-&lt;h2 id=&quot;五、insert死锁场景分析&quot;&gt;&lt;a href=&quot;#五、insert死锁场景分析&quot; class=&quot;headerlink&quot; title=&quot;五、insert死锁场景分析&quot;&gt;&lt;/a&gt;五、insert死锁场景分析&lt;/h2&gt;&lt;p&gt;接下来，带大家看几个与insert相关的死锁场景。&lt;/p&gt;
-&lt;h4 id=&quot;1-duplicate-key-error引发的死锁&quot;&gt;&lt;a href=&quot;#1-duplicate-key-error引发的死锁&quot; class=&quot;headerlink&quot; title=&quot;1. duplicate key error引发的死锁&quot;&gt;&lt;/a&gt;1. duplicate key error引发的死锁&lt;/h4&gt;&lt;p&gt;这个场景主要发生在两个以上的事务同时进行唯一键值相同的记录插入操作。&lt;/p&gt;
-&lt;p&gt;表结构&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;CREATE TABLE `aa` (
-  `id` int(10) unsigned NOT NULL COMMENT &amp;apos;主键&amp;apos;,
-  `name` varchar(20) NOT NULL DEFAULT &amp;apos;&amp;apos; COMMENT &amp;apos;姓名&amp;apos;,
-  `age` int(11) NOT NULL DEFAULT &amp;apos;0&amp;apos; COMMENT &amp;apos;年龄&amp;apos;,
-  `stage` int(11) NOT NULL DEFAULT &amp;apos;0&amp;apos; COMMENT &amp;apos;关卡数&amp;apos;,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `udx_name` (`name`),
-  KEY `idx_stage` (`stage`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;表数据&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select * from aa;
-+----+------+-----+-------+
-| id | name | age | stage |
-+----+------+-----+-------+
-|  1 | yst  |  11 |     8 |
-|  2 | dxj  |   7 |     4 |
-|  3 | lb   |  13 |     7 |
-|  4 | zsq  |   5 |     7 |
-|  5 | lxr  |  13 |     4 |
-+----+------+-----+-------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;事务执行时序表&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;T1(36727)&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;T2(36728)&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;T3(36729)&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;begin;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;begin;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;begin;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;insert into aa values(6, ‘test’, 12, 3);&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;insert into aa values(6, ‘test’, 12, 3);&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;insert into aa values(6, ‘test’, 12, 3);&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;rollback;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Query OK, 1 row affected (13.10 sec)&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;如果T1未rollback，而是commit的话，T2和T3会报唯一键冲突：ERROR 1062 (23000): Duplicate entry ‘6’ for key ‘PRIMARY’&lt;/p&gt;
-&lt;p&gt;事务锁占用情况&lt;/p&gt;
-&lt;p&gt;T1 rollback前，各事务锁占用情况：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select * from information_schema.innodb_locks;
-+--------------+-------------+-----------+-----------+-------------+------------+------------+-----------+----------+-----------+
-| lock_id      | lock_trx_id | lock_mode | lock_type | lock_table  | lock_index | lock_space | lock_page | lock_rec | lock_data |
-+--------------+-------------+-----------+-----------+-------------+------------+------------+-----------+----------+-----------+
-| 36729:24:3:7 | 36729       | S         | RECORD    | `test`.`aa` | PRIMARY    |         24 |         3 |        7 | 6         |
-| 36727:24:3:7 | 36727       | X         | RECORD    | `test`.`aa` | PRIMARY    |         24 |         3 |        7 | 6         |
-| 36728:24:3:7 | 36728       | S         | RECORD    | `test`.`aa` | PRIMARY    |         24 |         3 |        7 | 6         |
-+--------------+-------------+-----------+-----------+-------------+------------+------------+-----------+----------+-----------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;注：mysql有自己的一套规则来决定T2与T3哪个进行回滚，本文不做讨论。&lt;/p&gt;
-&lt;p&gt;死锁日志&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;------------------------
-LATEST DETECTED DEADLOCK
-------------------------
-2016-07-21 19:34:23 700000a3f000
-*** (1) TRANSACTION:
-TRANSACTION 36728, ACTIVE 199 sec inserting
-mysql tables in use 1, locked 1
-LOCK WAIT 4 lock struct(s), heap size 1184, 2 row lock(s)
-MySQL thread id 13, OS thread handle 0x700000b0b000, query id 590 localhost root update
-insert into aa values(6, &amp;apos;test&amp;apos;, 12, 3)
-*** (1) WAITING FOR THIS LOCK TO BE GRANTED:
-RECORD LOCKS space id 24 page no 3 n bits 80 index `PRIMARY` of table `test`.`aa` trx id 36728 lock_mode X insert intention waiting
-Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
- 0: len 8; hex 73757072656d756d; asc supremum;;
-*** (2) TRANSACTION:
-TRANSACTION 36729, ACTIVE 196 sec inserting
-mysql tables in use 1, locked 1
-4 lock struct(s), heap size 1184, 2 row lock(s)
-MySQL thread id 14, OS thread handle 0x700000a3f000, query id 591 localhost root update
-insert into aa values(6, &amp;apos;test&amp;apos;, 12, 3)
-*** (2) HOLDS THE LOCK(S):
-RECORD LOCKS space id 24 page no 3 n bits 80 index `PRIMARY` of table `test`.`aa` trx id 36729 lock mode S
-Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
- 0: len 8; hex 73757072656d756d; asc supremum;;
-*** (2) WAITING FOR THIS LOCK TO BE GRANTED:
-RECORD LOCKS space id 24 page no 3 n bits 80 index `PRIMARY` of table `test`.`aa` trx id 36729 lock_mode X insert intention waiting
-Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
- 0: len 8; hex 73757072656d756d; asc supremum;;
-*** WE ROLL BACK TRANSACTION (2)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;死锁成因&lt;/p&gt;
-&lt;p&gt;事务T1成功插入记录，并获得索引id=6上的排他记录锁(LOCK_X | LOCK_REC_NOT_GAP)。&lt;br&gt;紧接着事务T2、T3也开始插入记录，请求排他插入意向锁(LOCK_X | LOCK_GAP | LOCK_INSERT_INTENTION)；但由于发生重复唯一键冲突，各自请求的排他记录锁(LOCK_X | LOCK_REC_NOT_GAP)转成共享记录锁(LOCK_S | LOCK_REC_NOT_GAP)。&lt;/p&gt;
-&lt;p&gt;T1回滚释放索引id=6上的排他记录锁(LOCK_X | LOCK_REC_NOT_GAP)，T2和T3都要请求索引id=6上的排他记录锁(LOCK_X | LOCK_REC_NOT_GAP)。&lt;br&gt;由于X锁与S锁互斥，T2和T3都等待对方释放S锁。&lt;br&gt;于是，死锁便产生了。&lt;/p&gt;
-&lt;p&gt;如果此场景下，只有两个事务T1与T2或者T1与T3，则不会引发如上死锁情况产生。&lt;/p&gt;
-&lt;p&gt;思考&lt;/p&gt;
-&lt;p&gt;为什么发现重复主键冲突的时候，要将事务请求的X锁转成S锁？&lt;br&gt;(比较牵强的)个人理解，跟插入意向锁类型，也是为了提高插入的并发效率。&lt;/p&gt;
-&lt;p&gt;插入前请求插入意向锁的作用？&lt;br&gt;个人认为，通过兼容矩阵来分析，Insert Intention Locks是为了减少插入时的锁冲突。&lt;/p&gt;
-&lt;h4 id=&quot;2-GAP与Insert-Intention冲突引发的死锁&quot;&gt;&lt;a href=&quot;#2-GAP与Insert-Intention冲突引发的死锁&quot; class=&quot;headerlink&quot; title=&quot;2. GAP与Insert Intention冲突引发的死锁&quot;&gt;&lt;/a&gt;2. GAP与Insert Intention冲突引发的死锁&lt;/h4&gt;&lt;p&gt;表结构&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;CREATE TABLE `t` (
-  `a` int(11) NOT NULL,
-  `b` int(11) DEFAULT NULL,
-  PRIMARY KEY (`a`),
-  KEY `idx_b` (`b`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;表数据&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select * from t;
-+----+------+
-| a  | b    |
-+----+------+
-|  1 |    2 |
-|  2 |    3 |
-|  3 |    4 |
-| 11 |   22 |
-+----+------+
-事务执行时序表
-
-T1(36831)                T2(36832)
-begin;                    begin;
-select * from t where b = 6 for update;
-                         select * from t where b = 8 for update;
-insert into t values (4,5);     
-                         insert into t values (4,5);
-                         ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
-Query OK, 1 row affected (5.45 sec)     
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;事务锁占用情况&lt;/p&gt;
-&lt;p&gt;T2 insert前，各事务锁占用情况：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select * from information_schema.innodb_locks;
-+--------------+-------------+-----------+-----------+------------+------------+------------+-----------+----------+-----------+
-| lock_id      | lock_trx_id | lock_mode | lock_type | lock_table | lock_index | lock_space | lock_page | lock_rec | lock_data |
-+--------------+-------------+-----------+-----------+------------+------------+------------+-----------+----------+-----------+
-| 36831:25:4:5 | 36831       | X,GAP     | RECORD    | `test`.`t` | idx_b      |         25 |         4 |        5 | 22, 11    |
-| 36832:25:4:5 | 36832       | X,GAP     | RECORD    | `test`.`t` | idx_b      |         25 |         4 |        5 | 22, 11    |
-+--------------+-------------+-----------+-----------+------------+------------+------------+-----------+----------+-----------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;死锁日志&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;------------------------
-LATEST DETECTED DEADLOCK
-------------------------
-2016-07-28 12:28:34 700000a3f000
-*** (1) TRANSACTION:
-TRANSACTION 36831, ACTIVE 17 sec inserting
-mysql tables in use 1, locked 1
-LOCK WAIT 4 lock struct(s), heap size 1184, 3 row lock(s), undo log entries 1
-MySQL thread id 38, OS thread handle 0x700000b0b000, query id 953 localhost root update
-insert into t values (4,5)
-*** (1) WAITING FOR THIS LOCK TO BE GRANTED:
-RECORD LOCKS space id 25 page no 4 n bits 72 index `idx_b` of table `test`.`t` trx id 36831 lock_mode X locks gap before rec insert intention waiting
-Record lock, heap no 5 PHYSICAL RECORD: n_fields 2; compact format; info bits 0
- 0: len 4; hex 80000016; asc     ;;
- 1: len 4; hex 8000000b; asc     ;;
-*** (2) TRANSACTION:
-TRANSACTION 36832, ACTIVE 13 sec inserting
-mysql tables in use 1, locked 1
-3 lock struct(s), heap size 360, 2 row lock(s)
-MySQL thread id 39, OS thread handle 0x700000a3f000, query id 954 localhost root update
-insert into t values (4,5)
-*** (2) HOLDS THE LOCK(S):
-RECORD LOCKS space id 25 page no 4 n bits 72 index `idx_b` of table `test`.`t` trx id 36832 lock_mode X locks gap before rec
-Record lock, heap no 5 PHYSICAL RECORD: n_fields 2; compact format; info bits 0
- 0: len 4; hex 80000016; asc     ;;
- 1: len 4; hex 8000000b; asc     ;;
-*** (2) WAITING FOR THIS LOCK TO BE GRANTED:
-RECORD LOCKS space id 25 page no 3 n bits 72 index `PRIMARY` of table `test`.`t` trx id 36832 lock mode S locks rec but not gap waiting
-Record lock, heap no 5 PHYSICAL RECORD: n_fields 4; compact format; info bits 0
- 0: len 4; hex 80000004; asc     ;;
- 1: len 6; hex 000000008fdf; asc       ;;
- 2: len 7; hex 8d000001d00110; asc        ;;
- 3: len 4; hex 80000005; asc     ;;
-*** WE ROLL BACK TRANSACTION (2)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;死锁成因&lt;/p&gt;
-&lt;p&gt;事务T1执行查询语句，在索引b=6上加排他Next-key锁(LOCK_X | LOCK_ORDINARY)，会锁住idx_b索引范围(4, 22)。&lt;br&gt;事务T2执行查询语句，在索引b=8上加排他Next-key锁(LOCK_X | LOCK_ORDINARY)，会锁住idx_b索引范围(4, 22)。由于请求的GAP与已持有的GAP是兼容的，因此，事务T2在idx_b索引范围(4, 22)也能加锁成功。&lt;/p&gt;
-&lt;p&gt;事务T1执行插入语句，会先加排他Insert Intention锁。由于请求的Insert Intention锁与已有的GAP锁不兼容，则事务T1等待T2释放GAP锁。&lt;br&gt;事务T2执行插入语句，也会等待T1释放GAP锁。&lt;br&gt;于是，死锁便产生了。&lt;/p&gt;
-&lt;p&gt;注：LOCK_ORDINARY拥有LOCK_GAP一部分特性。&lt;/p&gt;
-&lt;p&gt;思考：Insert Intention锁在加哪级索引上？&lt;/p&gt;
-&lt;p&gt;这个排他锁加在PK上，还是二级索引上？&lt;/p&gt;
-&lt;h2 id=&quot;六、课后思考&quot;&gt;&lt;a href=&quot;#六、课后思考&quot; class=&quot;headerlink&quot; title=&quot;六、课后思考&quot;&gt;&lt;/a&gt;六、课后思考&lt;/h2&gt;&lt;p&gt;无主键的加锁过程&lt;br&gt;无PK时，会创建一个隐式聚簇索引。加锁在这个隐式聚簇索引会有什么不同？&lt;/p&gt;
-&lt;p&gt;复合索引加锁过程&lt;/p&gt;
-&lt;p&gt;多条件(where condition)加锁过程&lt;br&gt;隐式锁与显式锁，隐式锁什么情况下会转换成显式锁&lt;/p&gt;
-&lt;p&gt;如果插入意向锁不阻止任何锁，这个锁还有必要存在吗？&lt;br&gt;目前看到的作用是，通过加锁的方式来唤醒等待线程。&lt;br&gt;但这并不意味着，被唤醒后可以直接做插入操作了。需要再次判断是否有锁冲突。&lt;/p&gt;
-&lt;h2 id=&quot;七、补充知识&quot;&gt;&lt;a href=&quot;#七、补充知识&quot; class=&quot;headerlink&quot; title=&quot;七、补充知识&quot;&gt;&lt;/a&gt;七、补充知识&lt;/h2&gt;&lt;h4 id=&quot;1-查看事务隔离级别&quot;&gt;&lt;a href=&quot;#1-查看事务隔离级别&quot; class=&quot;headerlink&quot; title=&quot;1. 查看事务隔离级别&quot;&gt;&lt;/a&gt;1. 查看事务隔离级别&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;SELECT @@global.tx_isolation;
-SELECT @@session.tx_isolation;
-SELECT @@tx_isolation;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;2-设置隔离级别&quot;&gt;&lt;a href=&quot;#2-设置隔离级别&quot; class=&quot;headerlink&quot; title=&quot;2. 设置隔离级别&quot;&gt;&lt;/a&gt;2. 设置隔离级别&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;SET [SESSION | GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE}
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;例如：set session transaction isolation level read uncommitted;&lt;/p&gt;
-&lt;h4 id=&quot;3-查看auto-increment机制模式&quot;&gt;&lt;a href=&quot;#3-查看auto-increment机制模式&quot; class=&quot;headerlink&quot; title=&quot;3. 查看auto_increment机制模式&quot;&gt;&lt;/a&gt;3. 查看auto_increment机制模式&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;show variables like ‘innodb_autoinc_lock_mode’;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;4-查看表状态&quot;&gt;&lt;a href=&quot;#4-查看表状态&quot; class=&quot;headerlink&quot; title=&quot;4. 查看表状态&quot;&gt;&lt;/a&gt;4. 查看表状态&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;show table status like ‘plan_branch’\G;
-show table status from test like ‘plan_branch’\G;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;5-查看SQL性能&quot;&gt;&lt;a href=&quot;#5-查看SQL性能&quot; class=&quot;headerlink&quot; title=&quot;5. 查看SQL性能&quot;&gt;&lt;/a&gt;5. 查看SQL性能&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;show profiles
-show profile for query 1;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;6-查看当前最新事务ID&quot;&gt;&lt;a href=&quot;#6-查看当前最新事务ID&quot; class=&quot;headerlink&quot; title=&quot;6. 查看当前最新事务ID&quot;&gt;&lt;/a&gt;6. 查看当前最新事务ID&lt;/h4&gt;&lt;p&gt;每开启一个新事务，记录当前最新事务的id，可用于后续死锁分析。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;show engine innodb status\G;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;7-查看事务锁等待状态情况&quot;&gt;&lt;a href=&quot;#7-查看事务锁等待状态情况&quot; class=&quot;headerlink&quot; title=&quot;7. 查看事务锁等待状态情况&quot;&gt;&lt;/a&gt;7. 查看事务锁等待状态情况&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;select from information_schema.innodb_locks;
-select from information_schema.innodb_lock_waits;
-select * from information_schema.innodb_trx;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;8-查看innodb状态-包含最近的死锁日志&quot;&gt;&lt;a href=&quot;#8-查看innodb状态-包含最近的死锁日志&quot; class=&quot;headerlink&quot; title=&quot;8. 查看innodb状态(包含最近的死锁日志)&quot;&gt;&lt;/a&gt;8. 查看innodb状态(包含最近的死锁日志)&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;show engine innodb status;
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;八、参考文档&quot;&gt;&lt;a href=&quot;#八、参考文档&quot; class=&quot;headerlink&quot; title=&quot;八、参考文档&quot;&gt;&lt;/a&gt;八、参考文档&lt;/h2&gt;&lt;pre&gt;&lt;code&gt;[^1]: InnoDB Startup Options and System Variables
-[^2]: InnoDB Locking
-[^3]: Clustered and Secondary Indexes
-[^4]: [MySQL] gap lock/next-key lock浅析
-[^5]: Intention Lock是否表级锁
-[^6]: Locks Set by Different SQL Statements in InnoDB
-[^8]: AUTO_INCREMENT lock Handing in InnoDB
-[^9]: 深入理解innodb的锁(record,gap,Next-Key lock)
-[^11]: The INFORMATION_SCHEMA INNODB_LOCKS Table
-[^12]: The INFORMATION_SCHEMA INNODB_TRX Table
-[^13]: mysql innodb插入意向锁    
-&lt;/code&gt;&lt;/pre&gt;</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;h2 id=&quot;一、前言&quot;&gt;&lt;a href=&quot;#一、前言&quot; class=&quot;headerlink&quot; title=&quot;一、前言&quot;&gt;&lt;/a&gt;一、前言&lt;/h2&gt;&lt;p&gt;上周遇到一个因insert而引发的死锁问题，其成因比较令人费解。&lt;br&gt;于是想要了解一下insert加锁机制，但是
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="锁" scheme="http://idber.github.io/tags/%E9%94%81/"/>
     
   </entry>
   
