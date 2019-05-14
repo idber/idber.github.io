@@ -115,7 +115,7 @@ Do not ignore character set information sent by
     <link href="http://idber.github.io/2019/05/13-MySQL%E5%AD%97%E7%AC%A6%E9%9B%86%E7%9A%84%E5%86%85%E9%83%A8%E8%BD%AC%E6%8D%A2.html"/>
     <id>http://idber.github.io/2019/05/13-MySQL字符集的内部转换.html</id>
     <published>2019-05-13T02:01:56.000Z</published>
-    <updated>2019-05-14T10:33:06.752Z</updated>
+    <updated>2019-05-14T10:45:46.555Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;p&gt;看到雁闲大神一篇文章&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/p/4327019.html&lt;/a&gt;&lt;br&gt;在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_result三个值，到底是哪个值影响b）阶段的转换呢，下面通过物理学上的控制变量法来验证。&lt;/p&gt;
@@ -126,6 +126,7 @@ Do not ignore character set information sent by
 Create Table: CREATE TABLE `t` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `data` varchar(100) DEFAULT NULL,
+  `comment` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_data` (`data`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=gbk
@@ -146,16 +147,11 @@ Create Table: CREATE TABLE `t` (
 +--------------------------+-----------------------------------+
 8 rows in set (0.00 sec)
 
-insert into T values(null,&amp;apos;小明&amp;apos;);
+insert into T values(null,&amp;apos;小明&amp;apos;,&amp;apos;3 gbk&amp;apos;);
 
-SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
-+--------------+-------------------+--------+--------------+---------------+
-| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;小明&amp;apos;) |
-+--------------+-------------------+--------+--------------+---------------+
-|            6 |                 3 | 小明 | E5B08FE6988E | E5B08FE6988E  |
-+--------------+-------------------+--------+--------------+---------------+
-1 row in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里在SecureCRT明文输入hex(‘小明’)&lt;br&gt;可以看到查询出的二进制流为E5B08FE6988E&lt;br&gt;由于character_set_client、character_set_connection、character_set_result和表字符集均为GBK，不涉及MySQL内部编码转换。因此，表字符集虽然为GBK，但“小明”的编码并非为GBK编码的二进制流，而是UTF8的二进制流，两个汉字占用了6个字节，而读取是一个逆向的过程，不涉及到编码转换，查询依然能正确返回“小明”。&lt;/p&gt;
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;),comment  from t;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;+————–+——————-+——–+————–+—————+———+&lt;br&gt;| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(‘小明’) | comment |&lt;br&gt;+————–+——————-+——–+————–+—————+———+&lt;br&gt;|            6 |                 3 | 小明 | E5B08FE6988E | E5B08FE6988E  | 3 gbk   |&lt;br&gt;+————–+——————-+——–+————–+—————+———+&lt;br&gt;1 row in set (0.00 sec)&lt;/p&gt;
+&lt;p&gt;这里在SecureCRT明文输入hex(‘小明’)&lt;br&gt;可以看到查询出的二进制流为E5B08FE6988E&lt;br&gt;由于character_set_client、character_set_connection、character_set_result和表字符集均为GBK，不涉及MySQL内部编码转换。因此，表字符集虽然为GBK，但“小明”的编码并非为GBK编码的二进制流，而是UTF8的二进制流，两个汉字占用了6个字节，而读取是一个逆向的过程，不涉及到编码转换，查询依然能正确返回“小明”。&lt;/p&gt;
 &lt;h1 id=&quot;只更改character-set-client为utf8&quot;&gt;&lt;a href=&quot;#只更改character-set-client为utf8&quot; class=&quot;headerlink&quot; title=&quot;只更改character_set_client为utf8&quot;&gt;&lt;/a&gt;只更改character_set_client为utf8&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;set character_set_client=utf8;
 
 Query OK, 0 rows affected (0.00 sec)
@@ -175,13 +171,14 @@ show variables like &amp;apos;character%&amp;apos;;
 +--------------------------+-----------------------------------+
 8 rows in set (0.00 sec)
 
-SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
-+--------------+-------------------+--------+--------------+-------------+
-| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;С) |
-+--------------+-------------------+--------+--------------+-------------+
-|            6 |                 3 | 小明 | E5B08FE6988E | D0A1C3F7    |
-+--------------+-------------------+--------+--------------+-------------+
-1 row in set (0.00 sec)
+&amp;gt;SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;),comment  from t order by id ;
++----+--------------+-------------------+--------+--------------+-------------+---------------------------+
+| id | LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;С) | comment                   |
++----+--------------+-------------------+--------+--------------+-------------+---------------------------+
+|  1 |            6 |                 3 | 小明 | E5B08FE6988E | D0A1C3F7    | 3 gbk                     |
+|  2 |            4 |                 2 | С  | D0A1C3F7     | D0A1C3F7    | character_set_client utf8 |
++----+--------------+-------------------+--------+--------------+-------------+---------------------------+
+2 rows in set (0.00 sec)
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看到，数据库里存储的字符为utf8的二进制流E5B08FE6988E&lt;br&gt;MySQL把SecureCRT明文输入的“小明”转换成了gbk的二进制流D0A1C3F7&lt;br&gt;把SecureCRT字符集设置成gbk用unhex反向查看确认D0A1C3F7是不是gbk的二进制流&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;select unhex(&amp;apos;D0A1C3F7&amp;apos;);
 +-------------------+
@@ -239,13 +236,18 @@ show variables like &amp;apos;character%&amp;apos;;
 +--------------------------+-----------------------------------+
 8 rows in set (0.00 sec)
 
-SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
-+--------------+-------------------+--------+--------------+--------------------+
-| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;小明&amp;apos;)      |
-+--------------+-------------------+--------+--------------+--------------------+
-|            6 |                 3 | 小明 | E5B08FE6988E | E7818FE5BF94E6A791 |
-+--------------+-------------------+--------+--------------+--------------------+
-1 row in set (0.00 sec)
+ insert into T values(null,&amp;apos;小明&amp;apos;,&amp;apos;character_set_connection utf8&amp;apos;);
+Query OK, 1 row affected (0.01 sec)
+
+guo@ha 12:25:58&amp;gt;SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;),comment  from t order by id ;
++----+--------------+-------------------+--------+--------------+--------------------+-------------------------------+
+| id | LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;小明&amp;apos;)      | comment                       |
++----+--------------+-------------------+--------+--------------+--------------------+-------------------------------+
+|  1 |            6 |                 3 | 小明 | E5B08FE6988E | E7818FE5BF94E6A791 | 3 gbk                         |
+|  2 |            4 |                 2 | С  | D0A1C3F7     | E7818FE5BF94E6A791 | character_set_client utf8     |
+|  3 |            6 |                 3 | 小明 | E5B08FE6988E | E7818FE5BF94E6A791 | character_set_connection utf8 |
++----+--------------+-------------------+--------+--------------+--------------------+-------------------------------+
+3 rows in set (0.00 sec)
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;SecureCRT(utf8 E5B08FE6988E)–&amp;gt; character_set_client(gbk E5B08FE6988E)–&amp;gt;character_set_connection(utf8 E7818FE5BF94E6A791)&lt;/p&gt;
 &lt;p&gt;数据库存储的二进制流E5B08FE6988E不变&lt;br&gt;SecureCRT输入的utf-8字符集‘小明’在这里变成了E7818FE5BF94E6A791,connection把client传过来的二制流当成gbk二进制流转换成了utf8二进制流E7818FE5BF94E6A791    &lt;/p&gt;
 &lt;h1 id=&quot;只设置character-set-results为utf8&quot;&gt;&lt;a href=&quot;#只设置character-set-results为utf8&quot; class=&quot;headerlink&quot; title=&quot;只设置character_set_results为utf8&quot;&gt;&lt;/a&gt;只设置character_set_results为utf8&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;set names gbk;
@@ -269,13 +271,19 @@ show variables like &amp;apos;character%&amp;apos;;
 +--------------------------+-----------------------------------+
 8 rows in set (0.00 sec)
 
-SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
-+--------------+-------------------+-----------+--------------+------------------+
-| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&amp;apos;灏忔槑&amp;apos;) |
-+--------------+-------------------+-----------+--------------+------------------+
-|            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E     |
-+--------------+-------------------+-----------+--------------+------------------+
-1 row in set (0.00 sec)
+insert into T values(null,&amp;apos;小明&amp;apos;,&amp;apos;character_set_results utf8&amp;apos;);          
+Query OK, 1 row affected (0.00 sec)
+
+guo@ha 12:27:06&amp;gt;SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;),comment  from t order by id ;
++----+--------------+-------------------+-----------+--------------+------------------+-------------------------------+
+| id | LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&amp;apos;灏忔槑&amp;apos;) | comment                       |
++----+--------------+-------------------+-----------+--------------+------------------+-------------------------------+
+|  1 |            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E     | 3 gbk                         |
+|  2 |            4 |                 2 | 小明    | D0A1C3F7     | E5B08FE6988E     | character_set_client utf8     |
+|  3 |            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E     | character_set_connection utf8 |
+|  4 |            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E     | character_set_results utf8    |
++----+--------------+-------------------+-----------+--------------+------------------+-------------------------------+
+4 rows in set (0.00 sec)
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;SecureCRT(utf8 E5B08FE6988E)–&amp;gt; character_set_client(gbk E5B08FE6988E)–&amp;gt;character_set_connection(gbk E5B08FE6988E)–&amp;gt;database(gbk E5B08FE6988E)–&amp;gt;character_set_results(utf8 E7818FE5BF94E6A791)–&amp;gt;SecureCRT(utf8 E7818FE5BF94E6A791)&lt;br&gt;这里只是显示出了问题，数据库存储的二进制流E5B08FE6988E不变&lt;br&gt;SecureCRT输入的utf-8字符集‘小明’在这里也是E5B08FE6988E，但是“小明”显示成了“灏忔槑”对应二进制流E7818FE5BF94E6A791&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;select unhex(&amp;apos;E7818FE5BF94E6A791&amp;apos;);
 +-----------------------------+
@@ -303,13 +311,20 @@ show variables like &amp;apos;character%&amp;apos;;
 +--------------------------+-----------------------------------+
 8 rows in set (0.00 sec)
 
-SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
-+--------------+-------------------+-----------+--------------+---------------+
-| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&amp;apos;小明&amp;apos;) |
-+--------------+-------------------+-----------+--------------+---------------+
-|            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E  |
-+--------------+-------------------+-----------+--------------+---------------+
-1 row in set (0.00 sec)
+ insert into T values(null,&amp;apos;小明&amp;apos;,&amp;apos;3 utf8&amp;apos;);                     
+Query OK, 1 row affected (0.00 sec)
+
+guo@ha 12:28:10&amp;gt;SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;),comment  from t order by id ;
++----+--------------+-------------------+-----------+--------------+---------------+-------------------------------+
+| id | LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&amp;apos;小明&amp;apos;) | comment                       |
++----+--------------+-------------------+-----------+--------------+---------------+-------------------------------+
+|  1 |            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E  | 3 gbk                         |
+|  2 |            4 |                 2 | 小明    | D0A1C3F7     | E5B08FE6988E  | character_set_client utf8     |
+|  3 |            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E  | character_set_connection utf8 |
+|  4 |            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E  | character_set_results utf8    |
+|  5 |            4 |                 2 | 小明    | D0A1C3F7     | E5B08FE6988E  | 3 utf8                        |
++----+--------------+-------------------+-----------+--------------+---------------+-------------------------------+
+5 rows in set (0.00 sec)
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;SecureCRT(utf8 E5B08FE6988E)–&amp;gt; character_set_client(utf8 E5B08FE6988E)–&amp;gt;character_set_connection(utf8 E5B08FE6988E)–&amp;gt;database(gbk E5B08FE6988E)–&amp;gt;character_set_results(utf8 E7818FE5BF94E6A791)–&amp;gt;SecureCRT(utf8 E7818FE5BF94E6A791)&lt;br&gt;出现了上面character_set_results为utf8的显示结果，“小明”变马了“灏忔槑”。&lt;/p&gt;
 &lt;p&gt;设置SecureCRT的字符集为GBK，看看SecureCRT字符集设置对结果影响&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;灏忔槑&amp;apos;)  from t;
