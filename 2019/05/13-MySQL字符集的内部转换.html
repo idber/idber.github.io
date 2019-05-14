@@ -4,25 +4,25 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>MySQL字符集一个隐藏参数 | 似水年华--沉浮</title>
+    <title>MySQL字符集的内部转换 | 似水年华--沉浮</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Michael Guo">
     
 
     
-    <meta name="description" content="最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数 --character-set-client-handshake Do not ignore character set information sent by the client. To ignore client information and use the default server character set,">
+    <meta name="description" content="看到雁闲大神一篇文章https://www.cnblogs.com/cchust/p/4327019.html在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_r">
 <meta name="keywords" content="MySQL,字符集">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MySQL字符集一个隐藏参数">
-<meta property="og:url" content="http://idber.github.io/2019/05/14-MySQL字符集一个隐藏参数.html">
+<meta property="og:title" content="MySQL字符集的内部转换">
+<meta property="og:url" content="http://idber.github.io/2019/05/13-MySQL字符集的内部转换.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数 --character-set-client-handshake Do not ignore character set information sent by the client. To ignore client information and use the default server character set,">
+<meta property="og:description" content="看到雁闲大神一篇文章https://www.cnblogs.com/cchust/p/4327019.html在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_r">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-05-14T03:54:52.963Z">
+<meta property="og:updated_time" content="2019-05-14T10:33:06.752Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MySQL字符集一个隐藏参数">
-<meta name="twitter:description" content="最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数 --character-set-client-handshake Do not ignore character set information sent by the client. To ignore client information and use the default server character set,">
+<meta name="twitter:title" content="MySQL字符集的内部转换">
+<meta name="twitter:description" content="看到雁闲大神一篇文章https://www.cnblogs.com/cchust/p/4327019.html在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_r">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -77,14 +77,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2019/05/14-MySQL字符集一个隐藏参数.html" title="MySQL字符集一个隐藏参数" itemprop="url">MySQL字符集一个隐藏参数</a>
+      <a href="/2019/05/13-MySQL字符集的内部转换.html" title="MySQL字符集的内部转换" itemprop="url">MySQL字符集的内部转换</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
 		
   <p class="article-time">
-    <time datetime="2019-05-14T02:01:56.000Z" itemprop="datePublished"> Published 2019-05-14</time>
+    <time datetime="2019-05-13T02:01:56.000Z" itemprop="datePublished"> Published 2019-05-13</time>
     
   </p>
 </header>
@@ -93,61 +93,180 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#表准备"><span class="toc-number">1.</span> <span class="toc-text">表准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#只更改character-set-client为utf8"><span class="toc-number">2.</span> <span class="toc-text">只更改character_set_client为utf8</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#只设置character-set-connection为utf8"><span class="toc-number">3.</span> <span class="toc-text">只设置character_set_connection为utf8</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#只设置character-set-results为utf8"><span class="toc-number">4.</span> <span class="toc-text">只设置character_set_results为utf8</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#更改三者为utf8"><span class="toc-number">5.</span> <span class="toc-text">更改三者为utf8</span></a></li></ol>
 		
 		</div>
 		
 		<hr>
-<p>最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数</p>
-<pre><code>--character-set-client-handshake
-Do not ignore character set information sent by the client. To ignore client information and use the default server character set, use --skip-character-set-client-handshake; this makes MySQL behave like MySQL 4.0.
-</code></pre><p>为了兼容 mysql 4.0 的习惯增加的这个参数，character-set-client-handshake默认为1，读取default_character_set里设置的值。如果忽略客户端字符集设置，mysqld启动时加上 </p>
-<pre><code>--skip-character-set-client-handshake 
-</code></pre><p>验证：<br>my.cnf参数设置<br>default_character_set = latin1<br>character_set_server = utf8mb4</p>
-<p>启动不读取default_character_set的值设置</p>
-<pre><code>character-set-client-handshake=0
-or
-skip-character-set-client-handshake=1
-</code></pre><p>重启mysql让配置生效，查看结果</p>
+<p>看到雁闲大神一篇文章<br><a href="https://www.cnblogs.com/cchust/p/4327019.html" target="_blank" rel="noopener">https://www.cnblogs.com/cchust/p/4327019.html</a><br>在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_result三个值，到底是哪个值影响b）阶段的转换呢，下面通过物理学上的控制变量法来验证。</p>
+<h1 id="表准备"><a href="#表准备" class="headerlink" title="表准备"></a>表准备</h1><p>建立gbk字符集的表</p>
+<pre><code>show create table t\G
+*************************** 1. row ***************************
+       Table: t
+Create Table: CREATE TABLE `t` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `data` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_data` (`data`)
+) ENGINE=InnoDB  DEFAULT CHARSET=gbk
+1 row in set (0.00 sec)
+</code></pre><p>character_set_client、character_set_connection、character_set_result为gbk，SecureCRT为utf-8</p>
 <pre><code>show variables like &apos;character%&apos;;
 +--------------------------+-----------------------------------+
 | Variable_name            | Value                             |
 +--------------------------+-----------------------------------+
-| character_set_client     | utf8mb4                           |
-| character_set_connection | utf8mb4                           |
+| character_set_client     | gbk                               |
+| character_set_connection | gbk                               |
 | character_set_database   | gbk                               |
 | character_set_filesystem | binary                            |
-| character_set_results    | utf8mb4                           |
+| character_set_results    | gbk                               |
 | character_set_server     | utf8mb4                           |
 | character_set_system     | utf8                              |
 | character_sets_dir       | /home/mysql/mysql/share/charsets/ |
 +--------------------------+-----------------------------------+
-8 rows in set (0.01 sec)
-</code></pre><p>可以看到character_set_client，character_set_connection，character_set_results读取的是character_set_server的值utf8mb4</p>
-<p>如果启动读取default_character_set的值设置</p>
-<pre><code>character-set-client-handshake=1
-or
-skip-character-set-client-handshake=0
-</code></pre><p>重启mysql让配置生效，查看结果</p>
-<pre><code>show variables like &apos;character%&apos;;
-+--------------------------+-----------------------------------+
-| Variable_name            | Value                             |
-+--------------------------+-----------------------------------+
-| character_set_client     | latin1                            |
-| character_set_connection | latin1                            |
-| character_set_database   | gbk                               |
-| character_set_filesystem | binary                            |
-| character_set_results    | latin1                            |
-| character_set_server     | utf8mb4                           |
-| character_set_system     | utf8                              |
-| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
-+--------------------------+-----------------------------------+
-8 rows in set (0.13 sec)
-</code></pre><p>可以看到character_set_client，character_set_connection，character_set_results读取的是default_character_set的值latin1</p>
-<p>这时需要手工设置<br>set names xxx;<br>才会将client、connection、results的字符集改过来。</p>
-<pre><code>set names utf8;
+8 rows in set (0.00 sec)
 
-Query OK, 0 rows affected (0.02 sec)
+insert into T values(null,&apos;小明&apos;);
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&apos;小明&apos;)  from t;
++--------------+-------------------+--------+--------------+---------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&apos;小明&apos;) |
++--------------+-------------------+--------+--------------+---------------+
+|            6 |                 3 | 小明 | E5B08FE6988E | E5B08FE6988E  |
++--------------+-------------------+--------+--------------+---------------+
+1 row in set (0.00 sec)
+</code></pre><p>这里在SecureCRT明文输入hex(‘小明’)<br>可以看到查询出的二进制流为E5B08FE6988E<br>由于character_set_client、character_set_connection、character_set_result和表字符集均为GBK，不涉及MySQL内部编码转换。因此，表字符集虽然为GBK，但“小明”的编码并非为GBK编码的二进制流，而是UTF8的二进制流，两个汉字占用了6个字节，而读取是一个逆向的过程，不涉及到编码转换，查询依然能正确返回“小明”。</p>
+<h1 id="只更改character-set-client为utf8"><a href="#只更改character-set-client为utf8" class="headerlink" title="只更改character_set_client为utf8"></a>只更改character_set_client为utf8</h1><pre><code>set character_set_client=utf8;
+
+Query OK, 0 rows affected (0.00 sec)
+
+show variables like &apos;character%&apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | utf8                              |
+| character_set_connection | gbk                               |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | gbk                               |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&apos;小明&apos;)  from t;
++--------------+-------------------+--------+--------------+-------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&apos;С) |
++--------------+-------------------+--------+--------------+-------------+
+|            6 |                 3 | 小明 | E5B08FE6988E | D0A1C3F7    |
++--------------+-------------------+--------+--------------+-------------+
+1 row in set (0.00 sec)
+</code></pre><p>可以看到，数据库里存储的字符为utf8的二进制流E5B08FE6988E<br>MySQL把SecureCRT明文输入的“小明”转换成了gbk的二进制流D0A1C3F7<br>把SecureCRT字符集设置成gbk用unhex反向查看确认D0A1C3F7是不是gbk的二进制流</p>
+<pre><code>select unhex(&apos;D0A1C3F7&apos;);
++-------------------+
+| unhex(&apos;D0A1C3F7&apos;) |
++-------------------+
+| 小明              |
++-------------------+
+1 row in set (0.00 sec)
+
+select unhex(&apos;E5B08FE6988E&apos;);
++-----------------------+
+| unhex(&apos;E5B08FE6988E&apos;) |
++-----------------------+
+| 灏忔槑                |
++-----------------------+
+1 row in set (0.00 sec)
+</code></pre><p>由于SecureCRT是gbk字符集，把utf-8二进制流E5B08FE6988E按gbk解码成了gbk对应的汉字“灏忔槑”，于是乱码就产生了。把SecureCRT设置成utf-8后，即恢复正常</p>
+<pre><code>select unhex(&apos;E5B08FE6988E&apos;);
++-----------------------+
+| unhex(&apos;E5B08FE6988E&apos;) |
++-----------------------+
+| 小明                |
++-----------------------+
+1 row in set (0.00 sec)
+</code></pre><p>确认结果<br>D0A1C3F7为小明gbk的二进制流<br>E5B08FE6988E为小明utf8的二进制流</p>
+<p>SecureCRT(utf8 E5B08FE6988E)–&gt; character_set_client(utf8 E5B08FE6988E)–&gt;character_set_connection(gbk D0A1C3F7)<br>connection把utf8的二进制流转换为gbk的二进制流，由于gbk不包含utf8，需要先用utf8解码再转码为gbk，用Python演示过程为</p>
+<pre><code>a = u&quot;小明&quot;
+a_utf_8 = a.encode(&apos;utf-8&apos;)
+print(a_utf_8)
+a_unicode = a_utf_8.decode(&apos;utf-8&apos;)
+assert (a_unicode == a)
+a_gb2312 = a_unicode.encode(&apos;gb2312&apos;)
+print(a_gb2312)
+</code></pre><p>结果为</p>
+<pre><code>b&apos;\xe5\xb0\x8f\xe6\x98\x8e&apos;
+b&apos;\xd0\xa1\xc3\xf7&apos;
+</code></pre><h1 id="只设置character-set-connection为utf8"><a href="#只设置character-set-connection为utf8" class="headerlink" title="只设置character_set_connection为utf8"></a>只设置character_set_connection为utf8</h1><pre><code>set names gbk;
+Query OK, 0 rows affected (0.00 sec)
+
+set character_set_connection=utf8;
+Query OK, 0 rows affected (0.00 sec)
+
+show variables like &apos;character%&apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | gbk                               |
+| character_set_connection | utf8                              |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | gbk                               |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&apos;小明&apos;)  from t;
++--------------+-------------------+--------+--------------+--------------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&apos;小明&apos;)      |
++--------------+-------------------+--------+--------------+--------------------+
+|            6 |                 3 | 小明 | E5B08FE6988E | E7818FE5BF94E6A791 |
++--------------+-------------------+--------+--------------+--------------------+
+1 row in set (0.00 sec)
+</code></pre><p>SecureCRT(utf8 E5B08FE6988E)–&gt; character_set_client(gbk E5B08FE6988E)–&gt;character_set_connection(utf8 E7818FE5BF94E6A791)</p>
+<p>数据库存储的二进制流E5B08FE6988E不变<br>SecureCRT输入的utf-8字符集‘小明’在这里变成了E7818FE5BF94E6A791,connection把client传过来的二制流当成gbk二进制流转换成了utf8二进制流E7818FE5BF94E6A791    </p>
+<h1 id="只设置character-set-results为utf8"><a href="#只设置character-set-results为utf8" class="headerlink" title="只设置character_set_results为utf8"></a>只设置character_set_results为utf8</h1><pre><code>set names gbk;
+Query OK, 0 rows affected (0.00 sec)
+
+set character_set_results=utf8;
+Query OK, 0 rows affected (0.00 sec)
+
+show variables like &apos;character%&apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | gbk                               |
+| character_set_connection | gbk                               |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | utf8                              |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&apos;小明&apos;)  from t;
++--------------+-------------------+-----------+--------------+------------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&apos;灏忔槑&apos;) |
++--------------+-------------------+-----------+--------------+------------------+
+|            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E     |
++--------------+-------------------+-----------+--------------+------------------+
+1 row in set (0.00 sec)
+</code></pre><p>SecureCRT(utf8 E5B08FE6988E)–&gt; character_set_client(gbk E5B08FE6988E)–&gt;character_set_connection(gbk E5B08FE6988E)–&gt;database(gbk E5B08FE6988E)–&gt;character_set_results(utf8 E7818FE5BF94E6A791)–&gt;SecureCRT(utf8 E7818FE5BF94E6A791)<br>这里只是显示出了问题，数据库存储的二进制流E5B08FE6988E不变<br>SecureCRT输入的utf-8字符集‘小明’在这里也是E5B08FE6988E，但是“小明”显示成了“灏忔槑”对应二进制流E7818FE5BF94E6A791</p>
+<pre><code>select unhex(&apos;E7818FE5BF94E6A791&apos;);
++-----------------------------+
+| unhex(&apos;E7818FE5BF94E6A791&apos;) |
++-----------------------------+
+| 灏忔槑                   |
++-----------------------------+
+1 row in set (0.00 sec)
+</code></pre><h1 id="更改三者为utf8"><a href="#更改三者为utf8" class="headerlink" title="更改三者为utf8"></a>更改三者为utf8</h1><p>   改变character_set_client、character_set_connection、character_set_results的设置为utf8，查询插入的值。    </p>
+<pre><code>set names utf8;
+Query OK, 0 rows affected (0.00 sec)
 
 show variables like &apos;character%&apos;;
 +--------------------------+-----------------------------------+
@@ -163,9 +282,24 @@ show variables like &apos;character%&apos;;
 | character_sets_dir       | /home/mysql/mysql/share/charsets/ |
 +--------------------------+-----------------------------------+
 8 rows in set (0.00 sec)
-</code></pre><p>其实这个参数也是有好处的。比如启用 skip-character-set-client-handshake 选项后，就可以避免客户端程序误操作，使用其他字符集连接进来并写入数据，从而引发乱码问题。</p>
-<p>相关阅读：<br><a href="https://www.cnblogs.com/cchust/p/4327019.html" target="_blank" rel="noopener">https://www.cnblogs.com/cchust/p/4327019.html</a><br><a href="http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html">http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html</a></p>
-  
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&apos;小明&apos;)  from t;
++--------------+-------------------+-----------+--------------+---------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&apos;小明&apos;) |
++--------------+-------------------+-----------+--------------+---------------+
+|            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E  |
++--------------+-------------------+-----------+--------------+---------------+
+1 row in set (0.00 sec)
+</code></pre><p>SecureCRT(utf8 E5B08FE6988E)–&gt; character_set_client(utf8 E5B08FE6988E)–&gt;character_set_connection(utf8 E5B08FE6988E)–&gt;database(gbk E5B08FE6988E)–&gt;character_set_results(utf8 E7818FE5BF94E6A791)–&gt;SecureCRT(utf8 E7818FE5BF94E6A791)<br>出现了上面character_set_results为utf8的显示结果，“小明”变马了“灏忔槑”。</p>
+<p>设置SecureCRT的字符集为GBK，看看SecureCRT字符集设置对结果影响</p>
+<pre><code>SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&apos;灏忔槑&apos;)  from t;
++--------------+-------------------+-----------+--------------+---------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&apos;灏忔槑&apos;) |
++--------------+-------------------+-----------+--------------+---------------+
+|            6 |                 3 | 鐏忓繑妲     B08FE6988E   | E5B08FE6988E  |
++--------------+-------------------+-----------+--------------+---------------+
+1 row in set (0.00 sec)
+</code></pre>  
 	</div>
 		<footer class="article-footer clearfix">
 <div class="article-catetags">
@@ -187,7 +321,7 @@ show variables like &apos;character%&apos;;
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://idber.github.io/2019/05/14-MySQL字符集一个隐藏参数.html" data-title="MySQL字符集一个隐藏参数 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  <div data-url="http://idber.github.io/2019/05/13-MySQL字符集的内部转换.html" data-title="MySQL字符集的内部转换 | 似水年华--沉浮" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -200,11 +334,19 @@ show variables like &apos;character%&apos;;
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev" >
+ <a href="/2019/05/14-MySQL字符集一个隐藏参数.html" title="MySQL字符集一个隐藏参数">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MySQL字符集一个隐藏参数</span>
+</a>
+</div>
+
 
 <div class="next">
-<a href="/2019/05/13-MySQL字符集的内部转换.html"  title="MySQL字符集的内部转换">
+<a href="/2019/05/11-计算机原理之编码.html"  title="计算机原理之编码">
  <strong>下一篇：</strong><br/> 
- <span>MySQL字符集的内部转换
+ <span>计算机原理之编码
 </span>
 </a>
 </div>
@@ -227,7 +369,7 @@ show variables like &apos;character%&apos;;
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#表准备"><span class="toc-number">1.</span> <span class="toc-text">表准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#只更改character-set-client为utf8"><span class="toc-number">2.</span> <span class="toc-text">只更改character_set_client为utf8</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#只设置character-set-connection为utf8"><span class="toc-number">3.</span> <span class="toc-text">只设置character_set_connection为utf8</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#只设置character-set-results为utf8"><span class="toc-number">4.</span> <span class="toc-text">只设置character_set_results为utf8</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#更改三者为utf8"><span class="toc-number">5.</span> <span class="toc-text">更改三者为utf8</span></a></li></ol>
  
   </div>
 

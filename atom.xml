@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-05-14T03:52:15.885Z</updated>
+  <updated>2019-05-14T03:54:52.963Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://idber.github.io/2019/05/14-MySQL%E5%AD%97%E7%AC%A6%E9%9B%86%E4%B8%80%E4%B8%AA%E9%9A%90%E8%97%8F%E5%8F%82%E6%95%B0.html"/>
     <id>http://idber.github.io/2019/05/14-MySQL字符集一个隐藏参数.html</id>
     <published>2019-05-14T02:01:56.000Z</published>
-    <updated>2019-05-14T03:52:15.885Z</updated>
+    <updated>2019-05-14T03:54:52.963Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;p&gt;最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数&lt;/p&gt;
@@ -89,7 +89,7 @@ show variables like &amp;apos;character%&amp;apos;;
 +--------------------------+-----------------------------------+
 8 rows in set (0.00 sec)
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;其实这个参数也是有好处的。比如启用 skip-character-set-client-handshake 选项后，就可以避免客户端程序误操作，使用其他字符集连接进来并写入数据，从而引发乱码问题。&lt;/p&gt;
-&lt;p&gt;相关文章：&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/p/4327019.html&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html&quot;&gt;http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;相关阅读：&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/p/4327019.html&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html&quot;&gt;http://idber.github.io/2019/05/10-MySQL的伪utf8字符集.html&lt;/a&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
@@ -98,6 +98,233 @@ show variables like &amp;apos;character%&amp;apos;;
 &lt;p&gt;最近在研究字符集相关的问题，无意中看到了MySQL字符集一个隐藏的参数&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;--character-set-client-handshake
 Do not ignore character set information sent by 
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="字符集" scheme="http://idber.github.io/tags/%E5%AD%97%E7%AC%A6%E9%9B%86/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>MySQL字符集的内部转换</title>
+    <link href="http://idber.github.io/2019/05/13-MySQL%E5%AD%97%E7%AC%A6%E9%9B%86%E7%9A%84%E5%86%85%E9%83%A8%E8%BD%AC%E6%8D%A2.html"/>
+    <id>http://idber.github.io/2019/05/13-MySQL字符集的内部转换.html</id>
+    <published>2019-05-13T02:01:56.000Z</published>
+    <updated>2019-05-14T10:33:06.752Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;看到雁闲大神一篇文章&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/p/4327019.html&lt;/a&gt;&lt;br&gt;在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_result三个值，到底是哪个值影响b）阶段的转换呢，下面通过物理学上的控制变量法来验证。&lt;/p&gt;
+&lt;h1 id=&quot;表准备&quot;&gt;&lt;a href=&quot;#表准备&quot; class=&quot;headerlink&quot; title=&quot;表准备&quot;&gt;&lt;/a&gt;表准备&lt;/h1&gt;&lt;p&gt;建立gbk字符集的表&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;show create table t\G
+*************************** 1. row ***************************
+       Table: t
+Create Table: CREATE TABLE `t` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `data` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_data` (`data`)
+) ENGINE=InnoDB  DEFAULT CHARSET=gbk
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;character_set_client、character_set_connection、character_set_result为gbk，SecureCRT为utf-8&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | gbk                               |
+| character_set_connection | gbk                               |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | gbk                               |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+insert into T values(null,&amp;apos;小明&amp;apos;);
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
++--------------+-------------------+--------+--------------+---------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;小明&amp;apos;) |
++--------------+-------------------+--------+--------------+---------------+
+|            6 |                 3 | 小明 | E5B08FE6988E | E5B08FE6988E  |
++--------------+-------------------+--------+--------------+---------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里在SecureCRT明文输入hex(‘小明’)&lt;br&gt;可以看到查询出的二进制流为E5B08FE6988E&lt;br&gt;由于character_set_client、character_set_connection、character_set_result和表字符集均为GBK，不涉及MySQL内部编码转换。因此，表字符集虽然为GBK，但“小明”的编码并非为GBK编码的二进制流，而是UTF8的二进制流，两个汉字占用了6个字节，而读取是一个逆向的过程，不涉及到编码转换，查询依然能正确返回“小明”。&lt;/p&gt;
+&lt;h1 id=&quot;只更改character-set-client为utf8&quot;&gt;&lt;a href=&quot;#只更改character-set-client为utf8&quot; class=&quot;headerlink&quot; title=&quot;只更改character_set_client为utf8&quot;&gt;&lt;/a&gt;只更改character_set_client为utf8&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;set character_set_client=utf8;
+
+Query OK, 0 rows affected (0.00 sec)
+
+show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | utf8                              |
+| character_set_connection | gbk                               |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | gbk                               |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
++--------------+-------------------+--------+--------------+-------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;С) |
++--------------+-------------------+--------+--------------+-------------+
+|            6 |                 3 | 小明 | E5B08FE6988E | D0A1C3F7    |
++--------------+-------------------+--------+--------------+-------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;可以看到，数据库里存储的字符为utf8的二进制流E5B08FE6988E&lt;br&gt;MySQL把SecureCRT明文输入的“小明”转换成了gbk的二进制流D0A1C3F7&lt;br&gt;把SecureCRT字符集设置成gbk用unhex反向查看确认D0A1C3F7是不是gbk的二进制流&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;select unhex(&amp;apos;D0A1C3F7&amp;apos;);
++-------------------+
+| unhex(&amp;apos;D0A1C3F7&amp;apos;) |
++-------------------+
+| 小明              |
++-------------------+
+1 row in set (0.00 sec)
+
+select unhex(&amp;apos;E5B08FE6988E&amp;apos;);
++-----------------------+
+| unhex(&amp;apos;E5B08FE6988E&amp;apos;) |
++-----------------------+
+| 灏忔槑                |
++-----------------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;由于SecureCRT是gbk字符集，把utf-8二进制流E5B08FE6988E按gbk解码成了gbk对应的汉字“灏忔槑”，于是乱码就产生了。把SecureCRT设置成utf-8后，即恢复正常&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;select unhex(&amp;apos;E5B08FE6988E&amp;apos;);
++-----------------------+
+| unhex(&amp;apos;E5B08FE6988E&amp;apos;) |
++-----------------------+
+| 小明                |
++-----------------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;确认结果&lt;br&gt;D0A1C3F7为小明gbk的二进制流&lt;br&gt;E5B08FE6988E为小明utf8的二进制流&lt;/p&gt;
+&lt;p&gt;SecureCRT(utf8 E5B08FE6988E)–&amp;gt; character_set_client(utf8 E5B08FE6988E)–&amp;gt;character_set_connection(gbk D0A1C3F7)&lt;br&gt;connection把utf8的二进制流转换为gbk的二进制流，由于gbk不包含utf8，需要先用utf8解码再转码为gbk，用Python演示过程为&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;a = u&amp;quot;小明&amp;quot;
+a_utf_8 = a.encode(&amp;apos;utf-8&amp;apos;)
+print(a_utf_8)
+a_unicode = a_utf_8.decode(&amp;apos;utf-8&amp;apos;)
+assert (a_unicode == a)
+a_gb2312 = a_unicode.encode(&amp;apos;gb2312&amp;apos;)
+print(a_gb2312)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;结果为&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;b&amp;apos;\xe5\xb0\x8f\xe6\x98\x8e&amp;apos;
+b&amp;apos;\xd0\xa1\xc3\xf7&amp;apos;
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;只设置character-set-connection为utf8&quot;&gt;&lt;a href=&quot;#只设置character-set-connection为utf8&quot; class=&quot;headerlink&quot; title=&quot;只设置character_set_connection为utf8&quot;&gt;&lt;/a&gt;只设置character_set_connection为utf8&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;set names gbk;
+Query OK, 0 rows affected (0.00 sec)
+
+set character_set_connection=utf8;
+Query OK, 0 rows affected (0.00 sec)
+
+show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | gbk                               |
+| character_set_connection | utf8                              |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | gbk                               |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
++--------------+-------------------+--------+--------------+--------------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data   | hex(data)    | hex(&amp;apos;小明&amp;apos;)      |
++--------------+-------------------+--------+--------------+--------------------+
+|            6 |                 3 | 小明 | E5B08FE6988E | E7818FE5BF94E6A791 |
++--------------+-------------------+--------+--------------+--------------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;SecureCRT(utf8 E5B08FE6988E)–&amp;gt; character_set_client(gbk E5B08FE6988E)–&amp;gt;character_set_connection(utf8 E7818FE5BF94E6A791)&lt;/p&gt;
+&lt;p&gt;数据库存储的二进制流E5B08FE6988E不变&lt;br&gt;SecureCRT输入的utf-8字符集‘小明’在这里变成了E7818FE5BF94E6A791,connection把client传过来的二制流当成gbk二进制流转换成了utf8二进制流E7818FE5BF94E6A791    &lt;/p&gt;
+&lt;h1 id=&quot;只设置character-set-results为utf8&quot;&gt;&lt;a href=&quot;#只设置character-set-results为utf8&quot; class=&quot;headerlink&quot; title=&quot;只设置character_set_results为utf8&quot;&gt;&lt;/a&gt;只设置character_set_results为utf8&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;set names gbk;
+Query OK, 0 rows affected (0.00 sec)
+
+set character_set_results=utf8;
+Query OK, 0 rows affected (0.00 sec)
+
+show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | gbk                               |
+| character_set_connection | gbk                               |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | utf8                              |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
++--------------+-------------------+-----------+--------------+------------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&amp;apos;灏忔槑&amp;apos;) |
++--------------+-------------------+-----------+--------------+------------------+
+|            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E     |
++--------------+-------------------+-----------+--------------+------------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;SecureCRT(utf8 E5B08FE6988E)–&amp;gt; character_set_client(gbk E5B08FE6988E)–&amp;gt;character_set_connection(gbk E5B08FE6988E)–&amp;gt;database(gbk E5B08FE6988E)–&amp;gt;character_set_results(utf8 E7818FE5BF94E6A791)–&amp;gt;SecureCRT(utf8 E7818FE5BF94E6A791)&lt;br&gt;这里只是显示出了问题，数据库存储的二进制流E5B08FE6988E不变&lt;br&gt;SecureCRT输入的utf-8字符集‘小明’在这里也是E5B08FE6988E，但是“小明”显示成了“灏忔槑”对应二进制流E7818FE5BF94E6A791&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;select unhex(&amp;apos;E7818FE5BF94E6A791&amp;apos;);
++-----------------------------+
+| unhex(&amp;apos;E7818FE5BF94E6A791&amp;apos;) |
++-----------------------------+
+| 灏忔槑                   |
++-----------------------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;更改三者为utf8&quot;&gt;&lt;a href=&quot;#更改三者为utf8&quot; class=&quot;headerlink&quot; title=&quot;更改三者为utf8&quot;&gt;&lt;/a&gt;更改三者为utf8&lt;/h1&gt;&lt;p&gt;   改变character_set_client、character_set_connection、character_set_results的设置为utf8，查询插入的值。    &lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;set names utf8;
+Query OK, 0 rows affected (0.00 sec)
+
+show variables like &amp;apos;character%&amp;apos;;
++--------------------------+-----------------------------------+
+| Variable_name            | Value                             |
++--------------------------+-----------------------------------+
+| character_set_client     | utf8                              |
+| character_set_connection | utf8                              |
+| character_set_database   | gbk                               |
+| character_set_filesystem | binary                            |
+| character_set_results    | utf8                              |
+| character_set_server     | utf8mb4                           |
+| character_set_system     | utf8                              |
+| character_sets_dir       | /home/mysql/mysql/share/charsets/ |
++--------------------------+-----------------------------------+
+8 rows in set (0.00 sec)
+
+SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;小明&amp;apos;)  from t;
++--------------+-------------------+-----------+--------------+---------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&amp;apos;小明&amp;apos;) |
++--------------+-------------------+-----------+--------------+---------------+
+|            6 |                 3 | 灏忔槑 | E5B08FE6988E | E5B08FE6988E  |
++--------------+-------------------+-----------+--------------+---------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;SecureCRT(utf8 E5B08FE6988E)–&amp;gt; character_set_client(utf8 E5B08FE6988E)–&amp;gt;character_set_connection(utf8 E5B08FE6988E)–&amp;gt;database(gbk E5B08FE6988E)–&amp;gt;character_set_results(utf8 E7818FE5BF94E6A791)–&amp;gt;SecureCRT(utf8 E7818FE5BF94E6A791)&lt;br&gt;出现了上面character_set_results为utf8的显示结果，“小明”变马了“灏忔槑”。&lt;/p&gt;
+&lt;p&gt;设置SecureCRT的字符集为GBK，看看SecureCRT字符集设置对结果影响&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;SELECT LENGTH(data), CHAR_LENGTH(data),data,hex(data),hex(&amp;apos;灏忔槑&amp;apos;)  from t;
++--------------+-------------------+-----------+--------------+---------------+
+| LENGTH(data) | CHAR_LENGTH(data) | data      | hex(data)    | hex(&amp;apos;灏忔槑&amp;apos;) |
++--------------+-------------------+-----------+--------------+---------------+
+|            6 |                 3 | 鐏忓繑妲     B08FE6988E   | E5B08FE6988E  |
++--------------+-------------------+-----------+--------------+---------------+
+1 row in set (0.00 sec)
+&lt;/code&gt;&lt;/pre&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;看到雁闲大神一篇文章&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/
     
     </summary>
     
@@ -3120,68 +3347,6 @@ row_log_table_apply  //对于rebuild类型，处理增量
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="锁" scheme="http://idber.github.io/tags/%E9%94%81/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>数据同步利器-Otter的搭建及使用说明</title>
-    <link href="http://idber.github.io/2018/08/11-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E5%88%A9%E5%99%A8-otter%E7%9A%84%E6%90%AD%E5%BB%BA%E5%8F%8A%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E.html"/>
-    <id>http://idber.github.io/2018/08/11-数据同步利器-otter的搭建及使用说明.html</id>
-    <published>2018-08-11T02:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.935Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;&lt;/p&gt;&lt;h1&gt;前言&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;
-&lt;p&gt;&lt;li&gt;Otter为阿里云商业化版本 &lt;a href=&quot;https://www.aliyun.com/product/dts?spm=a2c4g.11186623.cloudEssentials.80.srdwr7&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;数据传输服务DTS&lt;/a&gt;开源版本。&lt;/li&gt;&lt;/p&gt;
-&lt;p&gt;Otter目前支持了什么&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. 单向同步， mysql/oracle互相同步
-
-2. 双向同步，无冲突变更
-
-3. 文件同步，本地/aranda文件
-
-4. 双A同步，冲突检测&amp;amp;冲突补救
-
-5. 数据迁移，中间表/行记录同步
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;导历史表还需要程序代码实现吗？ 还在用mysql的主从复制吗？ Otter都能为你解决。&lt;/p&gt;
-&lt;p&gt;典型的场景是账户信息表和账户交易明细表，更新账户余额后需要登记一条账户明细，并且保证在一个事务里，用户可以通过交易明细表查看交易记录，但是交易明细表的数据量是逐步递增的，用户量多的系统，几个月下来的数据超过千万了，表数据量一多就导致查询和插入变慢，而一开始就对账户明细做分表处理就难于保证强一致性事务，通过otter可以将记录同步导历史表，并且进行分表处理，用户往年的交易记录就可以查询历史表了，而原交易明细表就可以删除一个月甚至几天前的数据；&lt;/p&gt;
-&lt;p&gt;实际测试中，otter的同步速度相比于mysql的复制，约有5倍左右的性能提升，这取决于其同步算法的实现. 抛弃了强一致性，得到了性能提升。 &lt;/p&gt;
-&lt;p&gt;官方安装文档&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;https://github.com/alibaba/otter/wiki/Manager_Quickstart
-
-https://github.com/alibaba/otter/wiki/Node_Quickstart
-
-演示视频：http://video.tudou.com/v/XMTc4NjU1MjM4NA==.html
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;/p&gt;&lt;h1&gt;环境搭建 &amp;amp; 打包&lt;/h1&gt;&lt;br&gt;&lt;strong&gt;环境搭建：&lt;/strong&gt;&lt;p&gt;&lt;/p&gt;
-&lt;ol&gt;&lt;br&gt;&lt;li&gt;进入$otter_home目录&lt;/li&gt;&lt;br&gt;&lt;li&gt;执行：mvn clean install&lt;/li&gt;&lt;br&gt;&lt;li&gt;导入maven项目。如果eclipse下报”Missing artifact com.oracle:ojdbc14:jar:10.2.0.3.0”，修改$otter_home/pom.xml中”${user.dir}/lib/ojdbc14-10.2.0.3.0.jar”为绝对路径，比如”d:/lib/ojdbc14-10.2.0.3.0.jar” &lt;/li&gt;&lt;br&gt;&lt;/ol&gt;&lt;br&gt;&lt;strong&gt;打包：&lt;/strong&gt;&lt;br&gt;&lt;ol&gt;&lt;br&gt;&lt;li&gt;进入$otter_home目录&lt;/li&gt;&lt;br&gt;&lt;li&gt;执行：mvn clean install -Dmaven.test.skip -Denv=release&lt;/li&gt;&lt;br&gt;&lt;li&gt;发布包位置：$otter_home/target&lt;/li&gt;&lt;br&gt;&lt;/ol&gt;
-
-&lt;p&gt;&lt;/p&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF&quot; class=&quot;anchor&quot; href=&quot;#%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;项目背景&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;
-&lt;p&gt;&lt;br&gt;   &amp;nbsp;&amp;nbsp;&amp;nbsp;阿里巴巴B2B公司，因为业务的特性，卖家主要集中在国内，买家主要集中在国外，所以衍生出了杭州和美国异地机房的需求，同时为了提升用户体验，整个机房的架构为双A，两边均可写，由此诞生了otter这样一个产品。 &lt;/p&gt;&lt;br&gt;&lt;p&gt;&lt;br&gt;   &amp;nbsp;&amp;nbsp;&amp;nbsp;otter第一版本可追溯到04~05年，此次外部开源的版本为第4版，开发时间从2011年7月份一直持续到现在，目前阿里巴巴B2B内部的本地/异地机房的同步需求基本全上了otte4。&lt;br&gt;&lt;/p&gt;&lt;br&gt;&lt;strong&gt;目前同步规模：&lt;/strong&gt;&lt;br&gt;&lt;ol&gt;&lt;br&gt;&lt;li&gt;同步数据量6亿&lt;/li&gt;&lt;br&gt;&lt;li&gt;文件同步1.5TB(2000w张图片)&lt;/li&gt;&lt;br&gt;&lt;li&gt;涉及200+个数据库实例之间的同步&lt;/li&gt;&lt;br&gt;&lt;li&gt;80+台机器的集群规模&lt;/li&gt;&lt;br&gt;&lt;/ol&gt;&lt;br&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D&quot; class=&quot;anchor&quot; href=&quot;#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;项目介绍&lt;/h1&gt;&lt;br&gt;&lt;p&gt;名称：otter [‘ɒtə(r)]&lt;/p&gt;&lt;br&gt;&lt;p&gt;译意： 水獭，数据搬运工&lt;/p&gt;&lt;br&gt;&lt;p&gt;语言： 纯java开发&lt;/p&gt;&lt;br&gt;&lt;p&gt;定位： 基于数据库增量日志解析，准实时同步到本机房或异地机房的mysql/oracle数据库. 一个分布式数据库同步系统&lt;/p&gt;&lt;br&gt;&lt;p&gt; &lt;/p&gt;&lt;br&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86&quot; class=&quot;anchor&quot; href=&quot;#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;工作原理&lt;/h1&gt;&lt;br&gt;&lt;p&gt;&lt;img width=&quot;848&quot; src=&quot;https://camo.githubusercontent.com/2988fbbc7ddfe94ed027cd71720b1ffa5912a635/687474703a2f2f646c322e69746579652e636f6d2f75706c6f61642f6174746163686d656e742f303038382f313138392f64343230636131342d326438302d336435352d383038312d6239303833363036613830312e6a7067&quot; height=&quot;303&quot; alt=&quot;&quot;&gt;&lt;/p&gt;&lt;br&gt;&lt;p&gt;原理描述：&lt;/p&gt;&lt;br&gt;&lt;p&gt;1.   基于Canal开源产品，获取数据库增量日志数据。 什么是Canal,  请&lt;a href=&quot;https://github.com/alibaba/canal&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;点击&lt;/a&gt;&lt;/p&gt;&lt;br&gt;&lt;p&gt;2.   典型管理系统架构，manager(web管理)+node(工作节点)&lt;/p&gt;&lt;br&gt;&lt;p&gt;       &amp;nbsp;&amp;nbsp;&amp;nbsp; a.  manager运行时推送同步配置到node节点&lt;/p&gt;&lt;br&gt;&lt;p&gt;       &amp;nbsp;&amp;nbsp;&amp;nbsp; b.  node节点将同步状态反馈到manager上&lt;/p&gt;&lt;br&gt;&lt;p&gt;3.  基于zookeeper，解决分布式状态调度的，允许多node节点之间协同工作. &lt;/p&gt;&lt;br&gt;&lt;h3&gt;&lt;br&gt;&lt;a name=&quot;%E4%BB%80%E4%B9%88%E6%98%AFcanal-&quot; class=&quot;anchor&quot; href=&quot;#%E4%BB%80%E4%B9%88%E6%98%AFcanal-&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;什么是canal? &lt;/h3&gt;&lt;br&gt;otter之前开源的一个子项目，开源链接地址：&lt;a href=&quot;http://github.com/alibaba/canal&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://github.com/alibaba/canal&lt;/a&gt;&lt;br&gt;&lt;p&gt; &lt;/p&gt;&lt;br&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;introduction&quot; class=&quot;anchor&quot; href=&quot;#introduction&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;Introduction&lt;/h1&gt;&lt;br&gt;&lt;p&gt;See the page for introduction: &lt;a class=&quot;internal present&quot; href=&quot;https://github.com/alibaba/otter/wiki/Introduction&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Introduction&lt;/a&gt;.&lt;/p&gt;&lt;br&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;quickstart&quot; class=&quot;anchor&quot; href=&quot;#quickstart&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;QuickStart&lt;/h1&gt;&lt;br&gt;&lt;p&gt;See the page for quick start: &lt;a class=&quot;internal present&quot; href=&quot;https://github.com/alibaba/otter/wiki/QuickStart&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;QuickStart&lt;/a&gt;.&lt;/p&gt;&lt;br&gt;&lt;p&gt; &lt;/p&gt;&lt;br&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;adminguide&quot; class=&quot;anchor&quot; href=&quot;#adminguide&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;AdminGuide&lt;/h1&gt;&lt;br&gt;&lt;p&gt;See the page for admin deploy guide : &lt;a class=&quot;internal present&quot; href=&quot;https://github.com/alibaba/otter/wiki/Adminguide&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;AdminGuide&lt;/a&gt;&lt;/p&gt;&lt;br&gt;&lt;p&gt; &lt;/p&gt;&lt;br&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;%E7%9B%B8%E5%85%B3%E6%96%87%E6%A1%A3&quot; class=&quot;anchor&quot; href=&quot;#%E7%9B%B8%E5%85%B3%E6%96%87%E6%A1%A3&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;相关文档&lt;/h1&gt;&lt;br&gt;&lt;p&gt;See the page for 文档: &lt;a class=&quot;internal present&quot; href=&quot;https://github.com/alibaba/otter/wiki/%E7%9B%B8%E5%85%B3ppt%26pdf&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;相关PPT&amp;amp;PDF&lt;/a&gt;&lt;/p&gt;&lt;br&gt;&lt;p&gt; &lt;/p&gt;&lt;br&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98&quot; class=&quot;anchor&quot; href=&quot;#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;常见问题&lt;/h1&gt;&lt;br&gt;&lt;p&gt;See the page for FAQ: &lt;a class=&quot;internal present&quot; href=&quot;https://github.com/alibaba/otter/wiki/Faq&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;FAQ&lt;/a&gt;&lt;/p&gt;&lt;br&gt;&lt;p&gt; &lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;&lt;h1&gt;&lt;br&gt;&lt;a name=&quot;%E7%89%88%E6%9C%AC%E7%9B%B8%E5%85%B3-&quot; class=&quot;anchor&quot; href=&quot;#%E7%89%88%E6%9C%AC%E7%9B%B8%E5%85%B3-&quot;&gt;&lt;span class=&quot;octicon octicon-link&quot;&gt;&lt;/span&gt;&lt;/a&gt;版本相关: &lt;/h1&gt;&lt;p&gt;&lt;/p&gt;
-&lt;p&gt;1. 建议版本：4.2.15  (otter开源版本从内部演变而来，所以初始版本直接从4.x开始) &lt;/p&gt;&lt;br&gt;&lt;p&gt;2. 下载发布包：&lt;a href=&quot;https://github.com/alibaba/otter/releases&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;download &lt;/a&gt;&lt;/p&gt;&lt;br&gt;&lt;p&gt;3. maven依赖 ： 暂无 &lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;&lt;h1&gt;相关开源&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;
-&lt;ol&gt;&lt;br&gt;&lt;li&gt;阿里巴巴mysql数据库binlog的增量订阅&amp;amp;消费组件：&lt;a href=&quot;http://github.com/alibaba/canal&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://github.com/alibaba/canal&lt;/a&gt;&lt;/li&gt;&lt;br&gt;&lt;li&gt;阿里巴巴去Oracle数据迁移同步工具(目标支持MySQL/DRDS)：&lt;a href=&quot;http://github.com/alibaba/yugong&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://github.com/alibaba/yugong&lt;/a&gt;&lt;/li&gt;&lt;br&gt;&lt;/ol&gt;
-
-&lt;p&gt; &lt;/p&gt;
-
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;&lt;/p&gt;&lt;h1&gt;前言&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;
-&lt;p&gt;&lt;li&gt;Otter为阿里云商业化版本 &lt;a href=&quot;https://www.aliyun.com/product/dts?spm=a2c4g.11186623.cloudEssentials.80.srdwr
-    
-    </summary>
-    
-      <category term="ETL" scheme="http://idber.github.io/categories/ETL/"/>
-    
-    
-      <category term="ETL" scheme="http://idber.github.io/tags/ETL/"/>
-    
-      <category term="数据仓库" scheme="http://idber.github.io/tags/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/"/>
     
   </entry>
   
