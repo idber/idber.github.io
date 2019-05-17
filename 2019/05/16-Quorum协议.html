@@ -4,27 +4,25 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Percona XtraBackup 的工作原理 | 似水年华--沉浮</title>
+    <title>Quorum协议 | 似水年华--沉浮</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Michael Guo">
     
 
     
-    <meta name="description" content="前言Percona XtraBackup（简称PXB）是 Percona 公司开发的一个用于 MySQL 数据库物理热备的备份工具，支持 MySQl(Oracle)、Percona Server 和 MariaDB，并且全部开源，真可谓是业界良心。阿里云的 RDS MySQL 的物理备份就是基于这个工具做的。 工具集软件包安装完后一共有4个可执行文件，如下： usr ├── bin │   ├─">
-<meta name="keywords" content="MySQL,备份">
+    <meta name="description" content="Amazon Aurora 存储层的复制基于Quorum协议，那么什么是Quorum协议呢？ Quorum 协议，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。 什么又是鸽巢原理？ 鸽巢原理，又名狄利克雷抽屉原理、鸽笼原理。 其中一种简单的表述法为： 若有n个笼子和n + 1只鸽子，所有的鸽子都被关在鸽笼里，那么至少有一个笼子有至少2只鸽子。 另">
+<meta name="keywords" content="分布式">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Percona XtraBackup 的工作原理">
-<meta property="og:url" content="http://idber.github.io/2018/08/13-Percona XtraBackup 的工作原理.html">
+<meta property="og:title" content="Quorum协议">
+<meta property="og:url" content="http://idber.github.io/2019/05/16-Quorum协议.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="前言Percona XtraBackup（简称PXB）是 Percona 公司开发的一个用于 MySQL 数据库物理热备的备份工具，支持 MySQl(Oracle)、Percona Server 和 MariaDB，并且全部开源，真可谓是业界良心。阿里云的 RDS MySQL 的物理备份就是基于这个工具做的。 工具集软件包安装完后一共有4个可执行文件，如下： usr ├── bin │   ├─">
+<meta property="og:description" content="Amazon Aurora 存储层的复制基于Quorum协议，那么什么是Quorum协议呢？ Quorum 协议，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。 什么又是鸽巢原理？ 鸽巢原理，又名狄利克雷抽屉原理、鸽笼原理。 其中一种简单的表述法为： 若有n个笼子和n + 1只鸽子，所有的鸽子都被关在鸽笼里，那么至少有一个笼子有至少2只鸽子。 另">
 <meta property="og:locale" content="en">
-<meta property="og:image" content="https://github.com/idber/idber.photo/blob/master/blog/PXB-backup-procedure.png?raw=true">
-<meta property="og:updated_time" content="2019-04-22T01:41:16.932Z">
+<meta property="og:updated_time" content="2019-05-17T01:41:02.968Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Percona XtraBackup 的工作原理">
-<meta name="twitter:description" content="前言Percona XtraBackup（简称PXB）是 Percona 公司开发的一个用于 MySQL 数据库物理热备的备份工具，支持 MySQl(Oracle)、Percona Server 和 MariaDB，并且全部开源，真可谓是业界良心。阿里云的 RDS MySQL 的物理备份就是基于这个工具做的。 工具集软件包安装完后一共有4个可执行文件，如下： usr ├── bin │   ├─">
-<meta name="twitter:image" content="https://github.com/idber/idber.photo/blob/master/blog/PXB-backup-procedure.png?raw=true">
+<meta name="twitter:title" content="Quorum协议">
+<meta name="twitter:description" content="Amazon Aurora 存储层的复制基于Quorum协议，那么什么是Quorum协议呢？ Quorum 协议，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。 什么又是鸽巢原理？ 鸽巢原理，又名狄利克雷抽屉原理、鸽笼原理。 其中一种简单的表述法为： 若有n个笼子和n + 1只鸽子，所有的鸽子都被关在鸽笼里，那么至少有一个笼子有至少2只鸽子。 另">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -79,14 +77,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/08/13-Percona XtraBackup 的工作原理.html" title="Percona XtraBackup 的工作原理" itemprop="url">Percona XtraBackup 的工作原理</a>
+      <a href="/2019/05/16-Quorum协议.html" title="Quorum协议" itemprop="url">Quorum协议</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
 		
   <p class="article-time">
-    <time datetime="2018-08-13T02:01:56.000Z" itemprop="datePublished"> Published 2018-08-13</time>
+    <time datetime="2019-05-16T02:01:56.000Z" itemprop="datePublished"> Published 2019-05-16</time>
     
   </p>
 </header>
@@ -95,41 +93,32 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#工具集"><span class="toc-number">2.</span> <span class="toc-text">工具集</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">3.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#通信方式"><span class="toc-number">3.1.</span> <span class="toc-text">通信方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#备份过程"><span class="toc-number">3.2.</span> <span class="toc-text">备份过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#PXB备份过程"><span class="toc-number">3.2.0.1.</span> <span class="toc-text">PXB备份过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#增量备份"><span class="toc-number">3.2.0.2.</span> <span class="toc-text">增量备份</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#恢复过程"><span class="toc-number">3.2.1.</span> <span class="toc-text">恢复过程</span></a></li></ol></li></ol></li></ol>
+			
 		
 		</div>
 		
 		<hr>
-<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>Percona XtraBackup（简称PXB）是 Percona 公司开发的一个用于 MySQL 数据库物理热备的备份工具，支持 MySQl(Oracle)、Percona Server 和 MariaDB，并且全部开源，真可谓是业界良心。阿里云的 RDS MySQL 的物理备份就是基于这个工具做的。</p>
-<h1 id="工具集"><a href="#工具集" class="headerlink" title="工具集"></a>工具集</h1><p>软件包安装完后一共有4个可执行文件，如下：</p>
-<pre><code>usr
-├── bin
-│   ├── innobackupex
-│   ├── xbcrypt
-│   ├── xbstream
-│   └── xtrabackup
-</code></pre><p>其中最主要的是 innobackupex 和 xtrabackup，前者是一个 perl 脚本，后者是 C/C++ 编译的二进制。</p>
-<p>xtrabackup 是用来备份 InnoDB 表的，不能备份非 InnoDB 表，和 mysqld server 没有交互；innobackupex 脚本用来备份非 InnoDB 表，同时会调用 xtrabackup 命令来备份 InnoDB 表，还会和 mysqld server 发送命令进行交互，如加读锁（FTWRL）、获取位点（SHOW SLAVE STATUS）等。简单来说，innobackupex 在 xtrabackup 之上做了一层封装。</p>
-<p>一般情况下，我们是希望能备份 MyISAM 表的，虽然我们可能自己不用 MyISAM 表，但是 mysql 库下的系统表是 MyISAM 的，因此备份基本都通过 innobackupex 命令进行；另外一个原因是我们可能需要保存位点信息。</p>
-<p>另外2个工具相对小众些，xbcrypt 是加解密用的；xbstream 类似于tar，是 Percona 自己实现的一种支持并发写的流文件格式。两都在备份和解压时都会用到（如果备份用了加密和并发）。</p>
-<p>本文的介绍的主角是 innobackupex 和 xtrabackup。</p>
-<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><h2 id="通信方式"><a href="#通信方式" class="headerlink" title="通信方式"></a>通信方式</h2><p>2个工具之间的交互和协调是通过控制文件的创建和删除来实现的，主要文件有：</p>
-<pre><code>xtrabackup_suspended_1
-xtrabackup_suspended_2
-xtrabackup_log_copied
-</code></pre><p>举个栗子，我们来看备份时 xtrabackup_suspended_2 是怎么来协调2个工具进程的</p>
-<p>innobackupex 在启动 xtrabackup 进程后，会一直等 xtrabackup 备份完 InnoDB 文件，方式就是等待 xtrabackup_suspended_2 这个文件被创建出来；<br>xtrabackup 在备完 InnoDB 数据后，就在指定目录下创建出这个文件，然后等这个文件被 innobackupex 删除；<br>innobackupex 检测到文件 xtrabackup_suspended_2 被创建出来后，就继续往下走；<br>innobackupex 在备份完非 InnoDB 表后，删除 xtrabackup_suspended_2 这个文件，这样就通知 xtrabackup 可以继续了，然后等 xtrabackup_log_copied 被创建；<br>xtrabackup 检测到 xtrabackup_suspended_2 文件删除后，就可以继续往下了。<br>是不是感觉有点不可思议，通过文件是否存在来控制进程，这种方式非常的不靠谱，因为非常容易被外部干扰，比如文件被别人误删掉，或者2个正在跑的备份控制文件误放在同一个目录下，就等着备份乱掉吧，但是 Percona 就是这么干的。</p>
-<p>之所以这么搞，估计主要是因为 perl 和 C 二进制2个进程，没有既好用又方便的通信方式，搞个协议啥的太麻烦了。但是官方也觉得这种方式不靠谱，11年就搞了个 blueprint 要用C重写 innobackupex，终于在2.3 版本实现了，innobackupex 功能全部集成到 xtrabackup 里面，只有一个 binary，另外为了使用上的兼容考虑，innobackupex 作为 xtrabackup 的一个软链。对于二次开发来说，2.3 摆脱了之前2个进程协作的负担，架构上明显要好于之前版本。考虑到 perl + C 这种架构的长期存在，大多数读者朋友也基本用的2.3之前版本，本文的介绍也是基于老的架构（2.2版本），但是原理和2.3是一样的，只是实现上的差别。</p>
-<h2 id="备份过程"><a href="#备份过程" class="headerlink" title="备份过程"></a>备份过程</h2><p>整个备份过程如下图：<br><img src="https://github.com/idber/idber.photo/blob/master/blog/PXB-backup-procedure.png?raw=true" alt=""></p>
-<h4 id="PXB备份过程"><a href="#PXB备份过程" class="headerlink" title="PXB备份过程"></a>PXB备份过程</h4><p>innobackupex 在启动后，会先 fork 一个进程，启动 xtrabackup进程，然后就等待 xtrabackup 备份完 ibd 数据文件；<br>xtrabackup 在备份 InnoDB 相关数据时，是有2种线程的，1种是 redo 拷贝线程，负责拷贝 redo 文件，1种是 ibd 拷贝线程，负责拷贝 ibd 文件；redo 拷贝线程只有一个，在 ibd 拷贝线程之前启动，在 ibd 线程结束后结束。xtrabackup 进程开始执行后，先启动 redo 拷贝线程，从最新的 checkpoint 点开始顺序拷贝 redo 日志；然后再启动 ibd 数据拷贝线程，在 xtrabackup 拷贝 ibd 过程中，innobackupex 进程一直处于等待状态（等待文件被创建）。<br>xtrabackup 拷贝完成idb后，通知 innobackupex（通过创建文件），同时自己进入等待（redo 线程仍然继续拷贝）;<br>innobackupex 收到 xtrabackup 通知后，执行FLUSH TABLES WITH READ LOCK (FTWRL)，取得一致性位点，然后开始备份非 InnoDB 文件（包括 frm、MYD、MYI、CSV、opt、par等）。拷贝非 InnoDB 文件过程中，因为数据库处于全局只读状态，如果在业务的主库备份的话，要特别小心，非 InnoDB 表（主要是MyISAM）比较多的话整库只读时间就会比较长，这个影响一定要评估到。<br>当 innobackupex 拷贝完所有非 InnoDB 表文件后，通知 xtrabackup（通过删文件） ，同时自己进入等待（等待另一个文件被创建）；<br>xtrabackup 收到 innobackupex 备份完非 InnoDB 通知后，就停止 redo 拷贝线程，然后通知 innobackupex redo log 拷贝完成（通过创建文件）；<br>innobackupex 收到 redo 备份完成通知后，就开始解锁，执行 UNLOCK TABLES；<br>最后 innobackupex 和 xtrabackup 进程各自完成收尾工作，如资源的释放、写备份元数据信息等，innobackupex 等待 xtrabackup 子进程结束后退出。<br>在上面描述的文件拷贝，都是备份进程直接通过操作系统读取数据文件的，只在执行 SQL 命令时和数据库有交互，基本不影响数据库的运行，在备份非 InnoDB 时会有一段时间只读（如果没有MyISAM表的话，只读时间在几秒左右），在备份 InnoDB 数据文件时，对数据库完全没有影响，是真正的热备。</p>
-<p>InnoDB 和非 InnoDB 文件的备份都是通过拷贝文件来做的，但是实现的方式不同，前者是以page为粒度做的(xtrabackup)，后者是 cp 或者 tar 命令(innobackupex)，xtrabackup 在读取每个page时会校验 checksum 值，保证数据块是一致的，而 innobackupex 在 cp MyISAM 文件时已经做了flush（FTWRL），磁盘上的文件也是完整的，所以最终备份集里的数据文件都是写入完整的。</p>
-<h4 id="增量备份"><a href="#增量备份" class="headerlink" title="增量备份"></a>增量备份</h4><p>PXB 是支持增量备份的，但是只能对 InnoDB 做增量，InnoDB 每个 page 有个 LSN 号，LSN 是全局递增的，page 被更改时会记录当前的 LSN 号，page中的 LSN 越大，说明当前page越新（最近被更新）。每次备份会记录当前备份到的LSN（xtrabackup_checkpoints 文件中），增量备份就是只拷贝LSN大于上次备份的page，比上次备份小的跳过，每个 ibd 文件最终备份出来的是增量 delta 文件。</p>
-<p>MyISAM 是没有增量的机制的，每次增量备份都是全部拷贝的。</p>
-<p>增量备份过程和全量备份一样，只是在 ibd 文件拷贝上有不同。</p>
-<h3 id="恢复过程"><a href="#恢复过程" class="headerlink" title="恢复过程"></a>恢复过程</h3><p>如果看恢复备份集的日志，会发现和 mysqld 启动时非常相似，其实备份集的恢复就是类似 mysqld crash后，做一次 crash recover。</p>
-<p>恢复的目的是把备份集中的数据恢复到一个一致性位点，所谓一致就是指原数据库某一时间点各引擎数据的状态，比如 MyISAM 中的数据对应的是 15:00 时间点的，InnoDB 中的数据对应的是 15:20 的，这种状态的数据就是不一致的。PXB 备份集对应的一致点，就是备份时FTWRL的时间点，恢复出来的数据，就对应原数据库FTWRL时的状态。</p>
-<p>因为备份时 FTWRL 后，数据库是处于只读的，非 InnoDB 数据是在持有全局读锁情况下拷贝的，所以非 InnoDB 数据本身就对应 FTWRL 时间点；InnoDB 的 ibd 文件拷贝是在 FTWRL 前做的，拷贝出来的不同 ibd 文件最后更新时间点是不一样的，这种状态的 ibd 文件是不能直接用的，但是 redo log 是从备份开始一直持续拷贝的，最后的 redo 日志点是在持有 FTWRL 后取得的，所以最终通过 redo 应用后的 ibd 数据时间点也是和 FTWRL 一致的。</p>
-<p>所以恢复过程只涉及 InnoDB 文件的恢复，非 InnoDB 数据是不动的。备份恢复完成后，就可以把数据文件拷贝到对应的目录，然后通过mysqld来启动了。</p>
+<p>Amazon Aurora 存储层的复制基于Quorum协议，那么什么是Quorum协议呢？</p>
+<p>Quorum 协议，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。</p>
+<p>什么又是鸽巢原理？</p>
+<p>鸽巢原理，又名狄利克雷抽屉原理、鸽笼原理。</p>
+<p>其中一种简单的表述法为：</p>
+<p>若有n个笼子和n + 1只鸽子，所有的鸽子都被关在鸽笼里，那么至少有一个笼子有至少2只鸽子。</p>
+<p>另一种为：</p>
+<p>若有n个笼子和kn+1只鸽子，所有的鸽子都被关在鸽笼里，那么至少有一个笼子有至少k+1只鸽子。<br>随机取3组数据</p>
+<p>n = 1, k = 1<br>1个笼子<br>kn + 1 = 2 共2只鸽子<br>k + 1 = 2 至少有一个笼子有至少2只鸽子</p>
+<p>n = 2, k = 2<br>2个笼子<br>kn + 1 = 5 共5只鸽子<br>k + 1 = 3 至少有一个笼子有至少3只鸽子</p>
+<p>n = 10, k = 2<br>10个笼子<br>kn + 1 = 21 共21只鸽子<br>k + 1 = 3 至少有一个笼子有至少3只鸽子</p>
+<p>集合论的表述如下：</p>
+<p>若A是n+1元集，B是n元集，则不存在从A到B的单射。<br>拉姆齐定理是此原理的推广。</p>
+<p>基于Quorum投票的冗余控制算法<br>在有冗余数据的分布式存储系统当中，冗余数据对象会在不同的机器之间存放多份拷贝。但是同一时刻一个数据对象的多份拷贝只能用于读或者用于写。</p>
+<p>该算法可以保证同一份数据对象的多份拷贝不会被超过两个访问对象读写。</p>
+<p>算法来源于[Gifford, 1979]。 分布式系统中的每一份数据拷贝对象都被赋予一票。每一个读操作获得的票数必须大于最小读票数（read quorum）（Vr），每个写操作获得的票数必须大于最小写票数（write quorum）(Vw）才能读或者写。如果系统有V票（意味着一个数据对象有V份冗余拷贝），那么最小读写票数(quorum)应满足如下限制：</p>
+<p>Vr + Vw &gt; V<br>Vw &gt; V/2<br>第一条规则保证了一个数据不会被同时读写。当一个写操作请求过来的时候，它必须要获得Vw个冗余拷贝的许可。而剩下的数量是V-Vw 不够Vr，因此不能再有读请求过来了。同理，当读请求已经获得了Vr个冗余拷贝的许可时，写请求就无法获得许可了。</p>
+<p>第二条规则保证了数据的串行化修改。一份数据的冗余拷贝不可能同时被两个写请求修改。</p>
+<p>算法的好处<br>在分布式系统中，冗余数据是保证可靠性的手段，因此冗余数据的一致性维护就非常重要。一般而言，一个写操作必须要对所有的冗余数据都更新完成了，才能称为成功结束。比如一份数据在5台设备上有冗余，因为不知道读数据会落在哪一台设备上，那么一次写操作，必须5台设备都更新完成，写操作才能返回。</p>
+<p>对于写操作比较频繁的系统，这个操作的瓶颈非常大。Quorum算法可以让写操作只要写完3台就返回。剩下的由系统内部缓慢同步完成。而读操作，则需要也至少读3台，才能保证至少可以读到一个最新的数据。</p>
+<p>Quorum的读写最小票数可以用来做为系统在读、写性能方面的一个可调节参数。写票数Vw越大，则读票数Vr越小，这时候系统读的开销就小。反之则写的开销就小。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -143,7 +132,7 @@ xtrabackup_log_copied
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/备份/">备份</a>
+  <span></span> <a href="/tags/分布式/">分布式</a>
   </div>
 
 </div>
@@ -152,7 +141,7 @@ xtrabackup_log_copied
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://idber.github.io/2018/08/13-Percona XtraBackup 的工作原理.html" data-title="Percona XtraBackup 的工作原理 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  <div data-url="http://idber.github.io/2019/05/16-Quorum协议.html" data-title="Quorum协议 | 似水年华--沉浮" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -165,19 +154,11 @@ xtrabackup_log_copied
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2018/08/14-InnoDB buffer pool flush策略漫谈.html" title="InnoDB Buffer Pool Flush策略漫谈">
-  <strong>上一篇：</strong><br/>
-  <span>
-  InnoDB Buffer Pool Flush策略漫谈</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2018/08/12-MySQL主从同步延迟优化大全.html"  title="MySQL主从同步延迟优化大全">
+<a href="/2019/05/14-MySQL字符集一个隐藏参数.html"  title="MySQL字符集一个隐藏参数">
  <strong>下一篇：</strong><br/> 
- <span>MySQL主从同步延迟优化大全
+ <span>MySQL字符集一个隐藏参数
 </span>
 </a>
 </div>
@@ -200,7 +181,7 @@ xtrabackup_log_copied
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#工具集"><span class="toc-number">2.</span> <span class="toc-text">工具集</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">3.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#通信方式"><span class="toc-number">3.1.</span> <span class="toc-text">通信方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#备份过程"><span class="toc-number">3.2.</span> <span class="toc-text">备份过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#PXB备份过程"><span class="toc-number">3.2.0.1.</span> <span class="toc-text">PXB备份过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#增量备份"><span class="toc-number">3.2.0.2.</span> <span class="toc-text">增量备份</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#恢复过程"><span class="toc-number">3.2.1.</span> <span class="toc-text">恢复过程</span></a></li></ol></li></ol></li></ol>
+ 
  
   </div>
 

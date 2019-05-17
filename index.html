@@ -74,6 +74,30 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2019/05/16-Quorum协议.html" title="Quorum协议" itemprop="url">
+  
+    <h1 itemprop="name">Quorum协议</h1>
+    
+     
+           <p itemprop="description" >Amazon Aurora 存储层的复制基于Quorum协议，那么什么是Quorum协议呢？
+Quorum 协议，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。
+什么又是鸽巢原理？
+鸽巢原理，又名狄利克雷抽屉原理、鸽笼原理。
+其中</p>
+        
+    
+    <time datetime="2019-05-16T02:01:56.000Z" itemprop="datePublished">2019-05-16</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2019/05/14-MySQL字符集一个隐藏参数.html" title="MySQL字符集一个隐藏参数" itemprop="url">
   
     <h1 itemprop="name">MySQL字符集一个隐藏参数</h1>
@@ -101,7 +125,8 @@ Do not ignore character set information sent by the client. To ignore c</p>
     <h1 itemprop="name">MySQL字符集的内部转换</h1>
     
      
-           <p itemprop="description" >看到雁闲大神一篇文章https://www.cnblogs.com/cchust/p/4327019.html在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的ch</p>
+           <p itemprop="description" >我们知道set names utf8;改变的character_set_client、character_set_connection、character_set_result三个值，MySQL字符集的内部转换到底是哪个阶段呢，下面通过控制变量法来验证。
+表准备建立gbk字符集的</p>
         
     
     <time datetime="2019-05-13T02:01:56.000Z" itemprop="datePublished">2019-05-13</time>
@@ -268,27 +293,6 @@ Atlas </p>
 
 
 
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html" title="内存的80％？应该如何调整你的innodb_buffer_pool_size" itemprop="url">
-  
-    <h1 itemprop="name">内存的80％？应该如何调整你的innodb_buffer_pool_size</h1>
-    
-     
-           <p itemprop="description" >现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。MySQL手册引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？
-什么使用服务器上的内存？在我</p>
-        
-    
-    <time datetime="2018-08-26T02:01:56.000Z" itemprop="datePublished">2018-08-26</time>
-  </a>
-</section>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix unexpand">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/">Next<span></span></a>
@@ -318,7 +322,7 @@ Atlas </p>
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>40</sup></a></li>
 		  
 		
 		  
@@ -387,11 +391,11 @@ Atlas </p>
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
 			
 		
 			
@@ -403,11 +407,11 @@ Atlas </p>
 			
 		
 			
-				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
@@ -415,19 +419,27 @@ Atlas </p>
 			
 		
 			
-				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+				<li><a href="/tags/MHA/" title="MHA">MHA<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
 			
 		
 			
@@ -436,14 +448,6 @@ Atlas </p>
 		
 			
 				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 		</ul>

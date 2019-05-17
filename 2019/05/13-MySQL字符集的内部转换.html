@@ -11,18 +11,18 @@
     
 
     
-    <meta name="description" content="看到雁闲大神一篇文章https://www.cnblogs.com/cchust/p/4327019.html在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_r">
+    <meta name="description" content="我们知道set names utf8;改变的character_set_client、character_set_connection、character_set_result三个值，MySQL字符集的内部转换到底是哪个阶段呢，下面通过控制变量法来验证。 表准备建立gbk字符集的表 show create table t\G *************************** 1. row">
 <meta name="keywords" content="MySQL,字符集">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL字符集的内部转换">
 <meta property="og:url" content="http://idber.github.io/2019/05/13-MySQL字符集的内部转换.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="看到雁闲大神一篇文章https://www.cnblogs.com/cchust/p/4327019.html在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_r">
+<meta property="og:description" content="我们知道set names utf8;改变的character_set_client、character_set_connection、character_set_result三个值，MySQL字符集的内部转换到底是哪个阶段呢，下面通过控制变量法来验证。 表准备建立gbk字符集的表 show create table t\G *************************** 1. row">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-05-15T03:15:20.378Z">
+<meta property="og:updated_time" content="2019-05-15T07:36:46.494Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL字符集的内部转换">
-<meta name="twitter:description" content="看到雁闲大神一篇文章https://www.cnblogs.com/cchust/p/4327019.html在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_r">
+<meta name="twitter:description" content="我们知道set names utf8;改变的character_set_client、character_set_connection、character_set_result三个值，MySQL字符集的内部转换到底是哪个阶段呢，下面通过控制变量法来验证。 表准备建立gbk字符集的表 show create table t\G *************************** 1. row">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -98,7 +98,7 @@
 		</div>
 		
 		<hr>
-<p>看到雁闲大神一篇文章<br><a href="https://www.cnblogs.com/cchust/p/4327019.html" target="_blank" rel="noopener">https://www.cnblogs.com/cchust/p/4327019.html</a><br>在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_result三个值，到底是哪个值影响b）阶段的转换呢，下面通过物理学上的控制变量法来验证。</p>
+<p>我们知道set names utf8;改变的character_set_client、character_set_connection、character_set_result三个值，MySQL字符集的内部转换到底是哪个阶段呢，下面通过控制变量法来验证。</p>
 <h1 id="表准备"><a href="#表准备" class="headerlink" title="表准备"></a>表准备</h1><p>建立gbk字符集的表</p>
 <pre><code>show create table t\G
 *************************** 1. row ***************************
@@ -387,7 +387,8 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
 |  5 |            4 |                 2 | 灏忔槑     | D0A1C3F7     | 3 utf8                        |
 +----+--------------+-------------------+-----------+--------------+-------------------------------+
 5 rows in set (0.00 sec)
-</code></pre>  
+</code></pre><p>相关阅读<br><a href="https://www.cnblogs.com/cchust/p/4327019.html" target="_blank" rel="noopener">https://www.cnblogs.com/cchust/p/4327019.html</a></p>
+  
 	</div>
 		<footer class="article-footer clearfix">
 <div class="article-catetags">
@@ -482,7 +483,7 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>39</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>40</sup></a></li>
 		  
 		
 		  
@@ -551,11 +552,11 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
 			
 		
 			
@@ -567,11 +568,11 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
 			
 		
 			
-				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
@@ -579,19 +580,27 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
 			
 		
 			
-				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+				<li><a href="/tags/MHA/" title="MHA">MHA<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
 			
 		
 			
@@ -600,14 +609,6 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
 		
 			
 				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/ETL/" title="ETL">ETL<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 		</ul>

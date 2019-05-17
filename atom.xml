@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-05-14T03:54:52.963Z</updated>
+  <updated>2019-05-17T01:41:02.968Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,53 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Quorum协议</title>
+    <link href="http://idber.github.io/2019/05/16-Quorum%E5%8D%8F%E8%AE%AE.html"/>
+    <id>http://idber.github.io/2019/05/16-Quorum协议.html</id>
+    <published>2019-05-16T02:01:56.000Z</published>
+    <updated>2019-05-17T01:41:02.968Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;Amazon Aurora 存储层的复制基于Quorum协议，那么什么是Quorum协议呢？&lt;/p&gt;
+&lt;p&gt;Quorum 协议，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。&lt;/p&gt;
+&lt;p&gt;什么又是鸽巢原理？&lt;/p&gt;
+&lt;p&gt;鸽巢原理，又名狄利克雷抽屉原理、鸽笼原理。&lt;/p&gt;
+&lt;p&gt;其中一种简单的表述法为：&lt;/p&gt;
+&lt;p&gt;若有n个笼子和n + 1只鸽子，所有的鸽子都被关在鸽笼里，那么至少有一个笼子有至少2只鸽子。&lt;/p&gt;
+&lt;p&gt;另一种为：&lt;/p&gt;
+&lt;p&gt;若有n个笼子和kn+1只鸽子，所有的鸽子都被关在鸽笼里，那么至少有一个笼子有至少k+1只鸽子。&lt;br&gt;随机取3组数据&lt;/p&gt;
+&lt;p&gt;n = 1, k = 1&lt;br&gt;1个笼子&lt;br&gt;kn + 1 = 2 共2只鸽子&lt;br&gt;k + 1 = 2 至少有一个笼子有至少2只鸽子&lt;/p&gt;
+&lt;p&gt;n = 2, k = 2&lt;br&gt;2个笼子&lt;br&gt;kn + 1 = 5 共5只鸽子&lt;br&gt;k + 1 = 3 至少有一个笼子有至少3只鸽子&lt;/p&gt;
+&lt;p&gt;n = 10, k = 2&lt;br&gt;10个笼子&lt;br&gt;kn + 1 = 21 共21只鸽子&lt;br&gt;k + 1 = 3 至少有一个笼子有至少3只鸽子&lt;/p&gt;
+&lt;p&gt;集合论的表述如下：&lt;/p&gt;
+&lt;p&gt;若A是n+1元集，B是n元集，则不存在从A到B的单射。&lt;br&gt;拉姆齐定理是此原理的推广。&lt;/p&gt;
+&lt;p&gt;基于Quorum投票的冗余控制算法&lt;br&gt;在有冗余数据的分布式存储系统当中，冗余数据对象会在不同的机器之间存放多份拷贝。但是同一时刻一个数据对象的多份拷贝只能用于读或者用于写。&lt;/p&gt;
+&lt;p&gt;该算法可以保证同一份数据对象的多份拷贝不会被超过两个访问对象读写。&lt;/p&gt;
+&lt;p&gt;算法来源于[Gifford, 1979]。 分布式系统中的每一份数据拷贝对象都被赋予一票。每一个读操作获得的票数必须大于最小读票数（read quorum）（Vr），每个写操作获得的票数必须大于最小写票数（write quorum）(Vw）才能读或者写。如果系统有V票（意味着一个数据对象有V份冗余拷贝），那么最小读写票数(quorum)应满足如下限制：&lt;/p&gt;
+&lt;p&gt;Vr + Vw &amp;gt; V&lt;br&gt;Vw &amp;gt; V/2&lt;br&gt;第一条规则保证了一个数据不会被同时读写。当一个写操作请求过来的时候，它必须要获得Vw个冗余拷贝的许可。而剩下的数量是V-Vw 不够Vr，因此不能再有读请求过来了。同理，当读请求已经获得了Vr个冗余拷贝的许可时，写请求就无法获得许可了。&lt;/p&gt;
+&lt;p&gt;第二条规则保证了数据的串行化修改。一份数据的冗余拷贝不可能同时被两个写请求修改。&lt;/p&gt;
+&lt;p&gt;算法的好处&lt;br&gt;在分布式系统中，冗余数据是保证可靠性的手段，因此冗余数据的一致性维护就非常重要。一般而言，一个写操作必须要对所有的冗余数据都更新完成了，才能称为成功结束。比如一份数据在5台设备上有冗余，因为不知道读数据会落在哪一台设备上，那么一次写操作，必须5台设备都更新完成，写操作才能返回。&lt;/p&gt;
+&lt;p&gt;对于写操作比较频繁的系统，这个操作的瓶颈非常大。Quorum算法可以让写操作只要写完3台就返回。剩下的由系统内部缓慢同步完成。而读操作，则需要也至少读3台，才能保证至少可以读到一个最新的数据。&lt;/p&gt;
+&lt;p&gt;Quorum的读写最小票数可以用来做为系统在读、写性能方面的一个可调节参数。写票数Vw越大，则读票数Vr越小，这时候系统读的开销就小。反之则写的开销就小。&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;Amazon Aurora 存储层的复制基于Quorum协议，那么什么是Quorum协议呢？&lt;/p&gt;
+&lt;p&gt;Quorum 协议，是一种分布式系统中常用的，用来保证数据冗余和最终一致性的投票算法，其主要数学思想来源于鸽巢原理。&lt;/p&gt;
+&lt;p&gt;什么又是鸽巢原理？&lt;/p
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="分布式" scheme="http://idber.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
+    
+  </entry>
   
   <entry>
     <title>MySQL字符集一个隐藏参数</title>
@@ -115,10 +162,10 @@ Do not ignore character set information sent by
     <link href="http://idber.github.io/2019/05/13-MySQL%E5%AD%97%E7%AC%A6%E9%9B%86%E7%9A%84%E5%86%85%E9%83%A8%E8%BD%AC%E6%8D%A2.html"/>
     <id>http://idber.github.io/2019/05/13-MySQL字符集的内部转换.html</id>
     <published>2019-05-13T02:01:56.000Z</published>
-    <updated>2019-05-15T03:15:20.378Z</updated>
+    <updated>2019-05-15T07:36:46.494Z</updated>
     
     <content type="html">&lt;hr&gt;
-&lt;p&gt;看到雁闲大神一篇文章&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/p/4327019.html&lt;/a&gt;&lt;br&gt;在文章的 b）阶段作者说，改变character_set_client的设置为utf8，但根据图示作者使用的命令是set names utf8;我们知道实际上是改变的character_set_client、character_set_connection、character_set_result三个值，到底是哪个值影响b）阶段的转换呢，下面通过物理学上的控制变量法来验证。&lt;/p&gt;
+&lt;p&gt;我们知道set names utf8;改变的character_set_client、character_set_connection、character_set_result三个值，MySQL字符集的内部转换到底是哪个阶段呢，下面通过控制变量法来验证。&lt;/p&gt;
 &lt;h1 id=&quot;表准备&quot;&gt;&lt;a href=&quot;#表准备&quot; class=&quot;headerlink&quot; title=&quot;表准备&quot;&gt;&lt;/a&gt;表准备&lt;/h1&gt;&lt;p&gt;建立gbk字符集的表&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;show create table t\G
 *************************** 1. row ***************************
@@ -407,12 +454,14 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
 |  5 |            4 |                 2 | 灏忔槑     | D0A1C3F7     | 3 utf8                        |
 +----+--------------+-------------------+-----------+--------------+-------------------------------+
 5 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;</content>
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;相关阅读&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/p/4327019.html&lt;/a&gt;&lt;/p&gt;
+</content>
     
     <summary type="html">
     
       &lt;hr&gt;
-&lt;p&gt;看到雁闲大神一篇文章&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/cchust/p/4327019.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.cnblogs.com/cchust/
+&lt;p&gt;我们知道set names utf8;改变的character_set_client、character_set_connection、character_set_result三个值，MySQL字符集的内部转换到底是哪个阶段呢，下面通过控制变量法来验证。&lt;/p&gt;
+
     
     </summary>
     
@@ -3279,162 +3328,6 @@ end
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="主从" scheme="http://idber.github.io/tags/%E4%B8%BB%E4%BB%8E/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>MySQL Online DDL原理</title>
-    <link href="http://idber.github.io/2018/08/12-MySQL%20online%20DDL%E5%8E%9F%E7%90%86.html"/>
-    <id>http://idber.github.io/2018/08/12-MySQL online DDL原理.html</id>
-    <published>2018-08-12T02:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.929Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;dba的日常工作肯定有一项是ddl变更，ddl变更会锁表，这个可以说是dba心中永远的痛，特别是执行ddl变更，导致库上大量线程处于“Waiting for meta data lock”状态的时候。因此mysql 5.6的online ddl特性是dba们最期待的新特性，这个特性解决了执行ddl锁表的问题，保证了在进行表变更时，不会堵塞线上业务读写，保障在变更时，库依然能正常对外提供访问。网上关于online ddl的文章很多，但涉及原理的很少，都是介绍语法之类的，本文将详细介绍online ddl的原理，知其然，更要知其所以然。&lt;/p&gt;
-&lt;h4 id=&quot;ddl实现方式&quot;&gt;&lt;a href=&quot;#ddl实现方式&quot; class=&quot;headerlink&quot; title=&quot;ddl实现方式&quot;&gt;&lt;/a&gt;ddl实现方式&lt;/h4&gt;&lt;p&gt;5.6 online ddl推出以前，执行ddl主要有两种方式copy方式和inplace方式，inplace方式又称为(fast index creation)。相对于copy方式，inplace方式不拷贝数据，因此较快。但是这种方式仅支持添加、删除索引两种方式，而且与copy方式一样需要全程锁表，实用性不是很强。下面以加索引为例，简单介绍这两种方式的实现流程。&lt;/p&gt;
-&lt;p&gt;   copy方式&lt;/p&gt;
-&lt;p&gt;   (1).新建带索引的临时表&lt;br&gt;   (2).锁原表，禁止DML，允许查询&lt;/p&gt;
-&lt;p&gt;   (3).将原表数据拷贝到临时表(无排序，一行一行拷贝)&lt;/p&gt;
-&lt;p&gt;   (4).进行rename，升级字典锁，禁止读写&lt;/p&gt;
-&lt;p&gt;   (5).完成创建索引操作&lt;/p&gt;
-&lt;p&gt;   inplace方式&lt;/p&gt;
-&lt;p&gt;   (1).新建索引的数据字典&lt;/p&gt;
-&lt;p&gt;   (2).锁表，禁止DML，允许查询&lt;/p&gt;
-&lt;p&gt;   (3).读取聚集索引，构造新的索引项，排序并插入新索引&lt;/p&gt;
-&lt;p&gt;   (4).等待打开当前表的所有只读事务提交&lt;/p&gt;
-&lt;p&gt;   (5).创建索引结束&lt;/p&gt;
-&lt;p&gt;online ddl实现&lt;/p&gt;
-&lt;p&gt;online方式实质也包含了copy和inplace方式，对于不支持online的ddl操作采用copy方式，比如修改列类型，删除主键，修改字符集等，这些操作都会导致记录格式发生变化，无法通过简单的全量+增量的方式实现online；对于inplace方式，mysql内部以“是否修改记录格式”为基准也分为两类，一类需要重建表(重新组织记录)，比如optimize table、添加索引、添加/删除列、修改列NULL/NOT NULL属性等；另外一类是只需要修改表的元数据，比如删除索引、修改列名、修改列默认值、修改列自增值等。Mysql将这两类方式分别称为rebuild方式和no-rebuild方式。更多关于哪些DDL是否可以inplace的内容可以参考官方文档：&lt;br&gt;    &lt;a href=&quot;http://dev.mysql.com/doc/refman/5.6/en/innodb-create-index-overview.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://dev.mysql.com/doc/refman/5.6/en/innodb-create-index-overview.html&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;online ddl主要包括3个阶段，prepare阶段，ddl执行阶段，commit阶段，rebuild方式比no-rebuild方式实质多了一个ddl执行阶段，prepare阶段和commit阶段类似。下面将主要介绍ddl执行过程中三个阶段的流程。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;Prepare阶段：
-
-创建新的临时frm文件
-持有EXCLUSIVE-MDL锁，禁止读写
-根据alter类型，确定执行方式(copy,online-rebuild,online-norebuild)
-更新数据字典的内存对象
-分配row_log对象记录增量
-生成新的临时ibd文件
-ddl执行阶段：
-
-降级EXCLUSIVE-MDL锁，允许读写
-扫描old_table的聚集索引每一条记录rec
-遍历新表的聚集索引和二级索引，逐一处理
-根据rec构造对应的索引项
-将构造索引项插入sort_buffer块
-将sort_buffer块插入新的索引
-处理ddl执行过程中产生的增量(仅rebuild类型需要)
-commit阶段
-
-升级到EXCLUSIVE-MDL锁，禁止读写
-重做最后row_log中最后一部分增量
-更新innodb的数据字典表
-提交事务(刷事务的redo日志)
-修改统计信息
-rename临时idb文件，frm文件
-变更完成  
-关键函数堆栈
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;拷贝数据&lt;/p&gt;
-&lt;p&gt;row_merge_build_indexes&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;row_merge_read_clustered_index //拷贝全量                                   
-
-   {
-
-       遍历老表的聚集索引                                            
-
-       row_build //创建一个row
-
-       row_merge_buf_add //将row加入到sort_buffer
-       row_merge_insert_index_tuples //插入到新表(聚集索引+二级索引)
-   }             
-
-row_log_table_apply  //对于rebuild类型，处理增量                              
-
-{
-
-   row_log_table_apply_insert   //以insert为例
-
-   row_log_table_apply_convert_mrec //将buf项转为tuple
-
-    {
-
-       插入聚集索引 // row_ins_clust_index_entry_low
-
-       插入二级索引 // row_ins_sec_index_entry_low          
-
-    }
-
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;对于添加索引的操作，由于不需要修改聚集索引，因此处理增量调用的是另外一套接口&lt;/p&gt;
-&lt;p&gt;row_log_apply-&amp;gt;row_log_apply_ops-&amp;gt;row_log_apply_op-&amp;gt;row_log_apply_op_low-&amp;gt;&lt;/p&gt;
-&lt;p&gt;修改表数据字典&lt;/p&gt;
-&lt;p&gt;commit_try_norebuild，commit_try_rebuild&lt;/p&gt;
-&lt;p&gt; 常见的ddl操作&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;类型&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;并发DML&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;算法&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;备注&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;添加/删除索引&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Yes&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Online(no-rebuild)&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;全文索引不支持&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;修改default值修改列名修改自增列值添加/删除外键约束&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Yes&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Nothing&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;仅需要修改元数据&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;添加/删除列交换列顺序修改NULL/NOT NULL修改ROW-FORMAT添加/修改PK Optimize table&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Yes&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Online(rebuild)&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;由于记录格式改变，需要重建表&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;修改列类型删除PK转换字符集添加全文索引&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;No&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;Copy&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;需要锁表，不支持online&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt; 若干问题&lt;/p&gt;
-&lt;p&gt;1.如何实现数据完整性&lt;br&gt;使用online ddl后，用户心中一定有一个疑问，一边做ddl，一边做dml，表中的数据不会乱吗？这里面关键部件是row_log。row_log记录了ddl变更过程中新产生的dml操作，并在ddl执行的最后将其应用到新的表中，保证数据完整性。&lt;/p&gt;
-&lt;p&gt;2.online与数据一致性如何兼得&lt;/p&gt;
-&lt;p&gt;实际上，online ddl并非整个过程都是online，在prepare阶段和commit阶段都会持有MDL-Exclusive锁，禁止读写；而在整个ddl执行阶段，允许读写。由于prepare和commit阶段相对于ddl执行阶段时间特别短，因此基本可以认为是全程online的。Prepare阶段和commit阶段的禁止读写，主要是为了保证数据一致性。Prepare阶段需要生成row_log对象和修改内存的字典；Commit阶段，禁止读写后，重做最后一部分增量，然后提交，保证数据一致。&lt;/p&gt;
-&lt;p&gt;3.如何实现server层和innodb层一致性&lt;/p&gt;
-&lt;p&gt;在prepare阶段，server层会生成一个临时的frm文件，里面包含了新表的格式；innodb层生成了临时的ibd文件(rebuild方式)；在ddl执行阶段，将数据从原表拷贝到临时ibd文件，并且将row_log增量应用到临时ibd文件；在commit阶段，innodb层修改表的数据字典，然后提交；最后innodb层和mysql层面分别重命名frm和idb文件。&lt;/p&gt;
-&lt;p&gt; 4.对innodb表做ddl过程中异常了，为啥再次做ddl报#sql-xxx already exists&lt;/p&gt;
-&lt;p&gt;这个错误是什么鬼？这个表#sql-xxx实质是做ddl产生的临时表，ddl异常退出后(比如进程被kill，或者机器异常掉电等)，临时文件没有清理。再次执行时，会创建同名的#sql-xxx临时文件，从而导致报错。这里的xxx与table-id强相关，如果是这样，我们把这个讨厌的#sql-xxx临时文件删掉如何呢？再次重做ddl发现还是报同样的错误。这主要原因是，这个临时表信息在innodb的数据字典有残留，通过查询数据字典视图information_schema.innodb_sys_tables，可以发现存在一条#sql-xxx的表记录。&lt;br&gt;深层次原因：ddl整个过程不是原子的，prepare过程中会新建frm文件，ibd文件，并更新数据字典；然后再进行拷贝全量+重放增量操作；最后再rename frm文件，idb文件，并修改数据字典。由于整个过程涉及到server层和innodb层，并不是一个大事务(每次改数据字典都是单独一个事务)，所以执行过程中如果异常终止，就会导致临时表数据字典残留在系统表内。&lt;/p&gt;
-&lt;p&gt;影响：虽然临时表信息残留在数据字典内，但不影响用户后续操作。&lt;/p&gt;
-&lt;p&gt;解决方法：由于临时表与table-id强相关，如何改变table-id是我们需要做的，但表又不能被修改，table-id改变不了。这就成了一个悖论，要做ddl，需要改变table-id；要改变table-id，又需要通过ddl操作。查看源码后发现，对于online ddl，临时表名依赖于变更表的table-id(比如#sql-ib79，79就是变更表的table-id)，而对于copy类型(非online)的ddl，临时表名则不依赖于table-id(由mysqld进程号+连接会话号产生，比如sql-604d_2，604d是mysqld进程号，2是会话号)。因此，我们通过copy类型的ddl，就可以产生表名不一样的临时表了，也就可以完成ddl任务了。比如：alter table test_log add column c88 int, ALGORITHM=copy;&lt;/p&gt;
-&lt;p&gt;其它：ddl异常结束，会导致重做ddl失败。如果做ddl过程中，kill query，这个时候ddl也会退出，但退出前会做好善后工作，清理数据字典，因此再次做ddl不会存在问题。&lt;/p&gt;
-&lt;p&gt;参考文档&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://hedengcheng.com/?p=405&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://hedengcheng.com/?p=405&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://hedengcheng.com/?p=421&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://hedengcheng.com/?p=421&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://hedengcheng.com/?p=148&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://hedengcheng.com/?p=148&lt;/a&gt;&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;h4 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h4&gt;&lt;p&gt;dba的日常工作肯定有一项是ddl变更，ddl变更会锁表，这个可以说是dba心中永远的痛，特别是执行ddl变更，导致库上大量线程处
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="锁" scheme="http://idber.github.io/tags/%E9%94%81/"/>
     
   </entry>
   
