@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-05-17T01:41:02.968Z</updated>
+  <updated>2019-05-23T04:00:19.319Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,57 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Raft协议</title>
+    <link href="http://idber.github.io/2019/05/21-MySQL%E4%B8%ADdouble%E3%80%81float%E3%80%81decimal%E7%B1%BB%E5%9E%8B%E5%8F%8A%E6%95%B4%E6%95%B0%EF%BC%8C%E6%B5%AE%E7%82%B9%E6%95%B0%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E5%AD%98%E5%82%A8.html"/>
+    <id>http://idber.github.io/2019/05/21-MySQL中double、float、decimal类型及整数，浮点数在内存中的存储.html</id>
+    <published>2019-05-21T02:01:56.000Z</published>
+    <updated>2019-05-23T04:00:19.319Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;h1 id=&quot;概念与术语&quot;&gt;&lt;a href=&quot;#概念与术语&quot; class=&quot;headerlink&quot; title=&quot;概念与术语&quot;&gt;&lt;/a&gt;概念与术语&lt;/h1&gt;&lt;p&gt;Leader：领导者，为客户端提供服务(生成写日志)的节点，任何时候Raft系统中只能有一个Leader。&lt;br&gt;Follower：跟随者，被动接受请求的节点，不会发送任何请求，只会响应来自Leader或者Candidate的请求。如果接受到客户请求，会转发给Leader。&lt;br&gt;Candidate：候选人，选举过程中产生，Follower在超时时间内没有收到Leader的心跳或者日志，则切换到Candidate状态，进入选举流程。&lt;br&gt;TermId：任期号，时间被划分成一个个任期，每次选举后都会产生一个新的TermId，一个任期内只有一个Leader。TermId相当于Paxos的ProposalId。&lt;br&gt;currentTerm：更新的Term。&lt;br&gt;RequestVote：请求投票，Candidate在选举过程中发起，收到Quorum(多数派）响应后，成为Leader。&lt;br&gt;AppendEntries：附加日志，Leader发送日志和心跳的机制&lt;br&gt;Election Timeout：选举超时，如果Follower在一段时间内(超时时间为150ms-300ms内随机数)没有收到任何消息(追加日志或者心跳)，就是选举超时。&lt;br&gt;Leader Election：领导选举，选举超时即开始领导选举。&lt;br&gt;Raft协议主要包括三部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Leader选举&lt;/li&gt;
+&lt;li&gt;日志复制&lt;/li&gt;
+&lt;li&gt;成员变更&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;一个节点的状态只有如下三种形式的一种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Follower 状态&lt;/li&gt;
+&lt;li&gt;Candidate 状态&lt;/li&gt;
+&lt;li&gt;Leader 状态&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;Leader选举&quot;&gt;&lt;a href=&quot;#Leader选举&quot; class=&quot;headerlink&quot; title=&quot;Leader选举&quot;&gt;&lt;/a&gt;Leader选举&lt;/h1&gt;&lt;h2 id=&quot;Leader流程&quot;&gt;&lt;a href=&quot;#Leader流程&quot; class=&quot;headerlink&quot; title=&quot;Leader流程&quot;&gt;&lt;/a&gt;Leader流程&lt;/h2&gt;&lt;p&gt;服务器启动时初始状态都是Follower，如果在超时时间内没有收到Leader发送的心跳包，则进入Candidate状态进行选举，服务器启动时和Leader挂掉时处理一样。为了避免选票瓜分的情况，比如5个节点ABCDE，Leader A 挂掉后，还剩4个节点，raft协议约定，每个服务器在一个任期只能投一张票，假设B，D分别有最新的日志，且同时发起选举投票，则可能出现B和D分别得到2张票的情况，如果这样都得不到大多数确认，无法选出leader。为了避免这种情况发生，raft利用随机超时机制避免选票瓜分情况。选举超时时间从一个固定的区间随机选择，由于&lt;font color=&quot;red&quot;&gt;每个服务器的超时时间不同&lt;/font&gt;，则leader挂掉后，超时时间最短且拥有最多日志的follower最先开始选主，并成为leader。一旦candidate成为leader，就会向其他服务器发送心跳包阻止新一轮的选举开始。&lt;br&gt;发送日志信息:(term,candidateId,lastLogTerm,lastLogIndex)&lt;/p&gt;
+&lt;h2 id=&quot;Candidate流程&quot;&gt;&lt;a href=&quot;#Candidate流程&quot; class=&quot;headerlink&quot; title=&quot;Candidate流程&quot;&gt;&lt;/a&gt;Candidate流程&lt;/h2&gt;&lt;p&gt;1.在超时时间内没有收到leader的日志(包括心跳)&lt;br&gt;2.将状态切换为candidate,自增currentTerm,设置超时时间&lt;br&gt;3.向所有节点广播选举请求，等待响应，可能会有以下三种情况：&lt;br&gt;(1).如果收到多数派回应，则成为leader&lt;br&gt;(2).如果收到leader的心跳，且leader的term&amp;gt;=currentTerm，则自己切换为follower状态，&lt;br&gt;否则，保持Candidate身份&lt;br&gt;(3).如果在超时时间内没有达成多数派，也没有收到leader心跳，则很可能选票被瓜分，则会自增currentTerm,进行新一轮的选举&lt;/p&gt;
+&lt;h2 id=&quot;Follower流程&quot;&gt;&lt;a href=&quot;#Follower流程&quot; class=&quot;headerlink&quot; title=&quot;Follower流程&quot;&gt;&lt;/a&gt;Follower流程&lt;/h2&gt;&lt;p&gt;1.如果term &amp;lt; currentTerm，说明有更新的term，返回给candidate。&lt;br&gt;2.如果还没有投票，或者candidateId的日志(lastLogTerm,lastLogIndex)和本地日志一样或更新，则投票给它。&lt;br&gt;注意：一个term周期内，每个节点最多只能投一张票，按照先来先到原则&lt;/p&gt;
+&lt;p&gt;关键词：随机超时，FIFO&lt;/p&gt;
+&lt;h1 id=&quot;日志复制流程&quot;&gt;&lt;a href=&quot;#日志复制流程&quot; class=&quot;headerlink&quot; title=&quot;日志复制流程&quot;&gt;&lt;/a&gt;日志复制流程&lt;/h1&gt;&lt;p&gt;leader向follower发送日志时，会顺带邻近的前一条日志，follwer接收日志时，会在相同任期号和索引位置找前一条日志，如果存在且匹配，则接收日志；否则拒绝，leader会减少日志索引位置并进行重试，直到某个位置与follower达成一致。然后follower删除索引后的所有日志，并追加leader发送的日志，一旦日志追加成功，则follower和leader的所有日志就保持一致。只有在多数派的follower都响应接受到日志后，表示事务可以提交，才能返回客户端提交成功。&lt;br&gt;发送日志信息:(term,leaderId,prevLogIndex,prevLogTerm,leaderCommitIndex)&lt;/p&gt;
+&lt;h2 id=&quot;leader流程&quot;&gt;&lt;a href=&quot;#leader流程&quot; class=&quot;headerlink&quot; title=&quot;leader流程&quot;&gt;&lt;/a&gt;leader流程&lt;/h2&gt;&lt;p&gt;1.接收到client请求，本地持久化日志&lt;br&gt;2.将日志发往各个节点&lt;br&gt;3.如果达成多数派，再commit，返回给client。&lt;br&gt;备注：&lt;br&gt;(1).如果传递给follower的lastLogIndex&amp;gt;=nextIndex,则从nextIndex继续传递&lt;br&gt;.如果返回成功，则更新follower对应的nextIndex和matchIndex&lt;br&gt;.如果失败，则表示follower还差更多的日志，则递减nextIndex，重试&lt;br&gt;(2).如果存在N&amp;gt;commitIndex，且多数派matchIndex[i]&amp;gt;=N, 且log[N].term == currentTerm,&lt;br&gt;设置commitIndex=N。&lt;/p&gt;
+&lt;h2 id=&quot;follower处理流程&quot;&gt;&lt;a href=&quot;#follower处理流程&quot; class=&quot;headerlink&quot; title=&quot;follower处理流程&quot;&gt;&lt;/a&gt;follower处理流程&lt;/h2&gt;&lt;p&gt;1.比较term号和自身的currentTerm，如果term&amp;lt;currentTerm，则返回false&lt;br&gt;2.如果(prevLogIndex,prevLogTerm)不存在，说明还差日志，返回false&lt;br&gt;3.如果(prevLogIndex,prevLogTerm)与已有的日志冲突，则以leader为准，删除自身的日志&lt;br&gt;4.将leader传过来的日志追加到末尾&lt;br&gt;5.如果leaderCommitIndex&amp;gt;commitIndex,说明是新的提交位点，回放日志，设置commitIndex =&lt;br&gt;min(leaderCommitIndex, index of last new entry)&lt;/p&gt;
+&lt;p&gt;备注：默认情况下，如果日志不匹配，会按logIndex逐条往前推进，直到找到match的位置，有一个简单的思路是，每次往前推进一个term，这样可以减少了网络交互，尽快早点match的位置，代价是可能传递了一些多余的日志。&lt;/p&gt;
+&lt;p&gt;关键词：日志连续一致性，多数派，leader日志不变更&lt;/p&gt;
+&lt;h1 id=&quot;快照流程&quot;&gt;&lt;a href=&quot;#快照流程&quot; class=&quot;headerlink&quot; title=&quot;快照流程&quot;&gt;&lt;/a&gt;快照流程&lt;/h1&gt;&lt;p&gt;避免日志占满磁盘空间，需要定期对日志进行清理，在清理前需要做快照，这样新加入的节点可以通过快照+日志恢复。&lt;br&gt;快照属性：&lt;br&gt;1.最后一个已经提交的日志（termId，logIndex）&lt;br&gt;2.新的快照生成后，可以删除之前的日志和以前的快照。&lt;br&gt;删日志不能太快，否则，crash后的机器，本来可以通过日志恢复，如果日志不存在，需要通过快照恢复，比较慢。&lt;/p&gt;
+&lt;h2 id=&quot;leader发送快照流程&quot;&gt;&lt;a href=&quot;#leader发送快照流程&quot; class=&quot;headerlink&quot; title=&quot;leader发送快照流程&quot;&gt;&lt;/a&gt;leader发送快照流程&lt;/h2&gt;&lt;p&gt;传递参数(leaderTermId, lastIndex, lastTerm, offset, data[], done_flag)&lt;br&gt;1.如果发现日志落后太远(超过阀值)，则触发发送快照流程&lt;br&gt;备注：快照不能太频繁，否则会导致磁盘IO压力较大；但也需要定期做，清理非必要的日志，缓解日志的空间压力，另外可以提高follower追赶的速度。&lt;/p&gt;
+&lt;h2 id=&quot;follower接收快照流程&quot;&gt;&lt;a href=&quot;#follower接收快照流程&quot; class=&quot;headerlink&quot; title=&quot;follower接收快照流程&quot;&gt;&lt;/a&gt;follower接收快照流程&lt;/h2&gt;&lt;p&gt;1.如果leaderTermId&amp;lt;currentTerm, 则返回&lt;br&gt;2.如果是第一个块，创建快照&lt;br&gt;3.在指定的偏移，将数据写入快照&lt;br&gt;4.如果不是最后一块，等待更多的块&lt;br&gt;5.接收完毕后，丢掉以前旧的快照&lt;br&gt;6.删除掉不需要的日志&lt;/p&gt;
+&lt;h1 id=&quot;集群配置变更&quot;&gt;&lt;a href=&quot;#集群配置变更&quot; class=&quot;headerlink&quot; title=&quot;集群配置变更&quot;&gt;&lt;/a&gt;集群配置变更&lt;/h1&gt;&lt;p&gt;C(old): 旧配置&lt;br&gt;C(new): 新配置&lt;br&gt;C(old-new): 过渡配置，需要同时在old和new中达成多数派才行&lt;br&gt;原则：配置变更过程中，不会导致出现两个leader&lt;br&gt;二阶段方案：引入过渡阶段C(old-new)&lt;br&gt;约定：任何一个follower在收到新的配置后，就采用新的配置确定多数派。&lt;/p&gt;
+&lt;h2 id=&quot;变更流程&quot;&gt;&lt;a href=&quot;#变更流程&quot; class=&quot;headerlink&quot; title=&quot;变更流程&quot;&gt;&lt;/a&gt;变更流程&lt;/h2&gt;&lt;p&gt;1.leader收到从C(old)切换到C(new)配置的请求&lt;br&gt;2.创建配置日志C(old-new),这条日志需要在C(old)和C(new)中同时达成多数派&lt;br&gt;3.任何一个follower收到配置后，采用的C(old-new)来确定日志是否达成多数派(即使C(old-new)这条日志还没达成多数派)&lt;br&gt;备注：1，2，3阶段只有可能C(old)节点成为leader，因为C(old-new)没有可能成为多数派。&lt;br&gt;4.C(old-new)日志commit(达成多数派)，则无论是C(old)还是C(new)都无法单独达成多数派，即不会存在两个leader&lt;br&gt;5.创建配置配置日志C(new),广播到所有节点&lt;br&gt;6.同样的，任何一个follower收到配置后，采用的C(new)来确定日志是否达成多数派&lt;br&gt;备注：在4，5，6阶段，只有可能含有C(old-new)配置的节点成为leader。&lt;br&gt;7.C(new)配置日志commit后，则C(old-new)无法再达成多数派&lt;br&gt;8.对于不在C(new)配置的节点，就可以退出了，变更完成。&lt;br&gt;备注：在7，8阶段，只有可能含有C(new)配置成为leader。&lt;br&gt;所以整个过程中永远只会有一个leader。对于leader不在C(new)配置的情况，需要在C(new)日志提交后，自动关闭。&lt;/p&gt;
+&lt;p&gt;相关阅读&lt;br&gt;&lt;a href=&quot;http://thesecretlivesofdata.com/raft/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://thesecretlivesofdata.com/raft/&lt;/a&gt;  （强烈推荐阅读，动画的形式化繁为简地讲解raft）&lt;br&gt;&lt;a href=&quot;https://raft.github.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://raft.github.io/&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://raft.github.io/raft.pdf&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://raft.github.io/raft.pdf&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://medium.com/@techgeek628/raft-understandable-distributed-consensus-987b3783d48a&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://medium.com/@techgeek628/raft-understandable-distributed-consensus-987b3783d48a&lt;/a&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;h1 id=&quot;概念与术语&quot;&gt;&lt;a href=&quot;#概念与术语&quot; class=&quot;headerlink&quot; title=&quot;概念与术语&quot;&gt;&lt;/a&gt;概念与术语&lt;/h1&gt;&lt;p&gt;Leader：领导者，为客户端提供服务(生成写日志)的节点，任何时候Raft系统中只能有一个Leader。
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="分布式" scheme="http://idber.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
+    
+  </entry>
   
   <entry>
     <title>Quorum协议</title>
@@ -3254,80 +3305,6 @@ xtrabackup_log_copied
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="备份" scheme="http://idber.github.io/tags/%E5%A4%87%E4%BB%BD/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>MySQL主从同步延迟优化大全</title>
-    <link href="http://idber.github.io/2018/08/12-MySQL%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%BB%B6%E8%BF%9F%E4%BC%98%E5%8C%96%E5%A4%A7%E5%85%A8.html"/>
-    <id>http://idber.github.io/2018/08/12-MySQL主从同步延迟优化大全.html</id>
-    <published>2018-08-12T03:21:56.000Z</published>
-    <updated>2019-04-22T01:41:16.930Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;MySQL主从延迟主要有以下几种原因&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;只读实例规格配置过小导致延迟&lt;/li&gt;
-&lt;li&gt;主库的TPS过高导致只读节点延迟&lt;/li&gt;
-&lt;li&gt;主库的DDL(alter、drop、repair、create)导致只读节点延迟&lt;/li&gt;
-&lt;li&gt;主库执行大事务导致延迟&lt;/li&gt;
-&lt;li&gt;无主键的表进行DML操作导致延迟&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;创建实验数据库&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; create database fafa;
-Query OK, 1 row affected (0.01 sec)
-
-mysql&amp;gt; use fafa
-Database changed
-
-mysql&amp;gt; create table test(jj int,kk varchar(10));
-Query OK, 0 rows affected (0.02 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;接下来我们在主库循环插入数据实验，然后看看进程状态，和同步情况&lt;br&gt;创建procedure&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;delimiter //
-create procedure fafa()
-begin
-declare num int;
-set num=1;
-while num &amp;lt; 8000000 do
-insert into test(jj,kk) values(num,&amp;apos;fafa&amp;apos;);
-set num=num+1;
-end while;
-end
-//
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;之后我们要调用这个procedure，才会插入数据&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;call fafa();  //
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;由于我没有将delimiter’改回来，所以输入‘；’后并没有执行，还需要//&lt;/p&gt;
-&lt;p&gt;注意这里有一个现象，出现了主从很大的延时，这里我们进行逐个排查。总结排查方法&lt;/p&gt;
-&lt;h1 id=&quot;只读实例规格配置过小导致延迟&quot;&gt;&lt;a href=&quot;#只读实例规格配置过小导致延迟&quot; class=&quot;headerlink&quot; title=&quot;只读实例规格配置过小导致延迟&quot;&gt;&lt;/a&gt;只读实例规格配置过小导致延迟&lt;/h1&gt;&lt;p&gt;这类延迟场景的出现往往是主节点拥有较大规格的配置，而只读节点却购买了一个最小规格的配置（例如2G内存/200 IOPS）。&lt;br&gt;     原理解析：只读节点的数据为了和主节点保持同步，采用了MySQL binlog复制技术，由一个IO线程和一个SQL线程来完成，IO线程负责将主库的binlog拉取到只读节点，SQL线程负责消费这些binlog日志，这两个线程会消耗掉只读节点的IO资源，所以当只读节点IOPS配置不够的时候，则会导致只读节点的数据出现延迟&lt;/p&gt;
-&lt;p&gt;解决办法：&lt;br&gt;      升级只读实例的规格（可以参考主库此时的IOPS的消耗情况），防止由于只读实例的规格较小导致了数据延迟。&lt;br&gt;具体只需只读实例节点的配置大于或者等于主节点的配置即可。&lt;/p&gt;
-&lt;h1 id=&quot;主库的TPS过高导致只读节点延迟&quot;&gt;&lt;a href=&quot;#主库的TPS过高导致只读节点延迟&quot; class=&quot;headerlink&quot; title=&quot;主库的TPS过高导致只读节点延迟&quot;&gt;&lt;/a&gt;主库的TPS过高导致只读节点延迟&lt;/h1&gt;&lt;p&gt;原理解析：由于只读节点与主库的同步采用的是单线程同步，而主库的压力是并发多线程写入，这样势必会导致只读节点的数据延迟&lt;br&gt;解决办法：&lt;br&gt;开启只读节点的并行复制是解决这一问题的根本方法，想彻底解决还得排查业务写入压力是否正常，适当对业务进行优化或者拆分，保证主库的TPS不会导致slave出现延迟。&lt;/p&gt;
-&lt;p&gt;拓展：&lt;br&gt;在MySQL5.6中，引入了并发复制，这个并发复制是数据库级别的，这意味着一个SQL线程可以处理一个数据库的连续事务，而不用等待其它数据库完成。这个版本的并发复制，可以理解成一个数据库一个SQL线程。其与并发有关的参数如下：&lt;br&gt;slave_parallel_workers           // worker 线程个数&lt;br&gt;slave-checkpoint-group           // 隔多少个事务做一次 checkpoint&lt;br&gt;slave-checkpoint-period          // 隔多长时间做一次 checkpoint&lt;br&gt;slave-pending-jobs-size-max      // 分发给worker的、处于等待状态的event的大小上限&lt;/p&gt;
-&lt;p&gt;MySQL5.6基于DATABASE级别的并发复制可以解决业务表放在不同的database下同步延迟的问题，但是在实际生产中大部分表还是放在同一个库中的，这种情况即使设置slave_parallel_workers大于0，也无法进行并发。在高并发的情况下，依然会造成主从复制延迟，所以说MySQL 5.7版本才真正支持“真正”的并行复制功能&lt;/p&gt;
-&lt;p&gt;在MySQL5.7中，引入了新的并发复制方法，基于LOGICAL_CLOCK的并发复制，可以支持在一个database中，并发执行relaylog中的事务。&lt;br&gt;相同的二进制日志组在master上提交并行应用到slave节点上，没有跨数据库的限制，并且不需要把数据分割到多个数据库。&lt;br&gt;要实现这个功能，需要在master节点标记binlog中提交的事务哪些是可以并发执行，虽然的MySQL5.6中已经引入binarylog group commit,但是没有将可并发的事务标记出来。&lt;br&gt;可以通过此命令来查看：mysqlbinlog-vvv mysql-bin.000106 | grep -i last_commit&lt;br&gt;在MySQL5.7中，已经解决了主从复制延迟的问题，具体配置参数如下：&lt;br&gt;slave-parallel-type=LOGICAL_CLOCK&lt;br&gt;slave-parallel-workers=16&lt;br&gt;master_info_repository=TABLE&lt;br&gt;relay_log_info_repository=TABLE&lt;br&gt;relay_log_recovery=ON&lt;/p&gt;
-&lt;h1 id=&quot;主库的DDL-alter、drop、repair、create-导致只读节点延迟&quot;&gt;&lt;a href=&quot;#主库的DDL-alter、drop、repair、create-导致只读节点延迟&quot; class=&quot;headerlink&quot; title=&quot;主库的DDL(alter、drop、repair、create)导致只读节点延迟&quot;&gt;&lt;/a&gt;主库的DDL(alter、drop、repair、create)导致只读节点延迟&lt;/h1&gt;&lt;p&gt;可能1：只读节点与主库的DDL同步是串行进行的，如果DDL操作在主库执行时间很长，那么同样在备库也会消耗同样的时间，比如在主库对一张500W的表添加一个字段耗费了10分钟，那么在只读节点上也同样会耗费10分钟，所以只读节点会延迟600S，其他常见操作比如：&lt;br&gt;mysql&amp;gt; alter table test add column nn varchar(10);&lt;br&gt;mysql&amp;gt; alter table test add index(jj);&lt;br&gt;    可能2：只读节点上有一个执行时间非常长的的查询正在执行，那么这个查询会堵塞来自主库的DDL，读节点表被锁，直到查询结束为止，进而导致了只读节点的数据延迟。在只读节点上可以通过执行show processlist命令查看连接的状态处于: Waiting for table metadata lock&lt;/p&gt;
-&lt;p&gt;解决办法：&lt;br&gt;对于可能1，只能说执行操作之前对可能带来的影响要有考量，对于情况2，可以kill掉只读节点上的大查询进行，就可以恢复只读节点与主节点的数据同步&lt;/p&gt;
-&lt;h1 id=&quot;主库执行大事务导致延迟&quot;&gt;&lt;a href=&quot;#主库执行大事务导致延迟&quot; class=&quot;headerlink&quot; title=&quot;主库执行大事务导致延迟&quot;&gt;&lt;/a&gt;主库执行大事务导致延迟&lt;/h1&gt;&lt;p&gt; 主库执行了一条insert … select非常大的插入操作，该操作产生了近几百G的binlog文件传输到只读节点，进而导致了只读节点出现应用binlog延迟。&lt;br&gt;解决办法：&lt;br&gt;     将大事务拆分成为小事务进行排量提交，这样只读节点就可以迅速的完成事务的执行，不会造成数据的延迟。&lt;/p&gt;
-&lt;h1 id=&quot;无主键的表进行DML操作导致延迟&quot;&gt;&lt;a href=&quot;#无主键的表进行DML操作导致延迟&quot; class=&quot;headerlink&quot; title=&quot;无主键的表进行DML操作导致延迟&quot;&gt;&lt;/a&gt;无主键的表进行DML操作导致延迟&lt;/h1&gt;&lt;p&gt;mysql&amp;gt; update test set kk=’fafa01’;&lt;br&gt;由于表中没有主键，所以导致了每一个事务条目的更新都是全表扫描，如果表中很很多的数据，则备库执行该更新的事务条目的时候，就会出现很多的全表扫描更新；进一步说明就是，由于表中没有主键，在ROW模式下，每删一条数据都会做全表扫，也就是说一条delete，如果删了10条，会做10次全表扫，所以slave会一直卡住；&lt;br&gt;拓展：&lt;br&gt;       主键对于innodb来说，是非常重要的，每张表的设计的时候，都应该把主键默认的加上，不管你需不需要他，而且主键的设计最好选择自增型的主键，这里也可以略提一下自增主键的好处：&lt;br&gt;a.自增型主键以利于插入性能的提高；&lt;br&gt;b.自增型主键设计(int,bigint)可以降低二级索引的空间，提升二级索引的内存命中率；&lt;br&gt;c.自增型的主键可以减小page的碎片，提升空间和内存的使用。&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;MySQL主从延迟主要有以下几种原因&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;只读实例规格配置过小导致延迟&lt;/li&gt;
-&lt;li&gt;主库的TPS过高导致只读节点延迟&lt;/li&gt;
-&lt;li&gt;主库的DDL(alter、drop、repair、create)导致只读节点延迟&lt;/li&gt;
-&lt;li&gt;
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="主从" scheme="http://idber.github.io/tags/%E4%B8%BB%E4%BB%8E/"/>
     
   </entry>
   

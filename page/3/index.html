@@ -74,6 +74,35 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2018/08/12-MySQL主从同步延迟优化大全.html" title="MySQL主从同步延迟优化大全" itemprop="url">
+  
+    <h1 itemprop="name">MySQL主从同步延迟优化大全</h1>
+    
+     
+           <p itemprop="description" >MySQL主从延迟主要有以下几种原因
+
+只读实例规格配置过小导致延迟
+主库的TPS过高导致只读节点延迟
+主库的DDL(alter、drop、repair、create)导致只读节点延迟
+主库执行大事务导致延迟
+无主键的表进行DML操作导致延迟
+
+创建实验数据库
+mysql&amp;gt;</p>
+        
+    
+    <time datetime="2018-08-12T03:21:56.000Z" itemprop="datePublished">2018-08-12</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2018/08/12-MySQL online DDL原理.html" title="MySQL Online DDL原理" itemprop="url">
   
     <h1 itemprop="name">MySQL Online DDL原理</h1>
@@ -278,28 +307,6 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 
 
 
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2016/06/16-MySQL Online DDL 工具之pt-online-schema-change.html" title="MySQL Online DDL 工具之Pt-Online-Schema-Change" itemprop="url">
-  
-    <h1 itemprop="name">MySQL Online DDL 工具之Pt-Online-Schema-Change</h1>
-    
-     
-           <p itemprop="description" >MySQL DDL:
-DDL是一个令所有MySQL DBA诟病的一个功能，因为在MySQL中在对表进行DDL时，会锁表，当表比较小比如小于1W行时，对前端影响较小，当时遇到千万级别的表，就会影响前端应用对表的写操作！
-InnoDB引擎是通过以下步骤来进行DDL的：1、按照原始表（</p>
-        
-    
-    <time datetime="2016-06-16T06:51:56.000Z" itemprop="datePublished">2016-06-16</time>
-  </a>
-</section>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix unexpand">
     <a class="extend prev" rel="prev" href="/page/2/"><span></span>Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/">Next<span></span></a>
@@ -329,7 +336,7 @@ InnoDB引擎是通过以下步骤来进行DDL的：1、按照原始表（</p>
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>40</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
 		  
 		
 		  
@@ -394,7 +401,7 @@ InnoDB引擎是通过以下步骤来进行DDL的：1、按照原始表（</p>
 			
 		
 			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>3</sup></a></li>
 			
 		
 			
@@ -430,7 +437,7 @@ InnoDB引擎是通过以下步骤来进行DDL的：1、按照原始表（</p>
 			
 		
 			
-				<li><a href="/tags/分布式/" title="分布式">分布式<sup>2</sup></a></li>
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
 			
 		
 			
