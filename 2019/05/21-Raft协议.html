@@ -1,0 +1,692 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Raft协议 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="概念与术语Leader：领导者，为客户端提供服务(生成写日志)的节点，任何时候Raft系统中只能有一个Leader。Follower：跟随者，被动接受请求的节点，不会发送任何请求，只会响应来自Leader或者Candidate的请求。如果接受到客户请求，会转发给Leader。Candidate：候选人，选举过程中产生，Follower在超时时间内没有收到Leader的心跳或者日志，则切换到Can">
+<meta name="keywords" content="分布式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Raft协议">
+<meta property="og:url" content="http://idber.github.io/2019/05/21-Raft协议.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="概念与术语Leader：领导者，为客户端提供服务(生成写日志)的节点，任何时候Raft系统中只能有一个Leader。Follower：跟随者，被动接受请求的节点，不会发送任何请求，只会响应来自Leader或者Candidate的请求。如果接受到客户请求，会转发给Leader。Candidate：候选人，选举过程中产生，Follower在超时时间内没有收到Leader的心跳或者日志，则切换到Can">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-05-23T04:00:19.319Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Raft协议">
+<meta name="twitter:description" content="概念与术语Leader：领导者，为客户端提供服务(生成写日志)的节点，任何时候Raft系统中只能有一个Leader。Follower：跟随者，被动接受请求的节点，不会发送任何请求，只会响应来自Leader或者Candidate的请求。如果接受到客户请求，会转发给Leader。Candidate：候选人，选举过程中产生，Follower在超时时间内没有收到Leader的心跳或者日志，则切换到Can">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/05/21-Raft协议.html" title="Raft协议" itemprop="url">Raft协议</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2019-05-21T02:01:56.000Z" itemprop="datePublished"> Published 2019-05-21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#概念与术语"><span class="toc-number">1.</span> <span class="toc-text">概念与术语</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Leader选举"><span class="toc-number">2.</span> <span class="toc-text">Leader选举</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Leader流程"><span class="toc-number">2.1.</span> <span class="toc-text">Leader流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Candidate流程"><span class="toc-number">2.2.</span> <span class="toc-text">Candidate流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Follower流程"><span class="toc-number">2.3.</span> <span class="toc-text">Follower流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#日志复制流程"><span class="toc-number">3.</span> <span class="toc-text">日志复制流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#leader流程"><span class="toc-number">3.1.</span> <span class="toc-text">leader流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#follower处理流程"><span class="toc-number">3.2.</span> <span class="toc-text">follower处理流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#快照流程"><span class="toc-number">4.</span> <span class="toc-text">快照流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#leader发送快照流程"><span class="toc-number">4.1.</span> <span class="toc-text">leader发送快照流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#follower接收快照流程"><span class="toc-number">4.2.</span> <span class="toc-text">follower接收快照流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#集群配置变更"><span class="toc-number">5.</span> <span class="toc-text">集群配置变更</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#变更流程"><span class="toc-number">5.1.</span> <span class="toc-text">变更流程</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<hr>
+<h1 id="概念与术语"><a href="#概念与术语" class="headerlink" title="概念与术语"></a>概念与术语</h1><p>Leader：领导者，为客户端提供服务(生成写日志)的节点，任何时候Raft系统中只能有一个Leader。<br>Follower：跟随者，被动接受请求的节点，不会发送任何请求，只会响应来自Leader或者Candidate的请求。如果接受到客户请求，会转发给Leader。<br>Candidate：候选人，选举过程中产生，Follower在超时时间内没有收到Leader的心跳或者日志，则切换到Candidate状态，进入选举流程。<br>TermId：任期号，时间被划分成一个个任期，每次选举后都会产生一个新的TermId，一个任期内只有一个Leader。TermId相当于Paxos的ProposalId。<br>currentTerm：更新的Term。<br>RequestVote：请求投票，Candidate在选举过程中发起，收到Quorum(多数派）响应后，成为Leader。<br>AppendEntries：附加日志，Leader发送日志和心跳的机制<br>Election Timeout：选举超时，如果Follower在一段时间内(超时时间为150ms-300ms内随机数)没有收到任何消息(追加日志或者心跳)，就是选举超时。<br>Leader Election：领导选举，选举超时即开始领导选举。<br>Raft协议主要包括三部分：</p>
+<ul>
+<li>Leader选举</li>
+<li>日志复制</li>
+<li>成员变更</li>
+</ul>
+<p>一个节点的状态只有如下三种形式的一种：</p>
+<ul>
+<li>Follower 状态</li>
+<li>Candidate 状态</li>
+<li>Leader 状态</li>
+</ul>
+<h1 id="Leader选举"><a href="#Leader选举" class="headerlink" title="Leader选举"></a>Leader选举</h1><h2 id="Leader流程"><a href="#Leader流程" class="headerlink" title="Leader流程"></a>Leader流程</h2><p>服务器启动时初始状态都是Follower，如果在超时时间内没有收到Leader发送的心跳包，则进入Candidate状态进行选举，服务器启动时和Leader挂掉时处理一样。为了避免选票瓜分的情况，比如5个节点ABCDE，Leader A 挂掉后，还剩4个节点，raft协议约定，每个服务器在一个任期只能投一张票，假设B，D分别有最新的日志，且同时发起选举投票，则可能出现B和D分别得到2张票的情况，如果这样都得不到大多数确认，无法选出leader。为了避免这种情况发生，raft利用随机超时机制避免选票瓜分情况。选举超时时间从一个固定的区间随机选择，由于<font color="red">每个服务器的超时时间不同</font>，则leader挂掉后，超时时间最短且拥有最多日志的follower最先开始选主，并成为leader。一旦candidate成为leader，就会向其他服务器发送心跳包阻止新一轮的选举开始。<br>发送日志信息:(term,candidateId,lastLogTerm,lastLogIndex)</p>
+<h2 id="Candidate流程"><a href="#Candidate流程" class="headerlink" title="Candidate流程"></a>Candidate流程</h2><p>1.在超时时间内没有收到leader的日志(包括心跳)<br>2.将状态切换为candidate,自增currentTerm,设置超时时间<br>3.向所有节点广播选举请求，等待响应，可能会有以下三种情况：<br>(1).如果收到多数派回应，则成为leader<br>(2).如果收到leader的心跳，且leader的term&gt;=currentTerm，则自己切换为follower状态，<br>否则，保持Candidate身份<br>(3).如果在超时时间内没有达成多数派，也没有收到leader心跳，则很可能选票被瓜分，则会自增currentTerm,进行新一轮的选举</p>
+<h2 id="Follower流程"><a href="#Follower流程" class="headerlink" title="Follower流程"></a>Follower流程</h2><p>1.如果term &lt; currentTerm，说明有更新的term，返回给candidate。<br>2.如果还没有投票，或者candidateId的日志(lastLogTerm,lastLogIndex)和本地日志一样或更新，则投票给它。<br>注意：一个term周期内，每个节点最多只能投一张票，按照先来先到原则</p>
+<p>关键词：随机超时，FIFO</p>
+<h1 id="日志复制流程"><a href="#日志复制流程" class="headerlink" title="日志复制流程"></a>日志复制流程</h1><p>leader向follower发送日志时，会顺带邻近的前一条日志，follwer接收日志时，会在相同任期号和索引位置找前一条日志，如果存在且匹配，则接收日志；否则拒绝，leader会减少日志索引位置并进行重试，直到某个位置与follower达成一致。然后follower删除索引后的所有日志，并追加leader发送的日志，一旦日志追加成功，则follower和leader的所有日志就保持一致。只有在多数派的follower都响应接受到日志后，表示事务可以提交，才能返回客户端提交成功。<br>发送日志信息:(term,leaderId,prevLogIndex,prevLogTerm,leaderCommitIndex)</p>
+<h2 id="leader流程"><a href="#leader流程" class="headerlink" title="leader流程"></a>leader流程</h2><p>1.接收到client请求，本地持久化日志<br>2.将日志发往各个节点<br>3.如果达成多数派，再commit，返回给client。<br>备注：<br>(1).如果传递给follower的lastLogIndex&gt;=nextIndex,则从nextIndex继续传递<br>.如果返回成功，则更新follower对应的nextIndex和matchIndex<br>.如果失败，则表示follower还差更多的日志，则递减nextIndex，重试<br>(2).如果存在N&gt;commitIndex，且多数派matchIndex[i]&gt;=N, 且log[N].term == currentTerm,<br>设置commitIndex=N。</p>
+<h2 id="follower处理流程"><a href="#follower处理流程" class="headerlink" title="follower处理流程"></a>follower处理流程</h2><p>1.比较term号和自身的currentTerm，如果term&lt;currentTerm，则返回false<br>2.如果(prevLogIndex,prevLogTerm)不存在，说明还差日志，返回false<br>3.如果(prevLogIndex,prevLogTerm)与已有的日志冲突，则以leader为准，删除自身的日志<br>4.将leader传过来的日志追加到末尾<br>5.如果leaderCommitIndex&gt;commitIndex,说明是新的提交位点，回放日志，设置commitIndex =<br>min(leaderCommitIndex, index of last new entry)</p>
+<p>备注：默认情况下，如果日志不匹配，会按logIndex逐条往前推进，直到找到match的位置，有一个简单的思路是，每次往前推进一个term，这样可以减少了网络交互，尽快早点match的位置，代价是可能传递了一些多余的日志。</p>
+<p>关键词：日志连续一致性，多数派，leader日志不变更</p>
+<h1 id="快照流程"><a href="#快照流程" class="headerlink" title="快照流程"></a>快照流程</h1><p>避免日志占满磁盘空间，需要定期对日志进行清理，在清理前需要做快照，这样新加入的节点可以通过快照+日志恢复。<br>快照属性：<br>1.最后一个已经提交的日志（termId，logIndex）<br>2.新的快照生成后，可以删除之前的日志和以前的快照。<br>删日志不能太快，否则，crash后的机器，本来可以通过日志恢复，如果日志不存在，需要通过快照恢复，比较慢。</p>
+<h2 id="leader发送快照流程"><a href="#leader发送快照流程" class="headerlink" title="leader发送快照流程"></a>leader发送快照流程</h2><p>传递参数(leaderTermId, lastIndex, lastTerm, offset, data[], done_flag)<br>1.如果发现日志落后太远(超过阀值)，则触发发送快照流程<br>备注：快照不能太频繁，否则会导致磁盘IO压力较大；但也需要定期做，清理非必要的日志，缓解日志的空间压力，另外可以提高follower追赶的速度。</p>
+<h2 id="follower接收快照流程"><a href="#follower接收快照流程" class="headerlink" title="follower接收快照流程"></a>follower接收快照流程</h2><p>1.如果leaderTermId&lt;currentTerm, 则返回<br>2.如果是第一个块，创建快照<br>3.在指定的偏移，将数据写入快照<br>4.如果不是最后一块，等待更多的块<br>5.接收完毕后，丢掉以前旧的快照<br>6.删除掉不需要的日志</p>
+<h1 id="集群配置变更"><a href="#集群配置变更" class="headerlink" title="集群配置变更"></a>集群配置变更</h1><p>C(old): 旧配置<br>C(new): 新配置<br>C(old-new): 过渡配置，需要同时在old和new中达成多数派才行<br>原则：配置变更过程中，不会导致出现两个leader<br>二阶段方案：引入过渡阶段C(old-new)<br>约定：任何一个follower在收到新的配置后，就采用新的配置确定多数派。</p>
+<h2 id="变更流程"><a href="#变更流程" class="headerlink" title="变更流程"></a>变更流程</h2><p>1.leader收到从C(old)切换到C(new)配置的请求<br>2.创建配置日志C(old-new),这条日志需要在C(old)和C(new)中同时达成多数派<br>3.任何一个follower收到配置后，采用的C(old-new)来确定日志是否达成多数派(即使C(old-new)这条日志还没达成多数派)<br>备注：1，2，3阶段只有可能C(old)节点成为leader，因为C(old-new)没有可能成为多数派。<br>4.C(old-new)日志commit(达成多数派)，则无论是C(old)还是C(new)都无法单独达成多数派，即不会存在两个leader<br>5.创建配置配置日志C(new),广播到所有节点<br>6.同样的，任何一个follower收到配置后，采用的C(new)来确定日志是否达成多数派<br>备注：在4，5，6阶段，只有可能含有C(old-new)配置的节点成为leader。<br>7.C(new)配置日志commit后，则C(old-new)无法再达成多数派<br>8.对于不在C(new)配置的节点，就可以退出了，变更完成。<br>备注：在7，8阶段，只有可能含有C(new)配置成为leader。<br>所以整个过程中永远只会有一个leader。对于leader不在C(new)配置的情况，需要在C(new)日志提交后，自动关闭。</p>
+<p>相关阅读<br><a href="http://thesecretlivesofdata.com/raft/" target="_blank" rel="noopener">http://thesecretlivesofdata.com/raft/</a>  （强烈推荐阅读，动画的形式化繁为简地讲解raft）<br><a href="https://raft.github.io/" target="_blank" rel="noopener">https://raft.github.io/</a><br><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a><br><a href="https://medium.com/@techgeek628/raft-understandable-distributed-consensus-987b3783d48a" target="_blank" rel="noopener">https://medium.com/@techgeek628/raft-understandable-distributed-consensus-987b3783d48a</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/分布式/">分布式</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2019/05/21-Raft协议.html" data-title="Raft协议 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2019/05/30-MongoDB自定义权限实现MongoDB集合即表权限管理.html" title="MongoDB自定义权限实现MongoDB集合即表权限管理">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MongoDB自定义权限实现MongoDB集合即表权限管理</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2019/05/16-Quorum协议.html"  title="Quorum协议">
+ <strong>下一篇：</strong><br/> 
+ <span>Quorum协议
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#概念与术语"><span class="toc-number">1.</span> <span class="toc-text">概念与术语</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Leader选举"><span class="toc-number">2.</span> <span class="toc-text">Leader选举</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Leader流程"><span class="toc-number">2.1.</span> <span class="toc-text">Leader流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Candidate流程"><span class="toc-number">2.2.</span> <span class="toc-text">Candidate流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Follower流程"><span class="toc-number">2.3.</span> <span class="toc-text">Follower流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#日志复制流程"><span class="toc-number">3.</span> <span class="toc-text">日志复制流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#leader流程"><span class="toc-number">3.1.</span> <span class="toc-text">leader流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#follower处理流程"><span class="toc-number">3.2.</span> <span class="toc-text">follower处理流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#快照流程"><span class="toc-number">4.</span> <span class="toc-text">快照流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#leader发送快照流程"><span class="toc-number">4.1.</span> <span class="toc-text">leader发送快照流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#follower接收快照流程"><span class="toc-number">4.2.</span> <span class="toc-text">follower接收快照流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#集群配置变更"><span class="toc-number">5.</span> <span class="toc-text">集群配置变更</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#变更流程"><span class="toc-number">5.1.</span> <span class="toc-text">变更流程</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MongoDB/" title="MongoDB">MongoDB<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>43</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/字符集/" title="字符集">字符集<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,688 @@
+
+ <!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>MongoDB自定义权限实现MongoDB集合即表权限管理 | 似水年华--沉浮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Michael Guo">
+    
+
+    
+    <meta name="description" content="背景业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。 官方文档用户自定义角色https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles  创建角色语法https://docs">
+<meta name="keywords" content="MongoDB,权限">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MongoDB自定义权限实现MongoDB集合即表权限管理">
+<meta property="og:url" content="http://idber.github.io/2019/05/30-MongoDB自定义权限实现MongoDB集合即表权限管理.html">
+<meta property="og:site_name" content="似水年华--沉浮">
+<meta property="og:description" content="背景业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。 官方文档用户自定义角色https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles  创建角色语法https://docs">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-05-30T09:06:29.217Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MongoDB自定义权限实现MongoDB集合即表权限管理">
+<meta name="twitter:description" content="背景业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。 官方文档用户自定义角色https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles  创建角色语法https://docs">
+
+    
+    <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="似水年华--沉浮">似水年华--沉浮</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:idber.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/05/30-MongoDB自定义权限实现MongoDB集合即表权限管理.html" title="MongoDB自定义权限实现MongoDB集合即表权限管理" itemprop="url">MongoDB自定义权限实现MongoDB集合即表权限管理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
+		
+  <p class="article-time">
+    <time datetime="2019-05-30T02:01:56.000Z" itemprop="datePublished"> Published 2019-05-30</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#官方文档"><span class="toc-number"></span> <span class="toc-text">官方文档</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#用户自定义角色"><span class="toc-number">1.</span> <span class="toc-text">用户自定义角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建角色语法"><span class="toc-number">2.</span> <span class="toc-text">创建角色语法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#创建自定义角色"><span class="toc-number"></span> <span class="toc-text">创建自定义角色</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#更新业务库角色权限"><span class="toc-number"></span> <span class="toc-text">更新业务库角色权限</span></a>
+		
+		</div>
+		
+		<hr>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。</p>
+<h1 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h1><h2 id="用户自定义角色"><a href="#用户自定义角色" class="headerlink" title="用户自定义角色"></a>用户自定义角色</h2><p><a href="https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles" target="_blank" rel="noopener">https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles</a> </p>
+<h2 id="创建角色语法"><a href="#创建角色语法" class="headerlink" title="创建角色语法"></a>创建角色语法</h2><p><a href="https://docs.mongodb.com/manual/reference/method/db.createRole/#db.createRole" target="_blank" rel="noopener">https://docs.mongodb.com/manual/reference/method/db.createRole/#db.createRole</a></p>
+<h1 id="创建自定义角色"><a href="#创建自定义角色" class="headerlink" title="创建自定义角色"></a>创建自定义角色</h1><pre><code>use db_name // db_name这里是你业务数据库的名称
+db.createRole(
+   {
+     role: &quot;my_define_role&quot;, // 角色名称
+     privileges: [
+       { resource: { cluster: true }, actions: [ &quot;addShard&quot; ] }, // 分片集群MongoDB需要填写此项，副本集不用
+       { resource: { db: &quot;config&quot;, collection: &quot;&quot; }, actions: [ &quot;find&quot;, &quot;update&quot;, &quot;insert&quot;, &quot;remove&quot; ] }, // 定义库权限，可以到集合权限。
+       { resource: { db: &quot;users&quot;, collection: &quot;usersCollection&quot; }, actions: [ &quot;update&quot;, &quot;insert&quot;, &quot;remove&quot; ] },  // // 多个集合可以分别指定
+       { resource: { db: &quot;&quot;, collection: &quot;&quot; }, actions: [ &quot;find&quot; ] }
+     ], // 也可以指定不同的库，&quot;&quot;表示所有库、集合
+     roles: [
+       { role: &quot;read&quot;, db: &quot;db_name&quot; }  // db_name这里是你业务数据库的名称
+     ]
+   },
+   { w: &quot;majority&quot; , wtimeout: 5000 } // 副本集默认的写入方式是majority
+)
+</code></pre><p>相关文档<br><a href="https://docs.mongodb.com/manual/reference/write-concern/#writeconcern.%22majority%22" target="_blank" rel="noopener">https://docs.mongodb.com/manual/reference/write-concern/#writeconcern.%22majority%22</a></p>
+<h1 id="更新业务库角色权限"><a href="#更新业务库角色权限" class="headerlink" title="更新业务库角色权限"></a>更新业务库角色权限</h1><pre><code>db.getSiblingDB(&quot;db_name&quot;).updateUser( // db_name为业务库名
+    &quot;db_name&quot;,
+    {
+        customData: {},
+
+        roles: [
+        { &quot;role&quot;: &quot;my_define_role&quot;, &quot;db&quot;: &quot;db_name&quot; ,},// my_define_role为自定义角色名
+        ],
+    }
+</code></pre><p>)</p>
+<p>完</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/MongoDB/">MongoDB</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/MongoDB/">MongoDB</a><a href="/tags/权限/">权限</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://idber.github.io/2019/05/30-MongoDB自定义权限实现MongoDB集合即表权限管理.html" data-title="MongoDB自定义权限实现MongoDB集合即表权限管理 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2019/05/21-Raft协议.html"  title="Raft协议">
+ <strong>下一篇：</strong><br/> 
+ <span>Raft协议
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#官方文档"><span class="toc-number"></span> <span class="toc-text">官方文档</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#用户自定义角色"><span class="toc-number">1.</span> <span class="toc-text">用户自定义角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建角色语法"><span class="toc-number">2.</span> <span class="toc-text">创建角色语法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#创建自定义角色"><span class="toc-number"></span> <span class="toc-text">创建自定义角色</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#更新业务库角色权限"><span class="toc-number"></span> <span class="toc-text">更新业务库角色权限</span></a>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/ETL/" title="ETL">ETL<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MongoDB/" title="MongoDB">MongoDB<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SQL编程/" title="SQL编程">SQL编程<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/似水年华/" title="似水年华">似水年华<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/性能优化/" title="性能优化">性能优化<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/自动化/" title="自动化">自动化<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/锁/" title="锁">锁<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>43</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/字符集/" title="字符集">字符集<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/备份恢复/" title="备份恢复">备份恢复<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.edholroyd.info" target="_blank" title="ED">ED</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.dbunix.com/" target="_blank" title="DbUnix">DbUnix</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/pz/" target="_blank" title="Peter">Peter</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.percona.com/blog/author/admin/" target="_blank" title="Percona">Percona</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.innomysql.net/" target="_blank" title="姜承尧">姜承尧</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.cnblogs.com/cchust/" target="_blank" title="雁闲">雁闲</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://mysql.taobao.org/monthly/" target="_blank" title="淘宝月报">淘宝月报</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.yufeng.info/" target="_blank" title="褚霸">褚霸</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.penglixun.com" target="_blank" title="彭立勋">彭立勋</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Larry Page in Google. <br/>
+			This is my blog,believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'idber';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?8e6ad8685a49ecd708b409d5cf63d874";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
