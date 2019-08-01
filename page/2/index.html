@@ -74,6 +74,33 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2018/10/01-Purge死锁.html" title="Purge死锁" itemprop="url">
+  
+    <h1 itemprop="name">Purge死锁</h1>
+    
+     
+           <p itemprop="description" >环境准备场景：业务批量删除，然后插入操作
+select @@tx_isolation;
++----------------+
+| @@tx_isolation |
++----------------+
+| READ-COMMITTED |
++----------------+
+1</p>
+        
+    
+    <time datetime="2018-09-30T22:01:56.000Z" itemprop="datePublished">2018-10-01</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2018/09/09-Percona Xtrabackup 2.4 恢复指定表.html" title="Percona Xtrabackup 2.4 恢复指定表" itemprop="url">
   
     <h1 itemprop="name">Percona Xtrabackup 2.4 恢复指定表</h1>
@@ -263,26 +290,6 @@ defau</p>
 
 
 
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2018/08/14-InnoDB buffer pool flush策略漫谈.html" title="InnoDB Buffer Pool Flush策略漫谈" itemprop="url">
-  
-    <h1 itemprop="name">InnoDB Buffer Pool Flush策略漫谈</h1>
-    
-     
-           <p itemprop="description" >背景我们知道InnoDB使用buffer pool来缓存从磁盘读取到内存的数据页。buffer pool通常由数个内存块加上一组控制结构体对象组成。内存块的个数取决于buffer pool instance的个数，不过在5.7版本中开始默认以128M（可配置）的chunk单位分配</p>
-        
-    
-    <time datetime="2018-08-14T02:01:56.000Z" itemprop="datePublished">2018-08-14</time>
-  </a>
-</section>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix unexpand">
     <a class="extend prev" rel="prev" href="/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/">Next<span></span></a>
@@ -316,7 +323,7 @@ defau</p>
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>42</sup></a></li>
 		  
 		
 		  
@@ -365,7 +372,7 @@ defau</p>
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>43</sup></a></li>
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>44</sup></a></li>
 			
 		
 			
@@ -389,11 +396,7 @@ defau</p>
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
 			
 		
 			
@@ -402,6 +405,14 @@ defau</p>
 		
 			
 				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
@@ -417,19 +428,7 @@ defau</p>
 			
 		
 			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+				<li><a href="/tags/计算机原理/" title="计算机原理">计算机原理<sup>1</sup></a></li>
 			
 		
 			
@@ -437,11 +436,19 @@ defau</p>
 			
 		
 			
-				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
+				<li><a href="/tags/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 		</ul>

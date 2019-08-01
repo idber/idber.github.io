@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2019-05-30T09:06:29.217Z</updated>
+  <updated>2019-08-01T09:09:04.621Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -16,17 +16,206 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>MySQL 各种线程状态</title>
+    <link href="http://idber.github.io/2019/08/01-MySQL%20%E5%90%84%E7%A7%8D%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81.html"/>
+    <id>http://idber.github.io/2019/08/01-MySQL 各种线程状态.html</id>
+    <published>2019-08-01T02:01:56.000Z</published>
+    <updated>2019-08-01T09:09:04.621Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;以下列举了State 与常规查询处理相关联的线程值，而不是更具体的活动（如复制）。其中许多仅用于查找服务器中的错误。&lt;/p&gt;
+&lt;p&gt;After create&lt;/p&gt;
+&lt;p&gt;当线程在创建表的函数末尾创建表（包括内部临时表）时，会发生这种情况。即使由于某些错误而无法创建表，也会使用此状态。&lt;/p&gt;
+&lt;p&gt;Analyzing&lt;/p&gt;
+&lt;p&gt;线程正在计算MyISAM表键分布（例如，for ANALYZE TABLE）。&lt;/p&gt;
+&lt;p&gt;checking permissions&lt;/p&gt;
+&lt;p&gt;线程正在检查服务器是否具有执行语句所需的权限。&lt;/p&gt;
+&lt;p&gt;Checking table&lt;/p&gt;
+&lt;p&gt;该线程正在执行表检查操作。&lt;/p&gt;
+&lt;p&gt;cleaning up&lt;/p&gt;
+&lt;p&gt;该线程已经处理了一个命令，并准备释放内存并重置某些状态变量。&lt;/p&gt;
+&lt;p&gt;closing tables&lt;/p&gt;
+&lt;p&gt;该线程正在将更改的表数据刷新到磁盘并关闭已使用的表。这应该是一个快速的操作。如果不是，请验证您没有完整磁盘并且磁盘使用不是很大。&lt;/p&gt;
+&lt;p&gt;converting HEAP to ondisk&lt;/p&gt;
+&lt;p&gt;该线程正在将内部临时表从 MEMORY表转换为磁盘表。&lt;/p&gt;
+&lt;p&gt;copy to tmp table&lt;/p&gt;
+&lt;p&gt;线程正在处理一个ALTER TABLE语句。在创建具有新结构的表但在将行复制到其中之前，将发生此状态。&lt;/p&gt;
+&lt;p&gt;Copying to group table&lt;/p&gt;
+&lt;p&gt;如果语句具有不同的条件ORDER BY和 GROUP BY标准，则按组对行进行排序并将其复制到临时表。&lt;/p&gt;
+&lt;p&gt;Copying to tmp table&lt;/p&gt;
+&lt;p&gt;服务器正在复制到内存中的临时表。&lt;/p&gt;
+&lt;p&gt;altering table&lt;/p&gt;
+&lt;p&gt;服务器正在执行就地 ALTER TABLE。&lt;/p&gt;
+&lt;p&gt;Copying to tmp table on disk&lt;/p&gt;
+&lt;p&gt;服务器正在复制到磁盘上的临时表。临时结果集变得太大。因此，线程正在将临时表从内存更改为基于磁盘的格式以节省内存。&lt;/p&gt;
+&lt;p&gt;Creating index&lt;/p&gt;
+&lt;p&gt;线程正在处理ALTER TABLE … ENABLE KEYS一个MyISAM表。&lt;/p&gt;
+&lt;p&gt;Creating sort index&lt;/p&gt;
+&lt;p&gt;线程正在处理SELECT使用内部临时表解析的线程。&lt;/p&gt;
+&lt;p&gt;creating table&lt;/p&gt;
+&lt;p&gt;线程正在创建一个表。这包括创建临时表。&lt;/p&gt;
+&lt;p&gt;Creating tmp table&lt;/p&gt;
+&lt;p&gt;该线程正在内存或磁盘上创建临时表。如果表在内存中创建但稍后转换为磁盘表，则该操作期间的状态将为Copying to tmp table on disk。&lt;/p&gt;
+&lt;p&gt;committing alter table to storage engine&lt;/p&gt;
+&lt;p&gt;服务器已完成就地 ALTER TABLE并提交结果。&lt;/p&gt;
+&lt;p&gt;deleting from main table&lt;/p&gt;
+&lt;p&gt;服务器正在执行多表删除的第一部分。它仅从第一个表中删除，并保存用于从其他（引用）表中删除的列和偏移量。&lt;/p&gt;
+&lt;p&gt;deleting from reference tables&lt;/p&gt;
+&lt;p&gt;服务器正在执行多表删除的第二部分，并从其他表中删除匹配的行。&lt;/p&gt;
+&lt;p&gt;discard_or_import_tablespace&lt;/p&gt;
+&lt;p&gt;线程正在处理ALTER TABLE … DISCARD TABLESPACE或ALTER TABLE … IMPORT TABLESPACE声明。&lt;/p&gt;
+&lt;p&gt;end&lt;/p&gt;
+&lt;p&gt;这发生在结束，但的清理之前 ALTER TABLE， CREATE VIEW， DELETE， INSERT， SELECT，或 UPDATE语句。&lt;/p&gt;
+&lt;p&gt;executing&lt;/p&gt;
+&lt;p&gt;该线程已开始执行语句。&lt;/p&gt;
+&lt;p&gt;Execution of init_command&lt;/p&gt;
+&lt;p&gt;线程正在执行init_command系统变量值中的语句 。&lt;/p&gt;
+&lt;p&gt;freeing items&lt;/p&gt;
+&lt;p&gt;线程执行了一个命令。在此状态期间完成的一些项目的释放涉及查询缓存。这种状态通常紧随其后cleaning up。&lt;/p&gt;
+&lt;p&gt;FULLTEXT initialization&lt;/p&gt;
+&lt;p&gt;服务器正准备执行自然语言全文搜索。&lt;/p&gt;
+&lt;p&gt;init&lt;/p&gt;
+&lt;p&gt;出现这种情况的初始化之前 ALTER TABLE， DELETE， INSERT， SELECT，或 UPDATE语句。服务器在此状态下采取的操作包括刷新二进制日志，InnoDB日志和一些查询缓存清理操作。&lt;/p&gt;
+&lt;p&gt;对于end州，可能会发生以下操作：&lt;/p&gt;
+&lt;p&gt;删除表中的数据后删除查询缓存条目&lt;/p&gt;
+&lt;p&gt;将事件写入二进制日志&lt;/p&gt;
+&lt;p&gt;释放内存缓冲区，包括blob&lt;/p&gt;
+&lt;p&gt;Killed&lt;/p&gt;
+&lt;p&gt;有人KILL 向线程发送了一个语句，它应该在下次检查kill标志时中止。在MySQL的每个主循环中检查该标志，但在某些情况下，线程可能仍然需要很短的时间才能死掉。如果线程被某个其他线程锁定，则一旦另一个线程释放其锁定，kill就会生效。&lt;/p&gt;
+&lt;p&gt;logging slow query&lt;/p&gt;
+&lt;p&gt;该线程正在向慢查询日志写一条语句。&lt;/p&gt;
+&lt;p&gt;login&lt;/p&gt;
+&lt;p&gt;连接线程的初始状态，直到客户端成功通过身份验证。&lt;/p&gt;
+&lt;p&gt;manage keys&lt;/p&gt;
+&lt;p&gt;服务器正在启用或禁用表索引。&lt;/p&gt;
+&lt;p&gt;NULL&lt;/p&gt;
+&lt;p&gt;该状态用于该SHOW PROCESSLIST状态。&lt;/p&gt;
+&lt;p&gt;Opening tables&lt;/p&gt;
+&lt;p&gt;线程正在尝试打开一个表。这应该是非常快的程序，除非有什么东西阻止打开。例如，一个ALTER TABLE或一个 LOCK TABLE语句可以阻止在语句结束之前打开表。还值得检查您的table_open_cache价值是否足够大。&lt;/p&gt;
+&lt;p&gt;optimizing&lt;/p&gt;
+&lt;p&gt;服务器正在对查询执行初始优化。&lt;/p&gt;
+&lt;p&gt;preparing&lt;/p&gt;
+&lt;p&gt;在查询优化期间发生此状态。&lt;/p&gt;
+&lt;p&gt;Purging old relay logs&lt;/p&gt;
+&lt;p&gt;该线程正在删除不需要的中继日志文件。&lt;/p&gt;
+&lt;p&gt;query end&lt;/p&gt;
+&lt;p&gt;处理查询后但在freeing items状态之前发生此 状态。&lt;/p&gt;
+&lt;p&gt;Receiving from client&lt;/p&gt;
+&lt;p&gt;服务器正在从客户端读取数据包。Reading from net在MySQL 5.7.8之前调用此状态。&lt;/p&gt;
+&lt;p&gt;Removing duplicates&lt;/p&gt;
+&lt;p&gt;该查询使用 SELECT DISTINCT的方式是MySQL无法在早期阶段优化掉不同的操作。因此，在将结果发送到客户端之前，MySQL需要额外的阶段来删除所有重复的行。&lt;/p&gt;
+&lt;p&gt;removing tmp table&lt;/p&gt;
+&lt;p&gt;该线程在处理SELECT 语句后删除内部临时表。如果未创建临时表，则不使用此状态。&lt;/p&gt;
+&lt;p&gt;rename&lt;/p&gt;
+&lt;p&gt;该线程正在重命名一个表。&lt;/p&gt;
+&lt;p&gt;rename result table&lt;/p&gt;
+&lt;p&gt;线程正在处理一个ALTER TABLE语句，创建了新表，并重命名它以替换原始表。&lt;/p&gt;
+&lt;p&gt;Reopen tables&lt;/p&gt;
+&lt;p&gt;该线程获得了表的锁定，但在获取锁定之后注意到基础表结构发生了变化。它释放了锁，关闭了桌子，并试图重新打开它。&lt;/p&gt;
+&lt;p&gt;Repair by sorting&lt;/p&gt;
+&lt;p&gt;修复代码使用排序来创建索引。&lt;/p&gt;
+&lt;p&gt;preparing for alter table&lt;/p&gt;
+&lt;p&gt;服务器正准备执行就地 ALTER TABLE。&lt;/p&gt;
+&lt;p&gt;Repair done&lt;/p&gt;
+&lt;p&gt;该线程已完成对MyISAM表的多线程修复 。&lt;/p&gt;
+&lt;p&gt;Repair with keycache&lt;/p&gt;
+&lt;p&gt;修复代码通过密钥缓存逐个创建密钥。这比慢得多Repair by sorting。&lt;/p&gt;
+&lt;p&gt;Rolling back&lt;/p&gt;
+&lt;p&gt;该线程正在回滚一个事务。&lt;/p&gt;
+&lt;p&gt;Saving state&lt;/p&gt;
+&lt;p&gt;对于MyISAM诸如修复或分析的表操作，线程将新表状态保存到.MYI文件头。状态包括诸如行数， AUTO_INCREMENT计数器和密钥分发之类的信息。&lt;/p&gt;
+&lt;p&gt;Searching rows for update&lt;/p&gt;
+&lt;p&gt;该线程正在进行第一阶段以在更新之前查找所有匹配的行。如果 UPDATE要更改用于查找所涉及行的索引，则必须执行此操作。&lt;/p&gt;
+&lt;p&gt;Sending data&lt;/p&gt;
+&lt;p&gt;线程正在读取和处理SELECT语句的行 ，并将数据发送到客户端。由于在此状态期间发生的操作往往会执行大量磁盘访问（读取），因此它通常是给定查询生命周期中运行时间最长的状态。&lt;/p&gt;
+&lt;p&gt;Sending to client&lt;/p&gt;
+&lt;p&gt;服务器正在向客户端写入数据包。Writing to net在MySQL 5.7.8之前调用此状态。&lt;/p&gt;
+&lt;p&gt;setup&lt;/p&gt;
+&lt;p&gt;线程正在开始一个ALTER TABLE操作。&lt;/p&gt;
+&lt;p&gt;Sorting for group&lt;/p&gt;
+&lt;p&gt;线程正在进行排序以满足a GROUP BY。&lt;/p&gt;
+&lt;p&gt;Sorting for order&lt;/p&gt;
+&lt;p&gt;线程正在进行排序以满足ORDER BY。&lt;/p&gt;
+&lt;p&gt;Sorting index&lt;/p&gt;
+&lt;p&gt;该线程正在对索引页面进行排序，以便在MyISAM表优化操作期间进行更有效的访&lt;/p&gt;
+&lt;p&gt;Sorting result&lt;/p&gt;
+&lt;p&gt;正在对结果进行排序，类似Creating sort index，不过是正常表，而不是在内存表中进行排序建议：创建适当的索引&lt;/p&gt;
+&lt;p&gt;statistics&lt;/p&gt;
+&lt;p&gt;服务器正在计算统计信息以分配执行计划。如果线程长时间处于此状态，则服务器可能是磁盘IO性能很差建议：查看当前io性能状态，例如iowait&lt;/p&gt;
+&lt;p&gt;System lock&lt;/p&gt;
+&lt;p&gt;该线程已调用mysql_lock_tables() ，并且线程状态尚未更新。这是一个非常普遍的状态，可能由于多种原因而发生。&lt;/p&gt;
+&lt;p&gt;例如，线程将请求或正在等待表的内部或外部系统锁定。InnoDB在执行期间等待表级锁定时会 发生这种情况LOCK TABLES。如果此状态是由外部锁的请求引起的，并且您没有使用多个访问相同 表的mysqld服务器，则MyISAM可以使用该–skip-external-locking 选项禁用外部系统锁 。但是，默认情况下禁用外部锁定，因此该选项很可能无效。对于 SHOW PROFILE，这个状态意味着线程正在请求锁定（不等待它）。&lt;/p&gt;
+&lt;p&gt;update&lt;/p&gt;
+&lt;p&gt;线程正准备开始更新表。&lt;/p&gt;
+&lt;p&gt;Updating&lt;/p&gt;
+&lt;p&gt;线程正在搜索要更新的行并正在更新它们。&lt;/p&gt;
+&lt;p&gt;updating main table&lt;/p&gt;
+&lt;p&gt;服务器正在执行多表更新的第一部分。它仅更新第一个表，并保存用于更新其他（引用）表的列和偏移量。&lt;/p&gt;
+&lt;p&gt;updating reference tables&lt;/p&gt;
+&lt;p&gt;服务器正在执行多表更新的第二部分，并更新其他表中的匹配行。&lt;/p&gt;
+&lt;p&gt;User lock&lt;/p&gt;
+&lt;p&gt;该线程将要求或正在等待通过GET_LOCK()呼叫请求的咨询锁 。对于 SHOW PROFILE，此状态表示线程正在请求锁定（不等待它）。&lt;/p&gt;
+&lt;p&gt;User sleep&lt;/p&gt;
+&lt;p&gt;线程已经调用了一个 SLEEP()调用。&lt;/p&gt;
+&lt;p&gt;Waiting for commit lock&lt;/p&gt;
+&lt;p&gt;FLUSH TABLES WITH READ LOCK 正在等待提交锁定。&lt;/p&gt;
+&lt;p&gt;Waiting for global read lock&lt;/p&gt;
+&lt;p&gt;FLUSH TABLES WITH READ LOCK整等待全局读锁建议：不要对线上业务数据库加上全局读锁，通常是备份引起，可以放在业务低谷期间执行或者放在slave服务器上执行备份&lt;/p&gt;
+&lt;p&gt;Waiting for tables&lt;/p&gt;
+&lt;p&gt;线程得到一个通知，表明表的底层结构已经改变，它需要重新打开表以获得新结构。但是，要重新打开表，它必须等到所有其他线程关闭了相关表。&lt;/p&gt;
+&lt;p&gt;该通知发生如果另一个线程已使用 FLUSH TABLES或有问题的表下面的语句之一：FLUSH TABLES tbl_name, ALTER TABLE, RENAME TABLE, REPAIR TABLE, ANALYZE TABLE, or OPTIMIZE TABLE.&lt;br&gt;Waiting for table flush&lt;/p&gt;
+&lt;p&gt;线程正在执行FLUSH TABLES并且正在等待所有线程关闭它们的表，或者线程得到一个表的基础结构已经更改的通知，并且它需要重新打开表以获取新结构。但是，要重新打开表，它必须等到所有其他线程关闭了相关表。&lt;/p&gt;
+&lt;p&gt;该通知发生如果另一个线程已使用 FLUSH TABLES或有问题的表下面的语句之一： FLUSH TABLES tbl_nameALTER TABLERENAME TABLEREPAIR TABLEANALYZE TABLEOPTIMIZE TABLE&lt;/p&gt;
+&lt;p&gt;Waiting for lock_type lock&lt;/p&gt;
+&lt;p&gt;服务器正在等待THR_LOCK从元数据锁定子系统获取 锁定或锁定，其中 lock_type指示锁定的类型。&lt;/p&gt;
+&lt;p&gt;此状态表示等待 THR_LOCK：&lt;/p&gt;
+&lt;p&gt;Waiting for table level lock&lt;/p&gt;
+&lt;p&gt;这些状态表示等待元数据锁定：&lt;/p&gt;
+&lt;p&gt;Waiting for event metadata lock&lt;/p&gt;
+&lt;p&gt;Waiting for global read lock&lt;/p&gt;
+&lt;p&gt;Waiting for schema metadata lock&lt;/p&gt;
+&lt;p&gt;Waiting for stored function metadata lock&lt;/p&gt;
+&lt;p&gt;Waiting for stored procedure metadata lock&lt;/p&gt;
+&lt;p&gt;Waiting for table metadata lock&lt;/p&gt;
+&lt;p&gt;Waiting for trigger metadata lock&lt;/p&gt;
+&lt;p&gt;有关表锁指示器的信息，请参见 第8.11.1节“内部锁定方法”。有关元数据锁定的信息，请参见第8.11.4节“元数据锁定”。要查看哪些锁阻止了锁请求，请使用 第25.12.12节“性能模式锁表”中所述的性能模式锁表。&lt;/p&gt;
+&lt;p&gt;Waiting on cond&lt;/p&gt;
+&lt;p&gt;线程正在等待条件变为真的通用状态。没有具体的州信息。&lt;/p&gt;
+&lt;p&gt;Writing to net&lt;/p&gt;
+&lt;p&gt;服务器正在将数据包写入网络。Sending to client从MySQL 5.7.8开始调用此状态。&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;以下列举了State 与常规查询处理相关联的线程值，而不是更具体的活动（如复制）。其中许多仅用于查找服务器中的错误。&lt;/p&gt;
+&lt;p&gt;After create&lt;/p&gt;
+&lt;p&gt;当线程在创建表的函数末尾创建表（包括内部临时表）时，会发生这种情况。即使由于某些错误而无法创
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="线程" scheme="http://idber.github.io/tags/%E7%BA%BF%E7%A8%8B/"/>
+    
+  </entry>
+  
+  <entry>
     <title>MongoDB自定义权限实现MongoDB集合即表权限管理</title>
     <link href="http://idber.github.io/2019/05/30-MongoDB%E8%87%AA%E5%AE%9A%E4%B9%89%E6%9D%83%E9%99%90%E5%AE%9E%E7%8E%B0MongoDB%E9%9B%86%E5%90%88%E5%8D%B3%E8%A1%A8%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86.html"/>
     <id>http://idber.github.io/2019/05/30-MongoDB自定义权限实现MongoDB集合即表权限管理.html</id>
     <published>2019-05-30T02:01:56.000Z</published>
-    <updated>2019-05-30T09:06:29.217Z</updated>
+    <updated>2019-05-30T12:44:28.835Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;h2 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h2&gt;&lt;p&gt;业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。&lt;/p&gt;
 &lt;h1 id=&quot;官方文档&quot;&gt;&lt;a href=&quot;#官方文档&quot; class=&quot;headerlink&quot; title=&quot;官方文档&quot;&gt;&lt;/a&gt;官方文档&lt;/h1&gt;&lt;h2 id=&quot;用户自定义角色&quot;&gt;&lt;a href=&quot;#用户自定义角色&quot; class=&quot;headerlink&quot; title=&quot;用户自定义角色&quot;&gt;&lt;/a&gt;用户自定义角色&lt;/h2&gt;&lt;p&gt;&lt;a href=&quot;https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles&lt;/a&gt; &lt;/p&gt;
 &lt;h2 id=&quot;创建角色语法&quot;&gt;&lt;a href=&quot;#创建角色语法&quot; class=&quot;headerlink&quot; title=&quot;创建角色语法&quot;&gt;&lt;/a&gt;创建角色语法&lt;/h2&gt;&lt;p&gt;&lt;a href=&quot;https://docs.mongodb.com/manual/reference/method/db.createRole/#db.createRole&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://docs.mongodb.com/manual/reference/method/db.createRole/#db.createRole&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&quot;创建自定义角色&quot;&gt;&lt;a href=&quot;#创建自定义角色&quot; class=&quot;headerlink&quot; title=&quot;创建自定义角色&quot;&gt;&lt;/a&gt;创建自定义角色&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;use db_name // db_name这里是你业务数据库的名称
+&lt;h1 id=&quot;创建自定义角色&quot;&gt;&lt;a href=&quot;#创建自定义角色&quot; class=&quot;headerlink&quot; title=&quot;创建自定义角色&quot;&gt;&lt;/a&gt;创建自定义角色&lt;/h1&gt;&lt;p&gt;在业务库里执行&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;use db_name // db_name这里是你业务数据库的名称
 db.createRole(
    {
      role: &amp;quot;my_define_role&amp;quot;, // 角色名称
@@ -3224,88 +3413,6 @@ no_gap_lock:
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="事务" scheme="http://idber.github.io/tags/%E4%BA%8B%E5%8A%A1/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>InnoDB Buffer Pool Flush策略漫谈</title>
-    <link href="http://idber.github.io/2018/08/14-InnoDB%20buffer%20pool%20flush%E7%AD%96%E7%95%A5%E6%BC%AB%E8%B0%88.html"/>
-    <id>http://idber.github.io/2018/08/14-InnoDB buffer pool flush策略漫谈.html</id>
-    <published>2018-08-14T02:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.927Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;h1 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h1&gt;&lt;p&gt;我们知道InnoDB使用buffer pool来缓存从磁盘读取到内存的数据页。buffer pool通常由数个内存块加上一组控制结构体对象组成。内存块的个数取决于buffer pool instance的个数，不过在5.7版本中开始默认以128M（可配置）的chunk单位分配内存块，这样做的目的是为了支持buffer pool的在线动态调整大小。&lt;/p&gt;
-&lt;p&gt;Buffer pool的每个内存块通过mmap的方式分配内存，因此你会发现，在实例启动时虚存很高，而物理内存很低。这些大片的内存块又按照16KB划分为多个frame，用于存储数据页。&lt;/p&gt;
-&lt;p&gt;虽然大多数情况下buffer pool是以16KB来存储数据页，但有一种例外：使用压缩表时，需要在内存中同时存储压缩页和解压页，对于压缩页，使用Binary buddy allocator算法来分配内存空间。例如我们读入一个8KB的压缩页，就从buffer pool中取一个16KB的block，取其中8KB，剩下的8KB放到空闲链表上；如果紧跟着另外一个4KB的压缩页读入内存，就可以从这8KB中分裂4KB，同时将剩下的4KB放到空闲链表上。&lt;/p&gt;
-&lt;p&gt;为了管理buffer pool，每个buffer pool instance 使用如下几个链表来管理：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;LRU链表包含所有读入内存的数据页；&lt;/li&gt;
-&lt;li&gt;Flush_list包含被修改过的脏页；&lt;/li&gt;
-&lt;li&gt;unzip_LRU包含所有解压页；&lt;/li&gt;
-&lt;li&gt;Free list上存放当前空闲的block。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;另外为了避免查询数据页时扫描LRU，还为每个buffer pool instance维护了一个page hash，通过space id 和page no可以直接找到对应的page。&lt;/p&gt;
-&lt;p&gt;一般情况下，当我们需要读入一个Page时，首先根据space id 和page no找到对应的buffer pool instance。然后查询page hash，如果page hash中没有，则表示需要从磁盘读取。在读盘前首先我们需要为即将读入内存的数据页分配一个空闲的block。当free list上存在空闲的block时，可以直接从free list上摘取；如果没有，就需要从unzip_lru 或者 lru上驱逐page。&lt;/p&gt;
-&lt;p&gt;这里需要遵循一定的原则（参考函数buf_LRU_scan_and_free_block , 5.7.5）：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;首先尝试从unzip_lru上驱逐解压页；&lt;/li&gt;
-&lt;li&gt;如果没有，再尝试从Lru链表上驱逐Page；&lt;/li&gt;
-&lt;li&gt;如果还是无法从Lru上获取到空闲block，用户线程就会参与刷脏，尝试做一次SINGLE PAGE FLUSH，单独从Lru上刷掉一个脏页，然后再重试。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Buffer pool中的page被修改后，不是立刻写入磁盘，而是由后台线程定时写入，和大多数数据库系统一样，脏页的写盘遵循日志先行WAL原则，因此在每个block上都记录了一个最近被修改时的Lsn，写数据页时需要确保当前写入日志文件的redo不低于这个Lsn。&lt;/p&gt;
-&lt;p&gt;然而基于WAL原则的刷脏策略可能带来一个问题：当数据库的写入负载过高时，产生redo log的速度极快，redo log可能很快到达同步checkpoint点。这时候需要进行刷脏来推进Lsn。由于这种行为是由用户线程在检查到redo log空间不够时触发，大量用户线程将可能陷入到这段低效的逻辑中，产生一个明显的性能拐点。&lt;/p&gt;
-&lt;h2 id=&quot;Page-Cleaner线程&quot;&gt;&lt;a href=&quot;#Page-Cleaner线程&quot; class=&quot;headerlink&quot; title=&quot;Page Cleaner线程&quot;&gt;&lt;/a&gt;Page Cleaner线程&lt;/h2&gt;&lt;p&gt;在MySQL5.6中，开启了一个独立的page cleaner线程来进行刷lru list 和flush list。默认每隔一秒运行一次，5.6版本里提供了一大堆的参数来控制page cleaner的flush行为，包括：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;innodb_adaptive_flushing_lwm， 
-innodb_max_dirty_pages_pct_lwm
-innodb_flushing_avg_loops
-innodb_io_capacity_max
-innodb_lru_scan_depth
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这里我们不一一介绍，总的来说，如果你发现redo log推进的非常快，为了避免用户线程陷入刷脏，可以通过调大innodb_io_capacity_max来解决，该参数限制了每秒刷新的脏页上限，调大该值可以增加Page cleaner线程每秒的工作量。如果你发现你的系统中free list不足，总是需要驱逐脏页来获取空闲的block时，可以适当调大innodb_lru_scan_depth 。该参数表示从每个buffer pool instance的lru上扫描的深度，调大该值有助于多释放些空闲页，避免用户线程去做single page flush。&lt;/p&gt;
-&lt;p&gt;为了提升扩展性和刷脏效率，在5.7.4版本里引入了多个page cleaner线程，从而达到并行刷脏的效果。目前Page cleaner并未和buffer pool绑定，其模型为一个协调线程 + 多个工作线程，协调线程本身也是工作线程。因此如果innodb_page_cleaners设置为4，那么就是一个协调线程，加3个工作线程，工作方式为生产者-消费者。工作队列长度为buffer pool instance的个数，使用一个全局slot数组表示。&lt;/p&gt;
-&lt;p&gt;协调线程在决定了需要flush的page数和lsn_limit后，会设置slot数组，将其中每个slot的状态设置为PAGE_CLEANER_STATE_REQUESTED, 并设置目标page数及lsn_limit，然后唤醒工作线程 (pc_request)&lt;/p&gt;
-&lt;p&gt;工作线程被唤醒后，从slot数组中取一个未被占用的slot，修改其状态，表示已被调度，然后对该slot所对应的buffer pool instance进行操作。直到所有的slot都被消费完后，才进入下一轮。通过这种方式，多个page cleaner线程实现了并发flush buffer pool，从而提升flush dirty page/lru的效率。&lt;/p&gt;
-&lt;h2 id=&quot;MySQL5-7的InnoDB-flush策略优化&quot;&gt;&lt;a href=&quot;#MySQL5-7的InnoDB-flush策略优化&quot; class=&quot;headerlink&quot; title=&quot;MySQL5.7的InnoDB flush策略优化&quot;&gt;&lt;/a&gt;MySQL5.7的InnoDB flush策略优化&lt;/h2&gt;&lt;p&gt;在之前版本中，因为可能同时有多个线程操作buffer pool刷page （在刷脏时会释放buffer pool mutex），每次刷完一个page后需要回溯到链表尾部，使得扫描bp链表的时间复杂度最差为O（N*N）。&lt;/p&gt;
-&lt;p&gt;在5.6版本中针对Flush list的扫描做了一定的修复，使用一个指针来记录当前正在flush的page，待flush操作完成后，再看一下这个指针有没有被别的线程修改掉，如果被修改了，就回溯到链表尾部，否则无需回溯。但这个修复并不完整，在最差的情况下，时间复杂度依旧不理想。&lt;/p&gt;
-&lt;p&gt;因此在5.7版本中对这个问题进行了彻底的修复，使用多个名为hazard pointer的指针，在需要扫描LIST时，存储下一个即将扫描的目标page，根据不同的目的分为几类：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;flush_hp: 用作批量刷FLUSH LIST&lt;/li&gt;
-&lt;li&gt;lru_hp: 用作批量刷LRU LIST&lt;/li&gt;
-&lt;li&gt;lru_scan_itr: 用于从LRU链表上驱逐一个可替换的page，总是从上一次扫描结束的位置开始，而不是LRU尾部&lt;/li&gt;
-&lt;li&gt;single_scan_itr: 当buffer pool中没有空闲block时，用户线程会从FLUSH LIST上单独驱逐一个可替换的page 或者 flush一个脏页，总是从上一次扫描结束的位置开始，而不是LRU尾部。&lt;br&gt;后两类的hp都是由用户线程在尝试获取空闲block时调用，只有在推进到某个buf_page_t::old被设置成true的page (大约从Lru链表尾部起至总长度的八分之三位置的page)时， 再将指针重置到Lru尾部。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这些指针在初始化buffer pool时分配，每个buffer pool instance都拥有自己的hp指针。当某个线程对buffer pool中的page进行操作时，例如需要从LRU中移除Page时，如果当前的page被设置为hp，就要将hp更新为当前Page的前一个page。当完成当前page的flush操作后，直接使用hp中存储的page指针进行下一轮flush。&lt;/p&gt;
-&lt;h2 id=&quot;社区优化&quot;&gt;&lt;a href=&quot;#社区优化&quot; class=&quot;headerlink&quot; title=&quot;社区优化&quot;&gt;&lt;/a&gt;社区优化&lt;/h2&gt;&lt;p&gt;一如既往的，Percona Server在5.6版本中针对buffer pool flush做了不少的优化，主要的修改包括如下几点：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;优化刷LRU流程buf_flush_LRU_tail 该函数由page cleaner线程调用。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;原生的逻辑：依次flush 每个buffer pool instance，每次扫描的深度通过参数innodb_lru_scan_depth来配置。而在每个instance内，又分成多个chunk来调用；&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;修改后的逻辑为：每次flush一个buffer pool的LRU时，只刷一个chunk，然后再下一个instance，刷完所有instnace后，再回到前面再刷一个chunk。简而言之，把集中的flush操作进行了分散，其目的是分散压力，避免对某个instance的集中操作，给予其他线程更多访问buffer pool的机会。&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;允许设定刷LRU/FLUSH LIST的超时时间，防止flush操作时间过长导致别的线程（例如尝试做single page flush的用户线程）stall住；当到达超时时间时,page cleaner线程退出flush。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;避免用户线程参与刷buffer pool 当用户线程参与刷buffer pool时，由于线程数的不可控，将产生严重的竞争开销，例如free list不足时做single page flush，以及在redo空间不足时，做dirty page flush，都会严重影响性能。Percona Server允许选择让page cleaner线程来做这些工作，用户线程只需要等待即可。出于效率考虑，用户还可以设置page cleaner线程的cpu调度优先级。 另外在Page cleaner线程经过优化后，可以知道系统当前处于同步刷新状态，可以去做更激烈的刷脏(furious flush)，用户线程参与到其中，可能只会起到反作用。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;允许设置page cleaner线程，purge线程，io线程，master线程的CPU调度优先级，并优先获得InnoDB的mutex。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;使用新的独立后台线程来刷buffer pool的LRU链表，将这部分工作负担从page cleaner线程剥离。 实际上就是直接转移刷LRU的代码到独立线程了。从之前Percona的版本来看，都是在不断的强化后台线程，让用户线程少参与到刷脏/checkpoint这类耗时操作中。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;h1 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h1&gt;&lt;p&gt;我们知道InnoDB使用buffer pool来缓存从磁盘读取到内存的数据页。buffer pool通常由数个内存块加上一组控制结
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="性能优化" scheme="http://idber.github.io/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"/>
     
   </entry>
   

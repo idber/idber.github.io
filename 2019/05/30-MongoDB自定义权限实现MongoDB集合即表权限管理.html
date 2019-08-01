@@ -19,7 +19,7 @@
 <meta property="og:site_name" content="似水年华--沉浮">
 <meta property="og:description" content="背景业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。 官方文档用户自定义角色https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles  创建角色语法https://docs">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-05-30T09:06:29.217Z">
+<meta property="og:updated_time" content="2019-05-30T12:44:28.835Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MongoDB自定义权限实现MongoDB集合即表权限管理">
 <meta name="twitter:description" content="背景业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。 官方文档用户自定义角色https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles  创建角色语法https://docs">
@@ -101,7 +101,8 @@
 <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>业务上做迁移需要对原有数据进行锁定防止新数据写入，锁定的是db里的一个集合，MongoDB没有MySQL的权限细化管理到表，翻遍MongoDB文档，只能自建角色。</p>
 <h1 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h1><h2 id="用户自定义角色"><a href="#用户自定义角色" class="headerlink" title="用户自定义角色"></a>用户自定义角色</h2><p><a href="https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles" target="_blank" rel="noopener">https://docs.mongodb.com/manual/core/security-user-defined-roles/#user-defined-roles</a> </p>
 <h2 id="创建角色语法"><a href="#创建角色语法" class="headerlink" title="创建角色语法"></a>创建角色语法</h2><p><a href="https://docs.mongodb.com/manual/reference/method/db.createRole/#db.createRole" target="_blank" rel="noopener">https://docs.mongodb.com/manual/reference/method/db.createRole/#db.createRole</a></p>
-<h1 id="创建自定义角色"><a href="#创建自定义角色" class="headerlink" title="创建自定义角色"></a>创建自定义角色</h1><pre><code>use db_name // db_name这里是你业务数据库的名称
+<h1 id="创建自定义角色"><a href="#创建自定义角色" class="headerlink" title="创建自定义角色"></a>创建自定义角色</h1><p>在业务库里执行</p>
+<pre><code>use db_name // db_name这里是你业务数据库的名称
 db.createRole(
    {
      role: &quot;my_define_role&quot;, // 角色名称
@@ -164,6 +165,14 @@ db.createRole(
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev" >
+ <a href="/2019/08/01-MySQL 各种线程状态.html" title="MySQL 各种线程状态">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MySQL 各种线程状态</span>
+</a>
+</div>
+
 
 <div class="next">
 <a href="/2019/05/21-Raft协议.html"  title="Raft协议">
@@ -220,7 +229,7 @@ db.createRole(
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>42</sup></a></li>
 		  
 		
 		  
@@ -269,7 +278,7 @@ db.createRole(
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>43</sup></a></li>
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>44</sup></a></li>
 			
 		
 			
@@ -293,11 +302,7 @@ db.createRole(
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
 			
 		
 			
@@ -306,6 +311,14 @@ db.createRole(
 		
 			
 				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
@@ -321,19 +334,7 @@ db.createRole(
 			
 		
 			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+				<li><a href="/tags/计算机原理/" title="计算机原理">计算机原理<sup>1</sup></a></li>
 			
 		
 			
@@ -341,11 +342,19 @@ db.createRole(
 			
 		
 			
-				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
+				<li><a href="/tags/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 		</ul>

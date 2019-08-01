@@ -74,6 +74,26 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2016/03/10-查询处理.html" title="查询处理" itemprop="url">
+  
+    <h1 itemprop="name">查询处理</h1>
+    
+     
+           <p itemprop="description" >查询操作是关系数据库中使用最为频繁的操作，也是构成其他构架语句（如DELETE、UPDATE）的基础。当要删除或更新某些记录时，首先查询出这些记录，然后再对其进行相应的SQL操作。因此基于SELECT的查询操作是显得非常重要。对于查询处理，可将其分为逻辑查询处理及物理查询处理。逻</p>
+        
+    
+    <time datetime="2016-03-10T06:33:56.000Z" itemprop="datePublished">2016-03-10</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2016/03/08-CDH大数据集群平台搭建.html" title="CDH大数据集群平台搭建" itemprop="url">
   
     <h1 itemprop="name">CDH大数据集群平台搭建</h1>
@@ -161,13 +181,14 @@ Kettle是一款国外开源的ETL工具，纯java编写，可以在Window、Linu
   
 <section class="post" itemscope itemprop="blogitem">
   
-    <a href="/2016/01/26-MySQL数据导入到infobright中.html" title="MySQL数据导入到infobright中" itemprop="url">
+    <a href="/2016/01/26-MySQL提示-The server quit without updating PID file(…)失败.html" title="MySQL提示:The Server Quit Without Updating PID File(…)失败" itemprop="url">
   
-    <h1 itemprop="name">MySQL数据导入到infobright中</h1>
+    <h1 itemprop="name">MySQL提示:The Server Quit Without Updating PID File(…)失败</h1>
     
      
-           <p itemprop="description" >1.在mysql中建一张表：
-mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo char(10),    -&amp;gt;    qing char(10)    -&amp;gt; ) ENGINE=Inn</p>
+           <p itemprop="description" >重新启动MySQL数据库出错 原因
+
+[root@guoqing mysql]# service mysql restart    MySQL server PID file could not be found![失败]    Starting MySQL…The server</p>
         
     
     <time datetime="2016-01-26T08:05:40.000Z" itemprop="datePublished">2016-01-26</time>
@@ -182,14 +203,13 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
   
 <section class="post" itemscope itemprop="blogitem">
   
-    <a href="/2016/01/26-MySQL提示-The server quit without updating PID file(…)失败.html" title="MySQL提示:The Server Quit Without Updating PID File(…)失败" itemprop="url">
+    <a href="/2016/01/26-MySQL数据导入到infobright中.html" title="MySQL数据导入到infobright中" itemprop="url">
   
-    <h1 itemprop="name">MySQL提示:The Server Quit Without Updating PID File(…)失败</h1>
+    <h1 itemprop="name">MySQL数据导入到infobright中</h1>
     
      
-           <p itemprop="description" >重新启动MySQL数据库出错 原因
-
-[root@guoqing mysql]# service mysql restart    MySQL server PID file could not be found![失败]    Starting MySQL…The server</p>
+           <p itemprop="description" >1.在mysql中建一张表：
+mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo char(10),    -&amp;gt;    qing char(10)    -&amp;gt; ) ENGINE=Inn</p>
         
     
     <time datetime="2016-01-26T08:05:40.000Z" itemprop="datePublished">2016-01-26</time>
@@ -261,32 +281,6 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
 
 
 
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2015/09/11-MySQL基于binlog主从复制配置.html" title="MySQL基于binlog主从复制配置" itemprop="url">
-  
-    <h1 itemprop="name">MySQL基于binlog主从复制配置</h1>
-    
-     
-           <p itemprop="description" >Master-Slave 搭建环境：
-Master：
-Os: rhel-server-6.3-x86_64
-Mysql: MySQL -5.5.35-1
-虚拟机：Virtual BOX
-Ip:192.168.56.102
-Slave：    Os: rhel-server-6.3</p>
-        
-    
-    <time datetime="2015-09-11T02:40:12.000Z" itemprop="datePublished">2015-09-11</time>
-  </a>
-</section>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix unexpand">
     <a class="extend prev" rel="prev" href="/page/5/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/">Next<span></span></a>
@@ -320,7 +314,7 @@ Slave：    Os: rhel-server-6.3</p>
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>42</sup></a></li>
 		  
 		
 		  
@@ -369,7 +363,7 @@ Slave：    Os: rhel-server-6.3</p>
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>43</sup></a></li>
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>44</sup></a></li>
 			
 		
 			
@@ -393,11 +387,7 @@ Slave：    Os: rhel-server-6.3</p>
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
 			
 		
 			
@@ -406,6 +396,14 @@ Slave：    Os: rhel-server-6.3</p>
 		
 			
 				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
@@ -421,19 +419,7 @@ Slave：    Os: rhel-server-6.3</p>
 			
 		
 			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+				<li><a href="/tags/计算机原理/" title="计算机原理">计算机原理<sup>1</sup></a></li>
 			
 		
 			
@@ -441,11 +427,19 @@ Slave：    Os: rhel-server-6.3</p>
 			
 		
 			
-				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
+				<li><a href="/tags/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 		</ul>

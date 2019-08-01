@@ -74,6 +74,26 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2018/08/14-InnoDB buffer pool flush策略漫谈.html" title="InnoDB Buffer Pool Flush策略漫谈" itemprop="url">
+  
+    <h1 itemprop="name">InnoDB Buffer Pool Flush策略漫谈</h1>
+    
+     
+           <p itemprop="description" >背景我们知道InnoDB使用buffer pool来缓存从磁盘读取到内存的数据页。buffer pool通常由数个内存块加上一组控制结构体对象组成。内存块的个数取决于buffer pool instance的个数，不过在5.7版本中开始默认以128M（可配置）的chunk单位分配</p>
+        
+    
+    <time datetime="2018-08-14T02:01:56.000Z" itemprop="datePublished">2018-08-14</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2018/08/13-Percona XtraBackup 的工作原理.html" title="Percona XtraBackup 的工作原理" itemprop="url">
   
     <h1 itemprop="name">Percona XtraBackup 的工作原理</h1>
@@ -284,27 +304,6 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 
 
 
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2017/02/10-Mycat部署与使用.html" title="Mycat部署与使用" itemprop="url">
-  
-    <h1 itemprop="name">Mycat部署与使用</h1>
-    
-     
-           <p itemprop="description" >MyCAT 可以视为“MySQL”集群的企业级数据库，用来替代昂贵的Oracle集群，其背后是阿里曾经开源的知名产品Cobar。MyCAT的目标是：低成本的将现有的单机数据库和应用平滑迁移到“云”端，解决数据存储和业务规模迅速增长情况下的数据瓶颈问题。
-下面就适合订单的业务场景做</p>
-        
-    
-    <time datetime="2017-02-10T09:17:56.000Z" itemprop="datePublished">2017-02-10</time>
-  </a>
-</section>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix unexpand">
     <a class="extend prev" rel="prev" href="/page/2/"><span></span>Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/">Next<span></span></a>
@@ -338,7 +337,7 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>41</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>42</sup></a></li>
 		  
 		
 		  
@@ -387,7 +386,7 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>43</sup></a></li>
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>44</sup></a></li>
 			
 		
 			
@@ -411,11 +410,7 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 			
 		
 			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
 			
 		
 			
@@ -424,6 +419,14 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 		
 			
 				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
 			
 		
 			
@@ -439,19 +442,7 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 			
 		
 			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/DataHouse/" title="DataHouse">DataHouse<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+				<li><a href="/tags/计算机原理/" title="计算机原理">计算机原理<sup>1</sup></a></li>
 			
 		
 			
@@ -459,11 +450,19 @@ SQL_MODE可能是比较容易让开发人员和DBA忽略的一个变量，默认
 			
 		
 			
-				<li><a href="/tags/BINARY/" title="BINARY">BINARY<sup>1</sup></a></li>
+				<li><a href="/tags/死锁/" title="死锁">死锁<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/优化/" title="优化">优化<sup>1</sup></a></li>
+				<li><a href="/tags/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 		</ul>
