@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-01-18T02:47:30.586Z</updated>
+  <updated>2020-01-18T02:56:11.417Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -17,10 +17,10 @@
   
   <entry>
     <title>MySQL数据类型DECIMAL用法</title>
-    <link href="http://idber.github.io/2019/11/25-MySQL%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8BDECIMAL%E7%94%A8%E6%B3%95.html"/>
-    <id>http://idber.github.io/2019/11/25-MySQL数据类型DECIMAL用法.html</id>
-    <published>2019-11-25T02:01:56.000Z</published>
-    <updated>2020-01-18T02:47:30.586Z</updated>
+    <link href="http://idber.github.io/2020/01/18-MySQL%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8BDECIMAL%E7%94%A8%E6%B3%95.html"/>
+    <id>http://idber.github.io/2020/01/18-MySQL数据类型DECIMAL用法.html</id>
+    <published>2020-01-18T02:01:56.000Z</published>
+    <updated>2020-01-18T02:56:11.417Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;p&gt;前言： &lt;/p&gt;
