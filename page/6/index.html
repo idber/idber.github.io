@@ -74,6 +74,26 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2016/03/14-MySQL服务器Linux IO调度器算法的选择.html" title="MySQL服务器Linux IO调度器算法的选择" itemprop="url">
+  
+    <h1 itemprop="name">MySQL服务器Linux IO调度器算法的选择</h1>
+    
+     
+           <p itemprop="description" >一.  IO调度器（IO Scheduler）是操作系统用来决定块设备上IO操作提交顺序的方法。存在的目的有两个，一是提高IO吞吐量，二是降低IO响应时间。然而IO吞吐量和IO响应时间往往是矛盾的，为了尽量平衡这两者，IO调度器提供了多种调度算法来适应不同的IO请求场景。其中，对</p>
+        
+    
+    <time datetime="2016-03-14T09:23:56.000Z" itemprop="datePublished">2016-03-14</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2016/03/11-业务评估.html" title="业务评估" itemprop="url">
   
     <h1 itemprop="name">业务评估</h1>
@@ -231,14 +251,13 @@ Kettle是一款国外开源的ETL工具，纯java编写，可以在Window、Linu
   
 <section class="post" itemscope itemprop="blogitem">
   
-    <a href="/2016/01/26-MySQL提示-The server quit without updating PID file(…)失败.html" title="MySQL提示:The Server Quit Without Updating PID File(…)失败" itemprop="url">
+    <a href="/2016/01/26-MySQL数据导入到infobright中.html" title="MySQL数据导入到infobright中" itemprop="url">
   
-    <h1 itemprop="name">MySQL提示:The Server Quit Without Updating PID File(…)失败</h1>
+    <h1 itemprop="name">MySQL数据导入到infobright中</h1>
     
      
-           <p itemprop="description" >重新启动MySQL数据库出错 原因
-
-[root@guoqing mysql]# service mysql restart    MySQL server PID file could not be found![失败]    Starting MySQL…The server</p>
+           <p itemprop="description" >1.在mysql中建一张表：
+mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo char(10),    -&amp;gt;    qing char(10)    -&amp;gt; ) ENGINE=Inn</p>
         
     
     <time datetime="2016-01-26T08:05:40.000Z" itemprop="datePublished">2016-01-26</time>
@@ -253,13 +272,14 @@ Kettle是一款国外开源的ETL工具，纯java编写，可以在Window、Linu
   
 <section class="post" itemscope itemprop="blogitem">
   
-    <a href="/2016/01/26-MySQL数据导入到infobright中.html" title="MySQL数据导入到infobright中" itemprop="url">
+    <a href="/2016/01/26-MySQL提示-The server quit without updating PID file(…)失败.html" title="MySQL提示:The Server Quit Without Updating PID File(…)失败" itemprop="url">
   
-    <h1 itemprop="name">MySQL数据导入到infobright中</h1>
+    <h1 itemprop="name">MySQL提示:The Server Quit Without Updating PID File(…)失败</h1>
     
      
-           <p itemprop="description" >1.在mysql中建一张表：
-mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo char(10),    -&amp;gt;    qing char(10)    -&amp;gt; ) ENGINE=Inn</p>
+           <p itemprop="description" >重新启动MySQL数据库出错 原因
+
+[root@guoqing mysql]# service mysql restart    MySQL server PID file could not be found![失败]    Starting MySQL…The server</p>
         
     
     <time datetime="2016-01-26T08:05:40.000Z" itemprop="datePublished">2016-01-26</time>
@@ -283,26 +303,6 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
         
     
     <time datetime="2016-01-24T09:21:36.000Z" itemprop="datePublished">2016-01-24</time>
-  </a>
-</section>
-
-
-
-
-
-
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2016/01/21-CentOS 6.3下快速安装MongoDB 3.2.1.html" title="CentOS 6.3下快速安装MongoDB 3.2.1" itemprop="url">
-  
-    <h1 itemprop="name">CentOS 6.3下快速安装MongoDB 3.2.1</h1>
-    
-     
-           <p itemprop="description" >MongoDB是一个基于分布式文件存储的数据库。由C++语言编写。旨在为WEB应用提供可扩展的高性能数据存储解决方案。是一个介于关系数据 库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。他支持的数据结构非常松散，是类似json的bson格式，因此可以存</p>
-        
-    
-    <time datetime="2016-01-21T10:10:07.000Z" itemprop="datePublished">2016-01-21</time>
   </a>
 </section>
 
@@ -344,7 +344,7 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>43</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>44</sup></a></li>
 		  
 		
 		  
@@ -393,7 +393,7 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>45</sup></a></li>
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>46</sup></a></li>
 			
 		
 			
@@ -441,7 +441,7 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
 			
 		
 			
-				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
+				<li><a href="/tags/join/" title="join">join<sup>2</sup></a></li>
 			
 		
 			
@@ -449,7 +449,7 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
 			
 		
 			
-				<li><a href="/tags/计算机原理/" title="计算机原理">计算机原理<sup>1</sup></a></li>
+				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
 			
 		
 			
@@ -582,7 +582,7 @@ mysql&amp;gt; create table guoqing(    -&amp;gt;    id int,    -&amp;gt;    guo 
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2020 
 		
 		<a href="/about" target="_blank" title="Michael Guo">Michael Guo</a>
 		
