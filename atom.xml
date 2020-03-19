@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-03-19T03:53:38.588Z</updated>
+  <updated>2020-03-19T05:46:11.735Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -20,33 +20,40 @@
     <link href="http://idber.github.io/2020/03/19-MySQL%208%20%E7%A7%92%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%88%9D%E6%8E%A2.html"/>
     <id>http://idber.github.io/2020/03/19-MySQL 8 秒加字段初探.html</id>
     <published>2020-03-19T02:01:56.000Z</published>
-    <updated>2020-03-19T03:53:38.588Z</updated>
+    <updated>2020-03-19T05:46:11.735Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;p&gt;前言： &lt;/p&gt;
-&lt;p&gt; Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据添加了一个标记，没有数据，所以是支持秒加的。&lt;/p&gt;
-&lt;p&gt;MySQL官方团队博客里关于秒加字段的介绍：&lt;br&gt; &lt;a href=&quot;https://mysqlserverteam.com/mysql-8-0-innodb-now-supports-instant-add-column/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MySQL 8.0: InnoDB now supports Instant ADD COLUMN&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt; Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据打个标记，所以支持秒加。&lt;/p&gt;
+&lt;p&gt;限制：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;仅支持在一条语句中添加列，也就是说，如果同一条语句中还有其他非INSTANT操作，则无法立即完成
+仅支持最后添加列，不支持在现有列的中间
+不支持COMPRESSED行格式
+不支持已经有全文索引的表
+不支持DD表空间中的任何表
+不支持临时表
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;MySQL官方团队博客关于秒加字段的介绍：&lt;br&gt; &lt;a href=&quot;https://mysqlserverteam.com/mysql-8-0-innodb-now-supports-instant-add-column/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MySQL 8.0: InnoDB now supports Instant ADD COLUMN&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;下面是验证mysql8.0版本秒级添加字段的过程&lt;/p&gt;
 &lt;p&gt;加字段可以秒加&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`xm_user` ADD COLUMN `next_id` INT (11) NULL AFTER `open_id`,ALGORITHM=INSTANT; 
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`test_user` ADD COLUMN `next_id` INT (11) NULL AFTER `open_id`,ALGORITHM=INSTANT; 
 Query OK, 0 rows affected (0.09 sec)
 Records: 0  Duplicates: 0  Warnings: 1
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;加索引不支持&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`xm_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE,ALGORITHM=INSTANT; 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;加索引不支持INSTANT&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`test_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE,ALGORITHM=INSTANT; 
 1845 - ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;索引只能通过COPY/INPLACE方式&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`xm_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`test_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE;
 Query OK, 0 rows affected (8.78 sec)
 Records: 0  Duplicates: 0  Warnings: 0
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;重建索引支持秒建&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE xm_user DROP KEY idx_next_id,ADD KEY idx_next_id (next_id) USING BTREE,ALGORITHM=INSTANT; 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;重建索引支持INSTANT&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE test_user DROP KEY idx_next_id,ADD KEY idx_next_id (next_id) USING BTREE,ALGORITHM=INSTANT; 
 Query OK, 0 rows affected (0.01 sec)
 Records: 0  Duplicates: 0  Warnings: 0
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;删除索引不支持&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE xm_user DROP COLUMN next_id ,ALGORITHM=INSTANT; 
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;删除索引不支持INSTANT&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE test_user DROP COLUMN next_id ,ALGORITHM=INSTANT; 
 1845 - ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;删除索引只能通过COPY/INPLACE方式&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE xm_user DROP COLUMN next_id; 
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE test_user DROP COLUMN next_id; 
 Query OK, 0 rows affected (44.35 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 &lt;/code&gt;&lt;/pre&gt;</content>

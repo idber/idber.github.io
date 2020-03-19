@@ -11,18 +11,18 @@
     
 
     
-    <meta name="description" content="前言：   Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据添加了一个标记，没有数据，所以是支持秒加的。 MySQL官方团队博客里关于秒加字段的介绍： MySQL 8.0: InnoDB now s">
+    <meta name="description" content="前言：   Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据打个标记，所以支持秒加。 限制： 仅支持在一条语句中添加列，也就是说，如果同一条语句中还有其他非INSTANT操作，则无法立即完成 仅支持">
 <meta name="keywords" content="MySQL,join">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL 8 秒加字段初探">
 <meta property="og:url" content="http://idber.github.io/2020/03/19-MySQL 8 秒加字段初探.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="前言：   Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据添加了一个标记，没有数据，所以是支持秒加的。 MySQL官方团队博客里关于秒加字段的介绍： MySQL 8.0: InnoDB now s">
+<meta property="og:description" content="前言：   Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据打个标记，所以支持秒加。 限制： 仅支持在一条语句中添加列，也就是说，如果同一条语句中还有其他非INSTANT操作，则无法立即完成 仅支持">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-03-19T03:53:38.588Z">
+<meta property="og:updated_time" content="2020-03-19T05:46:11.735Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL 8 秒加字段初探">
-<meta name="twitter:description" content="前言：   Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据添加了一个标记，没有数据，所以是支持秒加的。 MySQL官方团队博客里关于秒加字段的介绍： MySQL 8.0: InnoDB now s">
+<meta name="twitter:description" content="前言：   Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据打个标记，所以支持秒加。 限制： 仅支持在一条语句中添加列，也就是说，如果同一条语句中还有其他非INSTANT操作，则无法立即完成 仅支持">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -99,29 +99,36 @@
 		
 		<hr>
 <p>前言： </p>
-<p> Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据添加了一个标记，没有数据，所以是支持秒加的。</p>
-<p>MySQL官方团队博客里关于秒加字段的介绍：<br> <a href="https://mysqlserverteam.com/mysql-8-0-innodb-now-supports-instant-add-column/" target="_blank" rel="noopener">MySQL 8.0: InnoDB now supports Instant ADD COLUMN</a></p>
+<p> Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据打个标记，所以支持秒加。</p>
+<p>限制：</p>
+<pre><code>仅支持在一条语句中添加列，也就是说，如果同一条语句中还有其他非INSTANT操作，则无法立即完成
+仅支持最后添加列，不支持在现有列的中间
+不支持COMPRESSED行格式
+不支持已经有全文索引的表
+不支持DD表空间中的任何表
+不支持临时表
+</code></pre><p>MySQL官方团队博客关于秒加字段的介绍：<br> <a href="https://mysqlserverteam.com/mysql-8-0-innodb-now-supports-instant-add-column/" target="_blank" rel="noopener">MySQL 8.0: InnoDB now supports Instant ADD COLUMN</a></p>
 <p>下面是验证mysql8.0版本秒级添加字段的过程</p>
 <p>加字段可以秒加</p>
-<pre><code>mysql&gt; ALTER TABLE `guo_test`.`xm_user` ADD COLUMN `next_id` INT (11) NULL AFTER `open_id`,ALGORITHM=INSTANT; 
+<pre><code>mysql&gt; ALTER TABLE `guo_test`.`test_user` ADD COLUMN `next_id` INT (11) NULL AFTER `open_id`,ALGORITHM=INSTANT; 
 Query OK, 0 rows affected (0.09 sec)
 Records: 0  Duplicates: 0  Warnings: 1
-</code></pre><p>加索引不支持</p>
-<pre><code>mysql&gt; ALTER TABLE `guo_test`.`xm_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE,ALGORITHM=INSTANT; 
+</code></pre><p>加索引不支持INSTANT</p>
+<pre><code>mysql&gt; ALTER TABLE `guo_test`.`test_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE,ALGORITHM=INSTANT; 
 1845 - ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.
 </code></pre><p>索引只能通过COPY/INPLACE方式</p>
-<pre><code>mysql&gt; ALTER TABLE `guo_test`.`xm_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE;
+<pre><code>mysql&gt; ALTER TABLE `guo_test`.`test_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE;
 Query OK, 0 rows affected (8.78 sec)
 Records: 0  Duplicates: 0  Warnings: 0
-</code></pre><p>重建索引支持秒建</p>
-<pre><code>mysql&gt; ALTER TABLE xm_user DROP KEY idx_next_id,ADD KEY idx_next_id (next_id) USING BTREE,ALGORITHM=INSTANT; 
+</code></pre><p>重建索引支持INSTANT</p>
+<pre><code>mysql&gt; ALTER TABLE test_user DROP KEY idx_next_id,ADD KEY idx_next_id (next_id) USING BTREE,ALGORITHM=INSTANT; 
 Query OK, 0 rows affected (0.01 sec)
 Records: 0  Duplicates: 0  Warnings: 0
-</code></pre><p>删除索引不支持</p>
-<pre><code>mysql&gt; ALTER TABLE xm_user DROP COLUMN next_id ,ALGORITHM=INSTANT; 
+</code></pre><p>删除索引不支持INSTANT</p>
+<pre><code>mysql&gt; ALTER TABLE test_user DROP COLUMN next_id ,ALGORITHM=INSTANT; 
 1845 - ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.
 </code></pre><p>删除索引只能通过COPY/INPLACE方式</p>
-<pre><code>mysql&gt; ALTER TABLE xm_user DROP COLUMN next_id; 
+<pre><code>mysql&gt; ALTER TABLE test_user DROP COLUMN next_id; 
 Query OK, 0 rows affected (44.35 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 </code></pre>  
