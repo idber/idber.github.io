@@ -74,6 +74,32 @@
   
 <section class="post" itemscope itemprop="blogitem">
   
+    <a href="/2016/04/05-行锁的三种算法.html" title="行锁的三种算法" itemprop="url">
+  
+    <h1 itemprop="name">行锁的三种算法</h1>
+    
+     
+           <p itemprop="description" >InnoDB存储引擎有3种行锁的算法，其分别是：
+
+Record Lock：单个行记录上的锁
+Gap Lock：间隙锁，锁定一个范围，但不包含记录本身
+Next-Key Lock：Gap Lock+Record Lock，锁定一个范围，并且锁定记录本身
+
+Record Lock总</p>
+        
+    
+    <time datetime="2016-04-05T03:23:56.000Z" itemprop="datePublished">2016-04-05</time>
+  </a>
+</section>
+
+
+
+
+
+
+  
+<section class="post" itemscope itemprop="blogitem">
+  
     <a href="/2016/03/31-CAP定理.html" title="CAP定理" itemprop="url">
   
     <h1 itemprop="name">CAP定理</h1>
@@ -269,27 +295,6 @@ CROSS JOI</p>
 
 
 
-  
-<section class="post" itemscope itemprop="blogitem">
-  
-    <a href="/2016/03/16-MySQL子查询.html" title="MySQL子查询" itemprop="url">
-  
-    <h1 itemprop="name">MySQL子查询</h1>
-    
-     
-           <p itemprop="description" >MySQL数据库被诟病的一个地方就是子查询。很多开发人员和DBA认为MySQL数据库只是拥有该功能，但性能很差，是一项很不实用的功能。在实际开发中开发人员很少使用子查询，因为在应用程序中使用子查询后，SQL语句的查询性能变得非常糟糕。
-子查询的优点和限制子查询是指在一个SELEC</p>
-        
-    
-    <time datetime="2016-03-16T03:23:56.000Z" itemprop="datePublished">2016-03-16</time>
-  </a>
-</section>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix unexpand">
     <a class="extend prev" rel="prev" href="/page/4/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/6/">Next<span></span></a>
@@ -323,7 +328,7 @@ CROSS JOI</p>
 		  
 		
 		  
-			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>44</sup></a></li>
+			<li><a href="/categories/MySQL/" title="MySQL">MySQL<sup>45</sup></a></li>
 		  
 		
 		  
@@ -372,19 +377,7 @@ CROSS JOI</p>
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>46</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/字符集/" title="字符集">字符集<sup>3</sup></a></li>
+				<li><a href="/tags/MySQL/" title="MySQL">MySQL<sup>47</sup></a></li>
 			
 		
 			
@@ -392,35 +385,19 @@ CROSS JOI</p>
 			
 		
 			
-				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+				<li><a href="/tags/join/" title="join">join<sup>3</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+				<li><a href="/tags/性能/" title="性能">性能<sup>3</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+				<li><a href="/tags/InnoDB/" title="InnoDB">InnoDB<sup>3</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/join/" title="join">join<sup>2</sup></a></li>
+				<li><a href="/tags/字符集/" title="字符集">字符集<sup>3</sup></a></li>
 			
 		
 			
@@ -428,11 +405,39 @@ CROSS JOI</p>
 			
 		
 			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/NoSQL/" title="NoSQL">NoSQL<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/SQL/" title="SQL">SQL<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/分表/" title="分表">分表<sup>1</sup></a></li>
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据仓库/" title="数据仓库">数据仓库<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/新特性/" title="新特性">新特性<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/锁/" title="锁">锁<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/事务/" title="事务">事务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/读写分离/" title="读写分离">读写分离<sup>1</sup></a></li>
 			
 		
 			
@@ -440,15 +445,15 @@ CROSS JOI</p>
 			
 		
 			
+				<li><a href="/tags/MongoDB/" title="MongoDB">MongoDB<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/Welcome/" title="Welcome">Welcome<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Xtrabackup/" title="Xtrabackup">Xtrabackup<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
+				<li><a href="/tags/主从/" title="主从">主从<sup>1</sup></a></li>
 			
 		
 		</ul>

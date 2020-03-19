@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-01-18T02:56:11.417Z</updated>
+  <updated>2020-03-19T03:53:38.588Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,59 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>MySQL 8 秒加字段初探</title>
+    <link href="http://idber.github.io/2020/03/19-MySQL%208%20%E7%A7%92%E5%8A%A0%E5%AD%97%E6%AE%B5%E5%88%9D%E6%8E%A2.html"/>
+    <id>http://idber.github.io/2020/03/19-MySQL 8 秒加字段初探.html</id>
+    <published>2020-03-19T02:01:56.000Z</published>
+    <updated>2020-03-19T03:53:38.588Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;前言： &lt;/p&gt;
+&lt;p&gt; Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段只是元数据添加了一个标记，没有数据，所以是支持秒加的。&lt;/p&gt;
+&lt;p&gt;MySQL官方团队博客里关于秒加字段的介绍：&lt;br&gt; &lt;a href=&quot;https://mysqlserverteam.com/mysql-8-0-innodb-now-supports-instant-add-column/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MySQL 8.0: InnoDB now supports Instant ADD COLUMN&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;下面是验证mysql8.0版本秒级添加字段的过程&lt;/p&gt;
+&lt;p&gt;加字段可以秒加&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`xm_user` ADD COLUMN `next_id` INT (11) NULL AFTER `open_id`,ALGORITHM=INSTANT; 
+Query OK, 0 rows affected (0.09 sec)
+Records: 0  Duplicates: 0  Warnings: 1
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;加索引不支持&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`xm_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE,ALGORITHM=INSTANT; 
+1845 - ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;索引只能通过COPY/INPLACE方式&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE `guo_test`.`xm_user` ADD KEY `idx_next_id` (`next_id`) USING BTREE;
+Query OK, 0 rows affected (8.78 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;重建索引支持秒建&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE xm_user DROP KEY idx_next_id,ADD KEY idx_next_id (next_id) USING BTREE,ALGORITHM=INSTANT; 
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;删除索引不支持&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE xm_user DROP COLUMN next_id ,ALGORITHM=INSTANT; 
+1845 - ALGORITHM=INSTANT is not supported for this operation. Try ALGORITHM=COPY/INPLACE.
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;删除索引只能通过COPY/INPLACE方式&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;mysql&amp;gt; ALTER TABLE xm_user DROP COLUMN next_id; 
+Query OK, 0 rows affected (44.35 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+&lt;/code&gt;&lt;/pre&gt;</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;前言： &lt;/p&gt;
+&lt;p&gt; Mysql 8.0版本合并了腾讯互娱数据库团队的Patch，可以实现秒级添加字段，这个功能可谓是mysql数据库攻城狮的福音，解决了之前5.6，5.7版本添加字段很高的运维成本。由于添加索引需要扫描行记录，所以添加索引不支持秒加，添加字段
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="join" scheme="http://idber.github.io/tags/join/"/>
+    
+  </entry>
   
   <entry>
     <title>MySQL数据类型DECIMAL用法</title>
@@ -3006,111 +3059,6 @@ skip_slave_start=0 #auto_start_slave
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="性能" scheme="http://idber.github.io/tags/%E6%80%A7%E8%83%BD/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>MySQL 5.7新特性系列一</title>
-    <link href="http://idber.github.io/2018/08/17-MySQL%205.7%E6%96%B0%E7%89%B9%E6%80%A7%E7%B3%BB%E5%88%97%E4%B8%80.html"/>
-    <id>http://idber.github.io/2018/08/17-MySQL 5.7新特性系列一.html</id>
-    <published>2018-08-16T22:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.929Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;h1 id=&quot;1-背景&quot;&gt;&lt;a href=&quot;#1-背景&quot; class=&quot;headerlink&quot; title=&quot;1. 背景&quot;&gt;&lt;/a&gt;1. 背景&lt;/h1&gt;&lt;p&gt;MySQL 5.7在2015-10-21发布了GA版本，即5.7.9，目前小版本已经到了5.7.23。5.7新增了许多新的feature和优化，接下来一个系列，我们就一起来尝尝鲜。首先这次主要是预览feature的变化以及兼容性问题。后面的系列，会针对重要的feature展开来学习。&lt;/p&gt;
-&lt;h1 id=&quot;2-安全相关的特性&quot;&gt;&lt;a href=&quot;#2-安全相关的特性&quot; class=&quot;headerlink&quot; title=&quot;2 安全相关的特性&quot;&gt;&lt;/a&gt;2 安全相关的特性&lt;/h1&gt;&lt;h2 id=&quot;2-1-认证插件&quot;&gt;&lt;a href=&quot;#2-1-认证插件&quot; class=&quot;headerlink&quot; title=&quot;2.1 认证插件&quot;&gt;&lt;/a&gt;2.1 认证插件&lt;/h2&gt;&lt;p&gt;mysql.user表中的plugin更改成not null，5.7开始不再支持mysql_old_password的认证插件，推荐全部使用mysql_native_password。从低版本升级到5.7的时候，需要处理两个兼容性问题。&lt;/p&gt;
-&lt;p&gt;[兼容性] 需要先迁移mysql_old_password的用户，然后进行user表结构的升级：&lt;/p&gt;
-&lt;h3 id=&quot;1-迁移mysql-old-password用户&quot;&gt;&lt;a href=&quot;#1-迁移mysql-old-password用户&quot; class=&quot;headerlink&quot; title=&quot;1. 迁移mysql_old_password用户&quot;&gt;&lt;/a&gt;1. 迁移mysql_old_password用户&lt;/h3&gt;&lt;p&gt; MySQL 5.7.2之前的版本，是根据password的hash value来判断使用的认证插件类型，5.7.2以后的版本，plugin字段为not null，就直接根据plugin来判断了。新的密码从password字段中，保存到新的字段authentication_string中，password字段废弃处理。&lt;/p&gt;
-&lt;p&gt;如果user是隐式的mysql_native_password。直接使用sql进行变更：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;UPDATE mysql.user SET plugin = &amp;apos;mysql_native_password&amp;apos; WHERE plugin = &amp;apos;&amp;apos; AND (Password = &amp;apos;&amp;apos; OR LENGTH(Password) = 41);
-FLUSH PRIVILEGES;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果user是隐式的或者显示的mysql_old_password， 首先通过以下sql进行查询：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;SELECT User, Host, Password FROM mysql.user WHERE (plugin = &amp;apos;&amp;apos; AND LENGTH(Password) = 16) OR plugin = &amp;apos;mysql_old_password&amp;apos;;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果存在记录，就表示还有使用mysql_old_password的user，使用以下sql进行用户的迁移：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;ALTER USER &amp;apos;user1&amp;apos;@&amp;apos;localhost&amp;apos; IDENTIFIED WITH mysql_native_password BY &amp;apos;DBA-chosen-password&amp;apos;;
-&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;2-user表结构升级&quot;&gt;&lt;a href=&quot;#2-user表结构升级&quot; class=&quot;headerlink&quot; title=&quot;2. user表结构升级&quot;&gt;&lt;/a&gt;2. user表结构升级&lt;/h3&gt;&lt;p&gt;通过mysql_upgrade直接进行升级，步骤如下[5.6-&amp;gt;5.7]：&lt;/p&gt;
-&lt;p&gt;stop MySQL 5.6实例&lt;br&gt;替换5.7的mysqld二进制版本&lt;br&gt;使用5.7启动实例&lt;br&gt;run mysql_upgrade升级系统表&lt;br&gt;重启MySQL 5.7实例&lt;/p&gt;
-&lt;h2 id=&quot;2-2-密码过期&quot;&gt;&lt;a href=&quot;#2-2-密码过期&quot; class=&quot;headerlink&quot; title=&quot;2.2 密码过期&quot;&gt;&lt;/a&gt;2.2 密码过期&lt;/h2&gt;&lt;p&gt;用户可以通过 ALTER USER ‘test‘@’localhost’ PASSWORD EXPIRE;这样的语句来使用户的密码过期。 并新增加 default_password_lifetime来表示用户密码自动过期时间，从5.7.10开始，其默认值从0变更到了360，也就是默认一年过期。 可以通过以下两种方法禁止过期：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;1. SET GLOBAL default_password_lifetime = 0;
-2. ALTER USER &amp;apos;test&amp;apos;@&amp;apos;localhost&amp;apos; PASSWORD EXPIRE NEVER;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;[兼容性] 只需要通过mysql_upgrade升级mysql.user系统表就可以使用密码过期新功能。&lt;/p&gt;
-&lt;h2 id=&quot;2-3-账号锁定&quot;&gt;&lt;a href=&quot;#2-3-账号锁定&quot; class=&quot;headerlink&quot; title=&quot;2.3 账号锁定&quot;&gt;&lt;/a&gt;2.3 账号锁定&lt;/h2&gt;&lt;p&gt;用户可以通过以下语法进行账号锁定，阻止这个用户进行登录：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;ALTER USER &amp;apos;test&amp;apos;@&amp;apos;localhost&amp;apos; ACCOUNT LOCK;
-ALTER USER &amp;apos;test&amp;apos;@&amp;apos;localhost&amp;apos; ACCOUNT UNLOCK;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;[兼容性] 只需要通过mysql_upgrade升级mysql.user系统表就可以使用密码过期新功能。&lt;/p&gt;
-&lt;h2 id=&quot;2-4-SSL连接&quot;&gt;&lt;a href=&quot;#2-4-SSL连接&quot; class=&quot;headerlink&quot; title=&quot;2.4 SSL连接&quot;&gt;&lt;/a&gt;2.4 SSL连接&lt;/h2&gt;&lt;p&gt;如果mysqld编译使用的openssl，在启动的时候，默认创建SSL， RSA certificate 和 key 文件。 但不管是openssl还是yassl，如果没有设置ssl相关的参数，mysqld都会在data directory里查找ssl认证文件，来尽量打开ssl特性。&lt;/p&gt;
-&lt;p&gt;[兼容性] 不存在兼容性的问题&lt;/p&gt;
-&lt;h2 id=&quot;2-5-安装数据库&quot;&gt;&lt;a href=&quot;#2-5-安装数据库&quot; class=&quot;headerlink&quot; title=&quot;2.5 安装数据库&quot;&gt;&lt;/a&gt;2.5 安装数据库&lt;/h2&gt;&lt;p&gt;5.7开始建议用户使用 mysqld –initialize来初始化数据库，放弃之前的mysql_install_db的方式，新的方式只创建了一个root@localhost的用户，随机密码保存在~/.mysql_secret文件中，并且账号是expired，第一次使用必须reset password，并且不再创建test db。&lt;/p&gt;
-&lt;p&gt;[兼容性] 不存在兼容性的问题&lt;/p&gt;
-&lt;h1 id=&quot;3-sql-mode变更&quot;&gt;&lt;a href=&quot;#3-sql-mode变更&quot; class=&quot;headerlink&quot; title=&quot;3 sql mode变更&quot;&gt;&lt;/a&gt;3 sql mode变更&lt;/h1&gt;&lt;p&gt;5.7 sql_mode的默认值变更为：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mode_no_engine_substitution |
-mode_only_full_group_by |
-mode_strict_trans_tables |
-mode_no_zero_in_date |
-mode_no_zero_date |
-mode_error_for_division_by_zero |
-mode_no_auto_create_user
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;而在5.7之前，sql_mode的默认值都只有mode_no_engine_substitution。 所以在5.7默认的情况下，比如grant不存在的用户的时候，会报一下错误：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;ERROR 1133 (42000): Can&amp;apos;t find any matching row in the user table
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;必须先使用create user，然后再使用grant user。&lt;/p&gt;
-&lt;p&gt;[兼容性] 默认sql mode发生变更会导致sql的行为不一致。&lt;/p&gt;
-&lt;h1 id=&quot;4-online-alter-table&quot;&gt;&lt;a href=&quot;#4-online-alter-table&quot; class=&quot;headerlink&quot; title=&quot;4. online alter table&quot;&gt;&lt;/a&gt;4. online alter table&lt;/h1&gt;&lt;p&gt;支持online rename index操作， in_place并且不需要table copy。 [兼容性] 不存在兼容性的问题&lt;/p&gt;
-&lt;h1 id=&quot;5-InnoDB增强&quot;&gt;&lt;a href=&quot;#5-InnoDB增强&quot; class=&quot;headerlink&quot; title=&quot;5. InnoDB增强&quot;&gt;&lt;/a&gt;5. InnoDB增强&lt;/h1&gt;&lt;h3 id=&quot;5-1-varchar长度变更支持inplace&quot;&gt;&lt;a href=&quot;#5-1-varchar长度变更支持inplace&quot; class=&quot;headerlink&quot; title=&quot;5.1 varchar长度变更支持inplace&quot;&gt;&lt;/a&gt;5.1 varchar长度变更支持inplace&lt;/h3&gt;&lt;p&gt;变更varchar 类型字段的长度支持inplace方法，但有一个限制，即用于表示varchar字段长度的字节数不能发生变化，也就是支持比如varchar的长度在255以下变更或者255以上的范围进行变更，因为从小于255变更到大于255，其size的字节需要从1个增加到2个。&lt;/p&gt;
-&lt;p&gt;注意：减少varchar的长度，仍然需要table copy。&lt;/p&gt;
-&lt;h3 id=&quot;5-2-优化InnoDB临时表&quot;&gt;&lt;a href=&quot;#5-2-优化InnoDB临时表&quot; class=&quot;headerlink&quot; title=&quot;5.2 优化InnoDB临时表&quot;&gt;&lt;/a&gt;5.2 优化InnoDB临时表&lt;/h3&gt;&lt;p&gt;因为InnoDB临时表的数据不再不受redo保护，而redo只保护临时表的元数据，所以大幅提升了临时表的性能。 并且InnoDB临时表的元数据保存在一个新的系统表中即innodb_temp_table_info， 临时表将建立一个统一的表空间，我们称之为临时表空间，其目录地址可以通过参数innodb_temp_data_file_path来设置。系统在启动的时候，都会新建这个表空间，重启会删除重建。&lt;/p&gt;
-&lt;p&gt;例如：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show global variables like &amp;apos;%temp_data_file_path%&amp;apos;;
-+----------------------------+-----------------------+
-| Variable_name              | Value                 |
-+----------------------------+-----------------------+
-| innodb_temp_data_file_path | ibtmp1:12M:autoextend |
-+----------------------------+-----------------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;并且5.7存储引擎默认都变更成InnoDB了：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show global variables like &amp;apos;%storage_engine%&amp;apos;;
-+----------------------------------+--------+
-| Variable_name                    | Value  |
-+----------------------------------+--------+
-| default_storage_engine           | InnoDB |
-| default_tmp_storage_engine       | InnoDB |
-| disabled_storage_engines         |        |
-| internal_tmp_disk_storage_engine | InnoDB |
-+----------------------------------+--------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;注意： 在开启gtid的情况下，非auto commit或者显示begin的context下，create 或者drop 临时表，仍然和5.6一样：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;ERROR 1787 (HY000): Statement violates GTID consistency: CREATE TEMPORARY TABLE and DROP TEMPORARY TABLE can only be executed outside transactional context.
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;另外， insert into t select * from t也会遇到错误，不能在一个sql语句中reference两次临时表。&lt;/p&gt;
-&lt;p&gt;备注： 因为InnoDB临时表进行了比较大的变动，我们会专门进行一次详细的介绍。&lt;/p&gt;
-&lt;h3 id=&quot;5-3-InnoDB原生支持DATA-GEOMETRY类型&quot;&gt;&lt;a href=&quot;#5-3-InnoDB原生支持DATA-GEOMETRY类型&quot; class=&quot;headerlink&quot; title=&quot;5.3 InnoDB原生支持DATA_GEOMETRY类型&quot;&gt;&lt;/a&gt;5.3 InnoDB原生支持DATA_GEOMETRY类型&lt;/h3&gt;&lt;p&gt;并且支持在spatial data types上建立index，加速查询。&lt;/p&gt;
-&lt;h3 id=&quot;5-4-buffer-pool-dump&quot;&gt;&lt;a href=&quot;#5-4-buffer-pool-dump&quot; class=&quot;headerlink&quot; title=&quot;5.4 buffer pool dump&quot;&gt;&lt;/a&gt;5.4 buffer pool dump&lt;/h3&gt;&lt;p&gt;buffer pool dump和load支持一个新的参数innodb_buffer_pool_dump_pct，即dump的比例，并且使用innodb_io_capacity 来控制load过程中的IO吞吐量。&lt;/p&gt;
-&lt;h3 id=&quot;5-5-多线程flush-dirty&quot;&gt;&lt;a href=&quot;#5-5-多线程flush-dirty&quot; class=&quot;headerlink&quot; title=&quot;5.5 多线程flush dirty&quot;&gt;&lt;/a&gt;5.5 多线程flush dirty&lt;/h3&gt;&lt;p&gt;从5.7.4开始，innodb_page_cleaners参数可以设置，支持多线程flush dirty page，加快脏块的刷新。&lt;/p&gt;
-&lt;h3 id=&quot;5-6-NVM-file-system&quot;&gt;&lt;a href=&quot;#5-6-NVM-file-system&quot; class=&quot;headerlink&quot; title=&quot;5.6 NVM file system&quot;&gt;&lt;/a&gt;5.6 NVM file system&lt;/h3&gt;&lt;p&gt;MySQL 一直使用double write buffer来解决一个page写入的partial write问题，但在linux系统上的Fusion-io Non-Volatile Memory (NVM) file system支持原子的写入。 这样就可以省略掉double write buffer的使用， 5.7.4以后，如果Fusion-io devices支持atomic write，那么MySQL自动把dirty block直接写入到数据文件了。这样减少了一次内存copy和IO操作。&lt;/p&gt;
-&lt;h3 id=&quot;5-7-InnoDB分区表&quot;&gt;&lt;a href=&quot;#5-7-InnoDB分区表&quot; class=&quot;headerlink&quot; title=&quot;5.7 InnoDB分区表&quot;&gt;&lt;/a&gt;5.7 InnoDB分区表&lt;/h3&gt;&lt;p&gt;MySQL 5.7之前的版本，InnoDB并不支持分区表，分区表的支持是在ha_partition引擎上支持的，从5.7开始，InnoDB支持原生的分区表，并且可以使用传输表空间。&lt;/p&gt;
-&lt;p&gt;[兼容性] mysql_upgrade会扫描ha_partition引擎支持的InnoDB表，并升级成InnoDB分区表，5.7.9之后，可以通过命令ALTER TABLE … UPGRADE PARTITIONING.进行升级。如果之前的版本大量使用了分区表，要注意使用mysql_upgrade会消耗非常长的时间来升级分区表。&lt;/p&gt;
-&lt;h3 id=&quot;5-8-动态调整buffer-pool-size&quot;&gt;&lt;a href=&quot;#5-8-动态调整buffer-pool-size&quot; class=&quot;headerlink&quot; title=&quot;5.8 动态调整buffer pool size&quot;&gt;&lt;/a&gt;5.8 动态调整buffer pool size&lt;/h3&gt;&lt;p&gt;MySQL 5.7.5之后，可以online动态调整buffer pool size，通过设置动态的参数innodb_buffer_pool_size来调整，并且根据Innodb_buffer_pool_resize_status状态来查看resize的进度，因为resize的过程是以chunk为大小，把pages从一个内存区域copy到另一片内存的。&lt;/p&gt;
-&lt;h3 id=&quot;5-9-加快recovery&quot;&gt;&lt;a href=&quot;#5-9-加快recovery&quot; class=&quot;headerlink&quot; title=&quot;5.9 加快recovery&quot;&gt;&lt;/a&gt;5.9 加快recovery&lt;/h3&gt;&lt;p&gt;MySQL 5.7.5之前，在recovery的过程中，需要扫描所有的ibd文件，获取元信息， 5.7.5之后，新加了一种redo log类型，即MLOG_FILE_NAME， 记录从上一次checkpoint以来，发生过变更的文件，这样在recovery的过程中，只需要打开这些文件就可以了。 [兼容性] 因为增加了新的log record type，需要安全的关闭5.7之前的实例，清理掉redo。&lt;/p&gt;
-&lt;h3 id=&quot;5-10-表空间管理&quot;&gt;&lt;a href=&quot;#5-10-表空间管理&quot; class=&quot;headerlink&quot; title=&quot;5.10 表空间管理&quot;&gt;&lt;/a&gt;5.10 表空间管理&lt;/h3&gt;&lt;p&gt;支持创建表空间，例如&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;CREATE TABLESPACE `tablespace_name`
-ADD DATAFILE &amp;apos;file_name.ibd&amp;apos;
-[FILE_BLOCK_SIZE = n]
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;并可以在创建表的时候，指定属于哪个表空间，&lt;/p&gt;
-&lt;p&gt;[兼容性] 因为可以任意指定空间目录，要注意升级过程中，不要漏掉目录。&lt;/p&gt;
-&lt;h3 id=&quot;5-11-InnoDB-Tablespace-Encryption&quot;&gt;&lt;a href=&quot;#5-11-InnoDB-Tablespace-Encryption&quot; class=&quot;headerlink&quot; title=&quot;5.11 InnoDB Tablespace Encryption&quot;&gt;&lt;/a&gt;5.11 InnoDB Tablespace Encryption&lt;/h3&gt;&lt;p&gt;支持InnoDB数据文件加密，其依赖keyring plugin来进行秘钥的管理，后面我们单独来介绍InnoDB加密的方法，并且RDS也实现了一种InnoDB数据文件透明加密方法，并通过KMS系统来管理秘钥。例如：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;create table t(id int) encryption=&amp;apos;y&amp;apos;;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;未完待续&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;h1 id=&quot;1-背景&quot;&gt;&lt;a href=&quot;#1-背景&quot; class=&quot;headerlink&quot; title=&quot;1. 背景&quot;&gt;&lt;/a&gt;1. 背景&lt;/h1&gt;&lt;p&gt;MySQL 5.7在2015-10-21发布了GA版本，即5.7.9，目前小版本已经到了5.7.23。5.7新
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="新特性" scheme="http://idber.github.io/tags/%E6%96%B0%E7%89%B9%E6%80%A7/"/>
     
   </entry>
   
