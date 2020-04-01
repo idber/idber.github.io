@@ -4,25 +4,27 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>内存的80％？应该如何调整你的innodb_buffer_pool_size | 似水年华--沉浮</title>
+    <title>goInception的审核规则 | 似水年华--沉浮</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Michael Guo">
     
 
     
-    <meta name="description" content="现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。MySQL手册引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？ 什么使用服务器上的内存？在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它">
-<meta name="keywords" content="MySQL,性能">
+    <meta name="description" content="引用自goInception作者文档，有时打开比较慢，放到自己博客加速via 支持参数goInception的审核规则可以通过show variables;```查看123```sqlinception show variables; 支持以下方式设置:  1.通过set ```设置123```sqlinception set check_dml_limit = true;  2.配置confi">
+<meta name="keywords" content="MySQL,审核">
 <meta property="og:type" content="article">
-<meta property="og:title" content="内存的80％？应该如何调整你的innodb_buffer_pool_size">
-<meta property="og:url" content="http://idber.github.io/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html">
+<meta property="og:title" content="goInception的审核规则">
+<meta property="og:url" content="http://idber.github.io/2020/04/01-goInception的审核规则.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。MySQL手册引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？ 什么使用服务器上的内存？在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它">
+<meta property="og:description" content="引用自goInception作者文档，有时打开比较慢，放到自己博客加速via 支持参数goInception的审核规则可以通过show variables;```查看123```sqlinception show variables; 支持以下方式设置:  1.通过set ```设置123```sqlinception set check_dml_limit = true;  2.配置confi">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-22T01:41:16.935Z">
+<meta property="og:image" content="http://idber.github.io/2020/04/images/variables.png">
+<meta property="og:updated_time" content="2020-04-01T02:45:17.404Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="内存的80％？应该如何调整你的innodb_buffer_pool_size">
-<meta name="twitter:description" content="现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。MySQL手册引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？ 什么使用服务器上的内存？在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它">
+<meta name="twitter:title" content="goInception的审核规则">
+<meta name="twitter:description" content="引用自goInception作者文档，有时打开比较慢，放到自己博客加速via 支持参数goInception的审核规则可以通过show variables;```查看123```sqlinception show variables; 支持以下方式设置:  1.通过set ```设置123```sqlinception set check_dml_limit = true;  2.配置confi">
+<meta name="twitter:image" content="http://idber.github.io/2020/04/images/variables.png">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -77,14 +79,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html" title="内存的80％？应该如何调整你的innodb_buffer_pool_size" itemprop="url">内存的80％？应该如何调整你的innodb_buffer_pool_size</a>
+      <a href="/2020/04/01-goInception的审核规则.html" title="goInception的审核规则" itemprop="url">goInception的审核规则</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
 		
   <p class="article-time">
-    <time datetime="2018-08-26T02:01:56.000Z" itemprop="datePublished"> Published 2018-08-26</time>
+    <time datetime="2020-04-01T02:01:56.000Z" itemprop="datePublished"> Published 2020-04-01</time>
     
   </p>
 </header>
@@ -93,81 +95,438 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#什么使用服务器上的内存？"><span class="toc-number">1.</span> <span class="toc-text">什么使用服务器上的内存？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#经验法则"><span class="toc-number">2.</span> <span class="toc-text">经验法则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#规则的起源"><span class="toc-number">3.</span> <span class="toc-text">规则的起源</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#你应该如何调整？"><span class="toc-number">4.</span> <span class="toc-text">你应该如何调整？</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#支持参数"><span class="toc-number">1.</span> <span class="toc-text">支持参数</span></a></li></ol>
 		
 		</div>
 		
 		<hr>
-<p>现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。<a href="https://dev.mysql.com/doc/refman/5.6/en/innodb-parameters.html#sysvar_innodb_buffer_pool_size" target="_blank" rel="noopener">MySQL手册</a>引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？</p>
-<h1 id="什么使用服务器上的内存？"><a href="#什么使用服务器上的内存？" class="headerlink" title="什么使用服务器上的内存？"></a>什么使用服务器上的内存？</h1><p>在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它概述了MySQL服务器消耗内存的大面积。</p>
-<pre><code>操作系统：内核，正在运行的进程，文件系统缓存等。
-MySQL固定使用：查询缓存，InnoDB缓冲池大小，mysqld rss等。
-基于MySQL工作负载的使用：连接，每个查询缓冲区（连接缓冲区，排序缓冲区等）
-MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索引等。
-同一服务器上的任何其他服务： Web服务器，缓存服务器，cronjobs等。
-</code></pre><p>毫无疑问，对于调优InnoDB，innodb_buffer_pool_size是最重要的变量。预计它将占用专用MySQL / Innodb服务器上的大部分RAM，但当然其他本地服务可能会影响它的调整方式。如果它（以及服务器上的其他内存消耗）太大，交换可能会启动并迅速降低性能。</p>
-<p>此外，MySQL服务器本身的工作量可能会导致很多变化。服务器是否有大量的开放连接和活动查询工作负载消耗内存？由此引起的内存消耗可能与服务器有很大不同。</p>
-<p>最后，像Galera这样的复制机制有自己的内存使用模式，可能需要对缓冲池进行一些调整。</p>
-<p>我们可以清楚地看到，80％的规则并不像现实那样微妙。</p>
-<h1 id="经验法则"><a href="#经验法则" class="headerlink" title="经验法则"></a>经验法则</h1><p>但是，为了论证，让我们说80％的规则是一个起点。根据经验，帮助我们获得快速调整数字以使服务器运行。假设我们对系统的工作负载还不知道，但我们知道该系统专用于InnoDB，我们的80％规则怎么能发挥作用呢？</p>
+<p>引用自goInception作者文档，有时打开比较慢，放到自己博客加速<br><a href="https://hanchuanchuan.github.io/goInception/options.html" target="_blank" rel="noopener">via</a></p>
+<h3 id="支持参数"><a href="#支持参数" class="headerlink" title="支持参数"></a>支持参数</h3><p>goInception的审核规则可以通过<figure class="highlight plain"><figcaption><span>show variables;```查看</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">```sql</span><br><span class="line">inception show variables;</span><br></pre></td></tr></table></figure></p>
+<p>支持以下方式设置:</p>
+<ul>
+<li><p>1.通过<figure class="highlight plain"><figcaption><span>set ```设置</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">```sql</span><br><span class="line">inception set check_dml_limit = true;</span><br></pre></td></tr></table></figure></p>
+</li>
+<li><p>2.配置config.toml,并通过<code>-config=config.toml</code>指定配置文件启动</p>
+</li>
+</ul>
+<p><img src="./images/variables.png" alt="variables列表"></p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">服务器总RAM</th>
-<th style="text-align:center">具有80％规则的缓冲池</th>
-<th style="text-align:center">剩余的RAM</th>
+<th>参数</th>
+<th>默认值</th>
+<th>可选范围</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">1G</td>
-<td style="text-align:center">800MB</td>
-<td style="text-align:center">200MB</td>
+<td>check_autoincrement_datatype</td>
+<td>false</td>
+<td>true,false</td>
+<td>当建表时自增列的类型不为int或者bigint时报错</td>
 </tr>
 <tr>
-<td style="text-align:center">16G</td>
-<td style="text-align:center">13G</td>
-<td style="text-align:center">3G</td>
+<td>check_autoincrement_init_value</td>
+<td>false</td>
+<td>true,false</td>
+<td>当建表时自增列的值指定的不为1，则报错</td>
 </tr>
 <tr>
-<td style="text-align:center">32G</td>
-<td style="text-align:center">26G</td>
-<td style="text-align:center">6G</td>
+<td>check_autoincrement_name</td>
+<td>false</td>
+<td>true,false</td>
+<td>建表时，如果指定的自增列的名字不为ID，则报错，说明是有意义的，给提示</td>
 </tr>
 <tr>
-<td style="text-align:center">64G</td>
-<td style="text-align:center">51G</td>
-<td style="text-align:center">13G</td>
+<td>check_column_comment</td>
+<td>false</td>
+<td>true,false</td>
+<td>建表时，列没有注释时报错</td>
 </tr>
 <tr>
-<td style="text-align:center">128G</td>
-<td style="text-align:center">102G</td>
-<td style="text-align:center">26G</td>
+<td>check_column_default_value</td>
+<td>false</td>
+<td>true,false</td>
+<td>检查在建表、修改列、新增列时，新的列属性是不是要有默认值</td>
 </tr>
 <tr>
-<td style="text-align:center">256G</td>
-<td style="text-align:center">205G</td>
-<td style="text-align:center">51G</td>
+<td>check_column_position_change <code>v0.9</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>检查列位置/顺序变更</td>
 </tr>
 <tr>
-<td style="text-align:center">512G</td>
-<td style="text-align:center">409G</td>
-<td style="text-align:center">103G</td>
+<td>check_column_type_change <code>v0.7.3</code></td>
+<td>true</td>
+<td>true,false</td>
+<td>检查字段类型变更</td>
 </tr>
 <tr>
-<td style="text-align:center">1024G</td>
-<td style="text-align:center">819G</td>
-<td style="text-align:center">205G</td>
+<td>check_dml_limit</td>
+<td>false</td>
+<td>true,false</td>
+<td>在DML语句中使用了LIMIT时，是不是要报错</td>
+</tr>
+<tr>
+<td>check_dml_orderby</td>
+<td>false</td>
+<td>true,false</td>
+<td>在DML语句中使用了Order By时，是不是要报错</td>
+</tr>
+<tr>
+<td>check_dml_where</td>
+<td>false</td>
+<td>true,false</td>
+<td>在DML语句中没有WHERE条件时，是不是要报错</td>
+</tr>
+<tr>
+<td>check_float_double <code>v1.0.2</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>开启时,当使用 <code>float/double</code> 类型时提示转成 <code>decimal</code> 类型</td>
+</tr>
+<tr>
+<td>check_identifier</td>
+<td>false</td>
+<td>true,false</td>
+<td>检查标识符是否正确,规则是[a-z,A-Z,0-9,_]</td>
+</tr>
+<tr>
+<td>check_identifier_upper  <code>v1.0.2</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>要求标识符即表名、列名、索引名等必须为大写,默认为<code>false</code></td>
+</tr>
+<tr>
+<td>check_implicit_type_conversion <code>v1.1.3</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>检查where条件中是否存在隐式类型转换,默认值<code>false</code></td>
+</tr>
+<tr>
+<td>check_index_prefix</td>
+<td>false</td>
+<td>true,false</td>
+<td>是不是要检查索引名字前缀为”idx_”，检查唯一索引前缀是不是”uniq_”</td>
+</tr>
+<tr>
+<td>check_insert_field</td>
+<td>false</td>
+<td>true,false</td>
+<td>是不是要检查插入语句中的列链表的存在性</td>
+</tr>
+<tr>
+<td>check_primary_key</td>
+<td>false</td>
+<td>true,false</td>
+<td>建表时，如果没有主键，则报错</td>
+</tr>
+<tr>
+<td>check_table_comment</td>
+<td>false</td>
+<td>true,false</td>
+<td>建表时，表没有注释时报错</td>
+</tr>
+<tr>
+<td>check_timestamp_count <code>v0.6.0</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>配置是否检查current_timestamp数量</td>
+</tr>
+<tr>
+<td>check_timestamp_default</td>
+<td>false</td>
+<td>true,false</td>
+<td>建表时，如果没有为timestamp类型指定默认值，则报错</td>
+</tr>
+<tr>
+<td>default_charset <code>v1.0.5</code></td>
+<td>‘utf8mb4’</td>
+<td>string</td>
+<td>设置连接数据库的默认字符集,默认值为<code>utf8mb4</code> (解决低版本不支持utf8mb4的问题)</td>
+</tr>
+<tr>
+<td>enable_autoincrement_unsigned</td>
+<td>false</td>
+<td>true,false</td>
+<td>自增列是不是要为无符号型</td>
+</tr>
+<tr>
+<td>enable_blob_not_null <code>v1.0</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>是否允许blob/text/json类型置为<code>not null</code>,默认为<code>false</code>,即不允许</td>
+</tr>
+<tr>
+<td>enable_blob_type</td>
+<td>false</td>
+<td>true,false</td>
+<td>检查是不是支持BLOB字段，包括建表、修改列、新增列操作</td>
+</tr>
+<tr>
+<td>enable_change_column <code>v1.0.3</code></td>
+<td>true</td>
+<td>true,false</td>
+<td>设置是否支持change column语法,默认值<code>true</code></td>
+</tr>
+<tr>
+<td>enable_column_charset</td>
+<td>false</td>
+<td>true,false</td>
+<td>允许列自己设置字符集</td>
+</tr>
+<tr>
+<td>enable_drop_database</td>
+<td>false</td>
+<td>true,false</td>
+<td>是否允许删除数据库</td>
+</tr>
+<tr>
+<td>enable_drop_table</td>
+<td>false</td>
+<td>true,false</td>
+<td>是否允许删除表</td>
+</tr>
+<tr>
+<td>enable_enum_set_bit</td>
+<td>false</td>
+<td>true,false</td>
+<td>是不是支持enum,set,bit数据类型</td>
+</tr>
+<tr>
+<td>enable_fingerprint <code>v0.6.2</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>sql指纹功能。dml语句相似时，可以根据相同的指纹ID复用explain结果，以减少远端数据库explain操作，并提高审核速度</td>
+</tr>
+<tr>
+<td>explain_rule <code>v1.1.1</code></td>
+<td>“first”</td>
+<td>“first”, “max”</td>
+<td>explain判断受影响行数时使用的规则(<code>&quot;first&quot;, &quot;max&quot;</code>)。  <code>&quot;first&quot;</code>: 使用第一行的explain结果作为受影响行数, <code>&quot;max&quot;</code>:         使用explain结果中的最大值作为受影响行数</td>
+</tr>
+<tr>
+<td>enable_foreign_key</td>
+<td>false</td>
+<td>true,false</td>
+<td>是不是支持外键</td>
+</tr>
+<tr>
+<td>enable_identifer_keyword</td>
+<td>false</td>
+<td>true,false</td>
+<td>检查在SQL语句中，是不是有标识符被写成MySQL的关键字，默认值为报警。</td>
+</tr>
+<tr>
+<td>enable_json_type  <code>v0.7.2</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>设置是否允许json类型字段，包括建表、修改列、新增列操作</td>
+</tr>
+<tr>
+<td>enable_minimal_rollback <code>v1.1.2</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>设置是否启用最小化回滚SQL，当开启时，update的回滚语句仅记录最小化变更(未变更列不再记录), 默认为<code>false</code></td>
+</tr>
+<tr>
+<td>enable_not_innodb  <code>v1.0-rc4 已删除</code></td>
+<td>false</td>
+<td>true,false</td>
+<td><code>已删除!</code> 请使用 <code>enable_set_engine</code>和 <code>support_engine</code>以便于更灵活的指定存储引擎。 <em>建表指定的存储引擎不为Innodb，不报错</em></td>
+</tr>
+<tr>
+<td>enable_nullable</td>
+<td>true</td>
+<td>true,false</td>
+<td>创建或者新增列时是否允许列为NULL</td>
+</tr>
+<tr>
+<td>enable_null_index_name <code>v0.7.1</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>创建索引时是否允许空索引名</td>
+</tr>
+<tr>
+<td>enable_orderby_rand</td>
+<td>false</td>
+<td>true,false</td>
+<td>order by rand时是不是报错</td>
+</tr>
+<tr>
+<td>enable_partition_table</td>
+<td>false</td>
+<td>true,false</td>
+<td>是不是支持分区表</td>
+</tr>
+<tr>
+<td>enable_pk_columns_only_int</td>
+<td>false</td>
+<td>true,false</td>
+<td>是否强制主键列必须是int</td>
+</tr>
+<tr>
+<td>enable_select_star</td>
+<td>false</td>
+<td>true,false</td>
+<td>Select*时是不是要报错</td>
+</tr>
+<tr>
+<td>enable_set_charset</td>
+<td>false</td>
+<td>true,false</td>
+<td>是否允许指定表和数据库的字符集</td>
+</tr>
+<tr>
+<td>enable_set_collation <code>v0.7</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>是否允许指定表和数据库的排序规则</td>
+</tr>
+<tr>
+<td>enable_set_engine  <code>v1.0-rc4</code></td>
+<td>true</td>
+<td>true,false</td>
+<td>是否允许指定存储引擎,默认为<code>true</code></td>
+</tr>
+<tr>
+<td>enable_sql_statistic <code>v0.9</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>开启统计功能. 详见 <strong><a href="../statistics">统计功能</a></strong></td>
+</tr>
+<tr>
+<td>enable_timestamp_type <code>v1.0.1</code></td>
+<td>true</td>
+<td>true,false</td>
+<td>设置是否允许 <code>timestamp</code> 类型字段，包括建表、修改列、新增列操作，默认为 <code>true</code></td>
+</tr>
+<tr>
+<td>enable_zero_date <code>v1.0.1</code></td>
+<td>true</td>
+<td>true,false</td>
+<td>设置是否支持时间为0值，关闭时强制报错。默认值为 <code>true</code>，即开启，此时会基于数据库sql_mode的NO_ZERO_DATE判断是否支持</td>
+</tr>
+<tr>
+<td>general_log <code>v0.8.1</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>是否记录全量日志</td>
+</tr>
+<tr>
+<td>hex_blob <code>v1.1.4</code></td>
+<td>false</td>
+<td>true,false</td>
+<td>在解析binlog时,二进制类型如果无法以字符串形式保存,则以十六进制字符串转储(影响类型:binary,varbinary,blob),默认关闭</td>
+</tr>
+<tr>
+<td>lang <code>v0.5.1</code></td>
+<td>en-US</td>
+<td>en-US,zh-CN</td>
+<td>返回的信息使用语言,可选值<code>en-US</code>,<code>zh-CN</code></td>
+</tr>
+<tr>
+<td>max_allowed_packet    <code>v1.0-rc3</code></td>
+<td>4194304</td>
+<td>int</td>
+<td>允许的最大数据包大小.默认为 <code>4194304</code>,单位字节,即4MB</td>
+</tr>
+<tr>
+<td>max_char_length</td>
+<td>0</td>
+<td>int</td>
+<td>最大char长度,当超出时警告转换为varchar类型</td>
+</tr>
+<tr>
+<td>max_ddl_affect_rows <code>v1.0.2</code></td>
+<td>0</td>
+<td>int</td>
+<td>当DDL预估受影响行数超出设置值时警告,为0时不限制</td>
+</tr>
+<tr>
+<td>max_insert_rows   <code>v0.6.3</code></td>
+<td>0</td>
+<td>int</td>
+<td>设置insert values允许的最大行数.0为不限制</td>
+</tr>
+<tr>
+<td>max_key_parts</td>
+<td>3</td>
+<td>int</td>
+<td>一个索引最多可指定的列数</td>
+</tr>
+<tr>
+<td>max_keys</td>
+<td>3</td>
+<td>int</td>
+<td>单表允许的最大索引数</td>
+</tr>
+<tr>
+<td>max_primary_key_parts</td>
+<td>3</td>
+<td>int</td>
+<td>主键最多可指定的列数</td>
+</tr>
+<tr>
+<td>max_update_rows</td>
+<td>5000</td>
+<td>int</td>
+<td>当update/delete预估受影响行数超出设置值时警告</td>
+</tr>
+<tr>
+<td>merge_alter_table</td>
+<td>false</td>
+<td>true,false</td>
+<td>在多个改同一个表的语句出现是，报错，提示合成一个</td>
+</tr>
+<tr>
+<td>must_have_columns  <code>v0.6.3</code></td>
+<td>‘’</td>
+<td>string</td>
+<td>用以指定建表时必须创建的列。多个列时以逗号分隔(<code>格式: 列名 [列类型,可选]</code>)</td>
+</tr>
+<tr>
+<td>skip_sqls <code>v1.0-rc3</code></td>
+<td>‘’</td>
+<td>string</td>
+<td>指定不再审核的SQL.该参数指定要跳过的客户端/框架默认SQL,以实现客户端兼容</td>
+</tr>
+<tr>
+<td>sql_safe_updates</td>
+<td>-1</td>
+<td>-1,0,1</td>
+<td>安全更新.-1表示不做操作,基于远端数据库,0表示关闭安全更新,1表示开启安全更新</td>
+</tr>
+<tr>
+<td>support_charset</td>
+<td>utf8,utf8mb4</td>
+<td>string</td>
+<td>支持的字符集,多个时以逗号分隔</td>
+</tr>
+<tr>
+<td>support_collation <code>v0.7</code></td>
+<td>‘’</td>
+<td>string</td>
+<td>支持的排序规则,多个时以逗号分隔</td>
+</tr>
+<tr>
+<td>support_engine <code>v1.0-rc4</code></td>
+<td>‘innodb’</td>
+<td>string</td>
+<td>支持的存储引擎类型.默认为<code>innodb</code>,此处可以设置多个,以逗号分隔,或者修改默认的存在引擎类型</td>
+</tr>
+<tr>
+<td>wait_timeout <code>v1.1.2</code></td>
+<td>0</td>
+<td>int</td>
+<td>远端数据库等待超时时间, 单位:秒, 默认值为 <code>0</code> 时表示使用数据库默认值</td>
 </tr>
 </tbody>
 </table>
-<p>数字较低，我们的80％规则看起来很合理。然而，当我们进入大型服务器时，它似乎开始变得不那么理智了。要使规则成立，它必须意味着工作负载内存消耗与缓冲池所需大小成比例增加，但通常情况并非如此。我们的服务器具有1TB的RAM可能不需要205G来处理连接和查询之类的东西（可能MySQL无法处理那么多活动连接和查询）。</p>
-<p>那么，如果你真的把所有的钱花在了一台强大的服务器上，你是否真的想因为这个经验法则对该资源征收20％的税？</p>
-<h1 id="规则的起源"><a href="#规则的起源" class="headerlink" title="规则的起源"></a>规则的起源</h1><p>在我的第一次MySQL会议上，可能是在2006-2007我在雅虎工作时，我参加了由Heikki Tuuri（InnoDB的原作者）和Peter Zaitsev主持的InnoDB调优讲座。我清楚地记得询问80％的规则，因为当时雅虎有一些强大的64G服务器而且规则并不适合我。</p>
-<p>Heikki的答案让我印象深刻。他说了一些（不是直接引用）的结果：“好吧，我测试的服务器有1GB内存，80％似乎是正确的”。然后，如果记忆服务，他澄清了它并说它不会适用于更大的服务器。</p>
-<h1 id="你应该如何调整？"><a href="#你应该如何调整？" class="headerlink" title="你应该如何调整？"></a>你应该如何调整？</h1><p>80％可能是一个很好的开始和经验法则。您确实希望确保服务器有足够的可用RAM用于操作系统和通常未知的工作负载。但是，正如我们上面所看到的，服务器越大，规则就越有可能浪费RAM。我认为对于大多数人来说，它以经验法则开始和结束，主要是因为更改InnoDB缓冲池需要在当前版本中重新启动。</p>
-<p>那么什么是更好的经验法则？我的规则是，当系统运行生产工作负载时，您可以在不使用swap的情况下调整innodb_buffer_pool_size尽可能大。原则上听起来不错，但同样需要一堆重启，说起来容易做起来难。</p>
-<p>幸运的是，  MySQL 5.7及其在线缓冲池调整大小功能应该使这个原则更容易理解。看到大量的空闲RAM（或者文件系统缓存使用）？动态调高缓冲池。看到一些交换活动？只需将其关闭即可，无需重启。在实践中，我怀疑使用此功能会有一些与性能相关的打嗝，但这至少是朝着正确方向迈出的一大步。</p>
+<!--
+inception_read_only     设置当前Inception服务器是不是只读的，这是为了防止一些人具有修改权限的帐号时，通过Inception误修改一些数据，如果inception_read_only设置为ON，则即使开了enable-execute，同时又有执行权限，也不会去执行，审核完成即返回
+ -->
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -181,7 +540,7 @@ MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/性能/">性能</a>
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/审核/">审核</a>
   </div>
 
 </div>
@@ -190,7 +549,7 @@ MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://idber.github.io/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html" data-title="内存的80％？应该如何调整你的innodb_buffer_pool_size | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  <div data-url="http://idber.github.io/2020/04/01-goInception的审核规则.html" data-title="goInception的审核规则 | 似水年华--沉浮" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -203,19 +562,11 @@ MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2018/08/28-ProxySQL 安装配置详解及读写分离、负载均衡.html" title="ProxySQL 安装配置详解及读写分离、负载均衡">
-  <strong>上一篇：</strong><br/>
-  <span>
-  ProxySQL 安装配置详解及读写分离、负载均衡</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2018/08/24-MySQL 5.7新特性系列二.html"  title="MySQL 5.7新特性系列二">
+<a href="/2020/03/19-MySQL 8 秒加字段初探.html"  title="MySQL 8 秒加字段初探">
  <strong>下一篇：</strong><br/> 
- <span>MySQL 5.7新特性系列二
+ <span>MySQL 8 秒加字段初探
 </span>
 </a>
 </div>
@@ -238,7 +589,7 @@ MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#什么使用服务器上的内存？"><span class="toc-number">1.</span> <span class="toc-text">什么使用服务器上的内存？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#经验法则"><span class="toc-number">2.</span> <span class="toc-text">经验法则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#规则的起源"><span class="toc-number">3.</span> <span class="toc-text">规则的起源</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#你应该如何调整？"><span class="toc-number">4.</span> <span class="toc-text">你应该如何调整？</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#支持参数"><span class="toc-number">1.</span> <span class="toc-text">支持参数</span></a></li></ol>
  
   </div>
 

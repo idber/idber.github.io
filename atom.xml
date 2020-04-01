@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-03-19T05:46:11.735Z</updated>
+  <updated>2020-04-01T02:45:17.404Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,459 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>goInception的审核规则</title>
+    <link href="http://idber.github.io/2020/04/01-goInception%E7%9A%84%E5%AE%A1%E6%A0%B8%E8%A7%84%E5%88%99.html"/>
+    <id>http://idber.github.io/2020/04/01-goInception的审核规则.html</id>
+    <published>2020-04-01T02:01:56.000Z</published>
+    <updated>2020-04-01T02:45:17.404Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;引用自goInception作者文档，有时打开比较慢，放到自己博客加速&lt;br&gt;&lt;a href=&quot;https://hanchuanchuan.github.io/goInception/options.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;via&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;支持参数&quot;&gt;&lt;a href=&quot;#支持参数&quot; class=&quot;headerlink&quot; title=&quot;支持参数&quot;&gt;&lt;/a&gt;支持参数&lt;/h3&gt;&lt;p&gt;goInception的审核规则可以通过&lt;figure class=&quot;highlight plain&quot;&gt;&lt;figcaption&gt;&lt;span&gt;show variables;```查看&lt;/span&gt;&lt;/figcaption&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;```sql&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;inception show variables;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;支持以下方式设置:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;1.通过&lt;figure class=&quot;highlight plain&quot;&gt;&lt;figcaption&gt;&lt;span&gt;set ```设置&lt;/span&gt;&lt;/figcaption&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;```sql&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;inception set check_dml_limit = true;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;2.配置config.toml,并通过&lt;code&gt;-config=config.toml&lt;/code&gt;指定配置文件启动&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&quot;./images/variables.png&quot; alt=&quot;variables列表&quot;&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;参数&lt;/th&gt;
+&lt;th&gt;默认值&lt;/th&gt;
+&lt;th&gt;可选范围&lt;/th&gt;
+&lt;th&gt;说明&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;check_autoincrement_datatype&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;当建表时自增列的类型不为int或者bigint时报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_autoincrement_init_value&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;当建表时自增列的值指定的不为1，则报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_autoincrement_name&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;建表时，如果指定的自增列的名字不为ID，则报错，说明是有意义的，给提示&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_column_comment&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;建表时，列没有注释时报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_column_default_value&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;检查在建表、修改列、新增列时，新的列属性是不是要有默认值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_column_position_change &lt;code&gt;v0.9&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;检查列位置/顺序变更&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_column_type_change &lt;code&gt;v0.7.3&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;检查字段类型变更&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_dml_limit&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;在DML语句中使用了LIMIT时，是不是要报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_dml_orderby&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;在DML语句中使用了Order By时，是不是要报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_dml_where&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;在DML语句中没有WHERE条件时，是不是要报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_float_double &lt;code&gt;v1.0.2&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;开启时,当使用 &lt;code&gt;float/double&lt;/code&gt; 类型时提示转成 &lt;code&gt;decimal&lt;/code&gt; 类型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_identifier&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;检查标识符是否正确,规则是[a-z,A-Z,0-9,_]&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_identifier_upper  &lt;code&gt;v1.0.2&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;要求标识符即表名、列名、索引名等必须为大写,默认为&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_implicit_type_conversion &lt;code&gt;v1.1.3&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;检查where条件中是否存在隐式类型转换,默认值&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_index_prefix&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是不是要检查索引名字前缀为”idx_”，检查唯一索引前缀是不是”uniq_”&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_insert_field&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是不是要检查插入语句中的列链表的存在性&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_primary_key&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;建表时，如果没有主键，则报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_table_comment&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;建表时，表没有注释时报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_timestamp_count &lt;code&gt;v0.6.0&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;配置是否检查current_timestamp数量&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;check_timestamp_default&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;建表时，如果没有为timestamp类型指定默认值，则报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;default_charset &lt;code&gt;v1.0.5&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;‘utf8mb4’&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;设置连接数据库的默认字符集,默认值为&lt;code&gt;utf8mb4&lt;/code&gt; (解决低版本不支持utf8mb4的问题)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_autoincrement_unsigned&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;自增列是不是要为无符号型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_blob_not_null &lt;code&gt;v1.0&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否允许blob/text/json类型置为&lt;code&gt;not null&lt;/code&gt;,默认为&lt;code&gt;false&lt;/code&gt;,即不允许&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_blob_type&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;检查是不是支持BLOB字段，包括建表、修改列、新增列操作&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_change_column &lt;code&gt;v1.0.3&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;设置是否支持change column语法,默认值&lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_column_charset&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;允许列自己设置字符集&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_drop_database&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否允许删除数据库&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_drop_table&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否允许删除表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_enum_set_bit&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是不是支持enum,set,bit数据类型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_fingerprint &lt;code&gt;v0.6.2&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;sql指纹功能。dml语句相似时，可以根据相同的指纹ID复用explain结果，以减少远端数据库explain操作，并提高审核速度&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;explain_rule &lt;code&gt;v1.1.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;“first”&lt;/td&gt;
+&lt;td&gt;“first”, “max”&lt;/td&gt;
+&lt;td&gt;explain判断受影响行数时使用的规则(&lt;code&gt;&amp;quot;first&amp;quot;, &amp;quot;max&amp;quot;&lt;/code&gt;)。  &lt;code&gt;&amp;quot;first&amp;quot;&lt;/code&gt;: 使用第一行的explain结果作为受影响行数, &lt;code&gt;&amp;quot;max&amp;quot;&lt;/code&gt;:         使用explain结果中的最大值作为受影响行数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_foreign_key&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是不是支持外键&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_identifer_keyword&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;检查在SQL语句中，是不是有标识符被写成MySQL的关键字，默认值为报警。&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_json_type  &lt;code&gt;v0.7.2&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;设置是否允许json类型字段，包括建表、修改列、新增列操作&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_minimal_rollback &lt;code&gt;v1.1.2&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;设置是否启用最小化回滚SQL，当开启时，update的回滚语句仅记录最小化变更(未变更列不再记录), 默认为&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_not_innodb  &lt;code&gt;v1.0-rc4 已删除&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;已删除!&lt;/code&gt; 请使用 &lt;code&gt;enable_set_engine&lt;/code&gt;和 &lt;code&gt;support_engine&lt;/code&gt;以便于更灵活的指定存储引擎。 &lt;em&gt;建表指定的存储引擎不为Innodb，不报错&lt;/em&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_nullable&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;创建或者新增列时是否允许列为NULL&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_null_index_name &lt;code&gt;v0.7.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;创建索引时是否允许空索引名&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_orderby_rand&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;order by rand时是不是报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_partition_table&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是不是支持分区表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_pk_columns_only_int&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否强制主键列必须是int&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_select_star&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;Select*时是不是要报错&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_set_charset&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否允许指定表和数据库的字符集&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_set_collation &lt;code&gt;v0.7&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否允许指定表和数据库的排序规则&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_set_engine  &lt;code&gt;v1.0-rc4&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否允许指定存储引擎,默认为&lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_sql_statistic &lt;code&gt;v0.9&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;开启统计功能. 详见 &lt;strong&gt;&lt;a href=&quot;../statistics&quot;&gt;统计功能&lt;/a&gt;&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_timestamp_type &lt;code&gt;v1.0.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;设置是否允许 &lt;code&gt;timestamp&lt;/code&gt; 类型字段，包括建表、修改列、新增列操作，默认为 &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;enable_zero_date &lt;code&gt;v1.0.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;true&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;设置是否支持时间为0值，关闭时强制报错。默认值为 &lt;code&gt;true&lt;/code&gt;，即开启，此时会基于数据库sql_mode的NO_ZERO_DATE判断是否支持&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;general_log &lt;code&gt;v0.8.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;是否记录全量日志&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;hex_blob &lt;code&gt;v1.1.4&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;在解析binlog时,二进制类型如果无法以字符串形式保存,则以十六进制字符串转储(影响类型:binary,varbinary,blob),默认关闭&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;lang &lt;code&gt;v0.5.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;en-US&lt;/td&gt;
+&lt;td&gt;en-US,zh-CN&lt;/td&gt;
+&lt;td&gt;返回的信息使用语言,可选值&lt;code&gt;en-US&lt;/code&gt;,&lt;code&gt;zh-CN&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_allowed_packet    &lt;code&gt;v1.0-rc3&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;4194304&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;允许的最大数据包大小.默认为 &lt;code&gt;4194304&lt;/code&gt;,单位字节,即4MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_char_length&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;最大char长度,当超出时警告转换为varchar类型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_ddl_affect_rows &lt;code&gt;v1.0.2&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;当DDL预估受影响行数超出设置值时警告,为0时不限制&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_insert_rows   &lt;code&gt;v0.6.3&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;设置insert values允许的最大行数.0为不限制&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_key_parts&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;一个索引最多可指定的列数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_keys&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;单表允许的最大索引数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_primary_key_parts&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;主键最多可指定的列数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;max_update_rows&lt;/td&gt;
+&lt;td&gt;5000&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;当update/delete预估受影响行数超出设置值时警告&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;merge_alter_table&lt;/td&gt;
+&lt;td&gt;false&lt;/td&gt;
+&lt;td&gt;true,false&lt;/td&gt;
+&lt;td&gt;在多个改同一个表的语句出现是，报错，提示合成一个&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;must_have_columns  &lt;code&gt;v0.6.3&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;‘’&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;用以指定建表时必须创建的列。多个列时以逗号分隔(&lt;code&gt;格式: 列名 [列类型,可选]&lt;/code&gt;)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;skip_sqls &lt;code&gt;v1.0-rc3&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;‘’&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;指定不再审核的SQL.该参数指定要跳过的客户端/框架默认SQL,以实现客户端兼容&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;sql_safe_updates&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;-1,0,1&lt;/td&gt;
+&lt;td&gt;安全更新.-1表示不做操作,基于远端数据库,0表示关闭安全更新,1表示开启安全更新&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;support_charset&lt;/td&gt;
+&lt;td&gt;utf8,utf8mb4&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;支持的字符集,多个时以逗号分隔&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;support_collation &lt;code&gt;v0.7&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;‘’&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;支持的排序规则,多个时以逗号分隔&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;support_engine &lt;code&gt;v1.0-rc4&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;‘innodb’&lt;/td&gt;
+&lt;td&gt;string&lt;/td&gt;
+&lt;td&gt;支持的存储引擎类型.默认为&lt;code&gt;innodb&lt;/code&gt;,此处可以设置多个,以逗号分隔,或者修改默认的存在引擎类型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;wait_timeout &lt;code&gt;v1.1.2&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;int&lt;/td&gt;
+&lt;td&gt;远端数据库等待超时时间, 单位:秒, 默认值为 &lt;code&gt;0&lt;/code&gt; 时表示使用数据库默认值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;!--
+inception_read_only     设置当前Inception服务器是不是只读的，这是为了防止一些人具有修改权限的帐号时，通过Inception误修改一些数据，如果inception_read_only设置为ON，则即使开了enable-execute，同时又有执行权限，也不会去执行，审核完成即返回
+ --&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;引用自goInception作者文档，有时打开比较慢，放到自己博客加速&lt;br&gt;&lt;a href=&quot;https://hanchuanchuan.github.io/goInception/options.html&quot; target=&quot;_blank&quot; rel=&quot;noope
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="审核" scheme="http://idber.github.io/tags/%E5%AE%A1%E6%A0%B8/"/>
+    
+  </entry>
   
   <entry>
     <title>MySQL 8 秒加字段初探</title>
@@ -2999,64 +3452,6 @@ skip_slave_start=0 #auto_start_slave
     
       &lt;hr&gt;
 &lt;p&gt;最近两天整理的参数文件详细说明，常用的参数都涉及到了，主要适用于MySQL 5.6，参考姜承尧老师的mysql_best_configuration，时间匆忙，后续发现错误会及时更正。&lt;br&gt;&lt;a href=&quot;https://github.com/jdaaaaaa
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="性能" scheme="http://idber.github.io/tags/%E6%80%A7%E8%83%BD/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【译】MySQL 5.7中InnoDB事务隔离模式的影响</title>
-    <link href="http://idber.github.io/2018/08/18-MySQL%205.7%E4%B8%ADInnoDB%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%BD%B1%E5%93%8D.html"/>
-    <id>http://idber.github.io/2018/08/18-MySQL 5.7中InnoDB事务隔离模式的影响.html</id>
-    <published>2018-08-17T22:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.928Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;&lt;a href=&quot;http://dimitrik.free.fr/blog/archives/2015/02/mysql-performance-impact-of-innodb-transaction-isolation-modes-in-mysql-57.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;via&lt;/a&gt;&lt;br&gt;过去几年，其他人已经写了很多有价值的文章，解释了InnoDB事务隔离级别的所有细节以及如何解决这个问题。因此，我将避免重复已经说过的内容; 我的注意力吸引了PeterZ的性能研究并发表在以下文章中：&lt;a href=&quot;https://www.percona.com/blog/2015/01/14/mysql-performance-implications-of-innodb-isolation-modes/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.percona.com/blog/2015/01/14/mysql-performance-implications-of-innodb-isolation-modes/&lt;/a&gt; 这篇文章非常好，可以很好地分析观察问题所在，可以通过修改隔离级别为READ-COMMITTED替代REPEATABLE-READ（InnoDB默认级别）来解决。那么问题来了：为什么我们没有默认的READ-COMMITTED模式？有什么危险吗？&lt;/p&gt;
-&lt;p&gt;让我们一起探讨&lt;/p&gt;
-&lt;p&gt;首先，你应该记住你的理论，不仅仅是在InnoDB中实现所有这些东西的方式：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;InnoDB中的事务隔离/ MVCC是通过ReadViews实现的&lt;/li&gt;
-&lt;li&gt;每次创建ReadView时，都应该获取互斥锁（trx_sys）&lt;/li&gt;
-&lt;li&gt;在REPEATABLE-READ模式下，在事务启动时创建ReadView&lt;/li&gt;
-&lt;li&gt;在READ-COMMITTED模式下，在每个语句上创建一个ReadView&lt;/li&gt;
-&lt;li&gt;意味着，如果您的陈述很短 - 您可能会在工作负载中遇到trx_sys互斥争用风暴。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;当然，一切都取决于工作量，如果你很幸运，你可能会在这里看到一个好处（一切皆有可能，对吧？ - 至少在理论上）&lt;/p&gt;
-&lt;p&gt;现在让我告诉你一些你会觉得自己不那么幸运的情况&lt;/p&gt;
-&lt;p&gt;对于我的测试用例，我将使用：&lt;/p&gt;
-&lt;p&gt;40cores-HT服务器&lt;br&gt;运行OEL 6.5 2.6.32-504内核&lt;br&gt;极快的闪存（Fusion-io ioMemory）&lt;br&gt;每个工作负载使用64个并发用户&lt;br&gt;每个工作负载执行3个测试用例：&lt;br&gt;配置REPEATABLE-READ模式（RR）&lt;br&gt;READ-COMMITTED模式已配置（RC）&lt;br&gt;已配置READ-UNCOMMITTED模式（RU）&lt;/p&gt;
-&lt;p&gt;DBT-2 500W工作负载（TPC-C）：&lt;br&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/01Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
-&lt;p&gt;观察 ：&lt;br&gt;你可能已经观察到，与第一个（RR）相比，第二（RC）和第三（RU）测试案例的TPS略低一些&lt;br&gt;“回归”不是很大，但值得注意&lt;br&gt;现在让我们来看看InnoDB中的内部锁定争用。&lt;br&gt;锁定争议：&lt;br&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/02Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
-&lt;p&gt;观察 ：&lt;br&gt;对于RC和RU测试，trx_sys互斥锁的跳跃争用非常明显&lt;br&gt;然而，它还不是太大，不会造成严重的损害..&lt;/p&gt;
-&lt;p&gt;现在，让我们转移到一个沉重的Sysbench OLTP_RW - 我在这里通过在我的测试中添加读/写比率稍微改变了“经典”OLTP_RW：&lt;br&gt;最初负载以128：1的比率开始（主要是读取，少写入）&lt;br&gt;那么16：1&lt;br&gt;那么4：1&lt;br&gt;那么2：1&lt;br&gt;最后1：1&lt;/p&gt;
-&lt;p&gt;我也在使用这个测试用例来评估写入在事务中的影响等。&lt;/p&gt;
-&lt;p&gt;到目前为止：&lt;/p&gt;
-&lt;p&gt;Sysbench OLTP_RW 32x10M-tables，rw128 / 16/4/2/1：&lt;br&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/03Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
-&lt;p&gt;观察 ：&lt;br&gt;这里的影响更多只是值得注意的;-)&lt;br&gt;这只是因为trx_sys互斥争用？或者是其他东西？..&lt;br&gt;锁定争议：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/04Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;br&gt;观察 ：&lt;br&gt;哦，确实，trx_sys现在跳得太高了！&lt;br&gt;它会更糟糕吗？&lt;/p&gt;
-&lt;p&gt;让我们看看;-) &lt;/p&gt;
-&lt;p&gt;下一个工作负载的代码名称是“OLTP_RW-p_sel10” - 这个测试中的所有读取都被10个点选择所取代，这就是全部，使得写入时的负载更加激进，读取时更快和更快：&lt;/p&gt;
-&lt;p&gt;Sysbench OLTP_RW-p_sel10 32x10M表，rw128 / 16/4/2/1：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/05Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;br&gt;观察 ：&lt;br&gt;事实上，看到x2时间更糟糕的表现真的是杀人..&lt;br&gt;仍然由于trx_sys互斥？&lt;br&gt;锁定争论：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/06Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
-&lt;p&gt;嗯，你可能仍然会说这只是因为这个服务器太大了，这就是我观察所有这些争论的原因，你将离现实不远 - 在较小的机器上所有这些争论当然都会降​​低 - 但是！仍然“值得注意”;-)）&lt;/p&gt;
-&lt;p&gt;相同的OLTP_RW-p_sel10，但在20cores-HT上:(&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://github.com/idber/idber.photo/blob/master/blog/07Impact%20of%20InnoDB%20Transaction%20Isolation%20Modes%20in%20MySQL%205.7.png?raw=true&quot; alt=&quot;&quot;&gt;&lt;br&gt;虽然今天许多x2 CPU Intel机器总共拥有超过32个-cx-HT，所以“小”HW变得很大; - ））&lt;/p&gt;
-&lt;p&gt;总结：&lt;br&gt;那么，我们最终应该从所有这些东西中得出结论?&lt;br&gt;PeterZ告诉我们一个如此美好的故事，现在你带着你的实验来表明PeterZ错了……&lt;br&gt;伙计们，PeterZ没错！&lt;br&gt;?? - 所以，你在撒谎??????&lt;br&gt;而且我也不是在撒谎;-)）&lt;br&gt;??? …..&lt;br&gt;那么，你应该记住的是，没有“银弹”，大多数情况下最普遍的答案将是“它取决于” ;&lt;br&gt;与InnoDB交易隔离在这里是一样的故事！&lt;br&gt;一般规则如下：&lt;br&gt;如果您的查询和事务很短：请使用默认的REPEATABLE-READ模式！&lt;br&gt;如果您的查询很长并且读取了很多可能被其他事务并行修改的数据：那么使用READ-COMMITTED模式 - 这将允许您在查询进行时读取已提交的更改并避免丢失而不是扫描旧页面图像（正如PeterZ在他的故事中向你展示的那样;-)）&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;&lt;a href=&quot;http://dimitrik.free.fr/blog/archives/2015/02/mysql-performance-impact-of-innodb-transaction-isolation-modes-in-mysql-57.ht
     
     </summary>
     
