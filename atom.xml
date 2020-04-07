@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-04-01T02:45:17.404Z</updated>
+  <updated>2020-04-07T10:14:47.574Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,48 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>关于Percona XtraBackup的redo-Only参数</title>
+    <link href="http://idber.github.io/2020/04/07-%E5%85%B3%E4%BA%8EPercona%20XtraBackup%E7%9A%84redo-only%E5%8F%82%E6%95%B0.html"/>
+    <id>http://idber.github.io/2020/04/07-关于Percona XtraBackup的redo-only参数.html</id>
+    <published>2020-04-07T02:01:56.000Z</published>
+    <updated>2020-04-07T10:14:47.574Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;我们知道，在Percona XtraBackup执行增量恢复的时候有一步是加参数redo-only，如果不加这个参数，后面的增量是无法合并的。关于这个参数的作用，Percona XtraBackup官方文档的说明如下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;pre&gt;&lt;code&gt;--redo-only
+This option should be used when preparing the base full backup and when merging all incrementals except the last one. It is passed directly to xtrabackup’s xtrabackup --apply-log-only option. This forces xtrabackup to skip the “rollback” phase and do a “redo” only. This is necessary if the backup will have incremental changes applied to it later. See the xtrabackup documentation for details.
+&lt;/code&gt;&lt;/pre&gt;&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The xtrabackup –prepare step for incremental backups is not the same as for normal backups. In normal backups, two types of operations are performed to make the database consistent: committed transactions are replayed from the log file against the data files, and uncommitted transactions are rolled back. You must skip the rollback of uncommitted transactions when preparing a backup, because transactions that were uncommitted at the time of your backup may be in progress, and it’s likely that they will be committed in the next incremental backup. You should use thextrabackup –apply-log-only option to prevent the roll back phase.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Warning: Ifyoudonotusethextrabackup –apply-log-onlyoptiontopreventtherollbackphase,then your incremental backups will be useless. After transactions have been rolled back, further incremental backups cannot be applied.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;大致意思是，redo-only除最后一次增量备份外，前面的增量备份在合并的时候都需要加上这个参数，即只进行前滚，不回滚，在备份进行时有事务未提交，很可能在下次增量备份的时候提交。如果执行了回滚，后面的备份将无法使用，至于为什么，官方文档里没说。其他也没找到有用信息。&lt;br&gt;有的说法是&lt;br&gt;后续恢复增备文件时，redo继续回放了全备未提交事务的后一部分，如果回滚会导致最终的数据文件中丢失了事务第一部分的数据，问题是如果增备时候间隔太长，redo被覆盖了呢，怎么回放未提交的事务？&lt;br&gt;所以，个人理解为这里的备份是基本lsn的，每个数据文件都有lsn，一般回滚的代价是大于提交的，回滚未提交的事务全备最后的lsn就会向前推，会大于增量备份的第一个数据块的lsn，这样就无法连接数据块，所以后面的增备就无法合并了。&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;我们知道，在Percona XtraBackup执行增量恢复的时候有一步是加参数redo-only，如果不加这个参数，后面的增量是无法合并的。关于这个参数的作用，Percona XtraBackup官方文档的说明如下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;pre&gt;
+    
+    </summary>
+    
+      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="备份" scheme="http://idber.github.io/tags/%E5%A4%87%E4%BB%BD/"/>
+    
+      <category term="PXB" scheme="http://idber.github.io/tags/PXB/"/>
+    
+  </entry>
   
   <entry>
     <title>goInception的审核规则</title>
@@ -640,7 +682,7 @@ ERROR 1425 (42000): Too big scale 31 specified for column &amp;apos;col6&amp;apo
     <link href="http://idber.github.io/2019/11/25-Join%20%E7%9A%84%E7%AE%97%E6%B3%95.html"/>
     <id>http://idber.github.io/2019/11/25-Join 的算法.html</id>
     <published>2019-11-25T02:01:56.000Z</published>
-    <updated>2019-11-25T09:46:55.702Z</updated>
+    <updated>2020-04-02T02:15:51.048Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;h1 id=&quot;JOIN-语法&quot;&gt;&lt;a href=&quot;#JOIN-语法&quot; class=&quot;headerlink&quot; title=&quot;JOIN 语法&quot;&gt;&lt;/a&gt;JOIN 语法&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;mysql&amp;gt; select * from t1;
@@ -786,6 +828,8 @@ mysql&amp;gt;
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="join" scheme="http://idber.github.io/tags/join/"/>
+    
+      <category term="算法" scheme="http://idber.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
   </entry>
   
@@ -1721,7 +1765,7 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
     <link href="http://idber.github.io/2019/04/28-MySQL%E7%9A%84%E4%B8%89%E7%A7%8D%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95.html"/>
     <id>http://idber.github.io/2019/04/28-MySQL的三种排序算法.html</id>
     <published>2019-04-28T02:01:56.000Z</published>
-    <updated>2019-04-30T03:17:35.940Z</updated>
+    <updated>2020-04-02T02:16:09.869Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;p&gt;MySQL内部实现排序主要有3种方式，常规排序，优化排序和优先队列排序，主要涉及3种排序算法：快速排序、归并排序和堆排序。&lt;/p&gt;
@@ -1758,7 +1802,7 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
     
       <category term="排序" scheme="http://idber.github.io/tags/%E6%8E%92%E5%BA%8F/"/>
     
-      <category term="优化" scheme="http://idber.github.io/tags/%E4%BC%98%E5%8C%96/"/>
+      <category term="优化，算法" scheme="http://idber.github.io/tags/%E4%BC%98%E5%8C%96%EF%BC%8C%E7%AE%97%E6%B3%95/"/>
     
   </entry>
   
@@ -3287,180 +3331,6 @@ row_insert_for_mysql_using_cursor直接跳过了加锁的lock_table过程。
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="新特性" scheme="http://idber.github.io/tags/%E6%96%B0%E7%89%B9%E6%80%A7/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>MySQL经典模板参数详解</title>
-    <link href="http://idber.github.io/2018/08/19-MySQL%E7%BB%8F%E5%85%B8%E6%A8%A1%E6%9D%BF%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3.html"/>
-    <id>http://idber.github.io/2018/08/19-MySQL经典模板参数详解.html</id>
-    <published>2018-08-18T22:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.931Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;最近两天整理的参数文件详细说明，常用的参数都涉及到了，主要适用于MySQL 5.6，参考姜承尧老师的mysql_best_configuration，时间匆忙，后续发现错误会及时更正。&lt;br&gt;&lt;a href=&quot;https://github.com/jdaaaaaavid/mysql_best_configuration&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;源文件&lt;/a&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;[mysql]
-prompt=\\u@\\d \\r:\\m:\\s&amp;gt;
-default_character_set=utf8 #character_set_client、character_set_connection、character_set_results这3个参数值是由客户端每次连接进来设置的，和服务器端没关系。我们登陆进mysql后，执行 set names utf8; 实际就是同时修改上面的这3个参数值的。
-no_auto_rehash #启用自动补全功能，类似linux下tab补全。默认情况下，此选项处于启用状态，可以使数据库，表和列名称完成。使用 --disable-auto-rehash 禁用换汤不换药。禁用会导致mysql启动得更快，可以在连接时指定参数，例：mysql -u root --auto-rehash
-
-[mysqld_safe]
-malloc_lib=tcmalloc  #tcmalloc是Google开源的一个内存管理库， 作为glibc malloc的替代品。目前已经在chrome、safari等知名软件中运用。
-
-[mysqldump]
-single_transaction #single-transaction 选项和 lock-all-tables 选项是二选一的，前者是在导出开始时设置事务隔离状态并使用一致性快照开始事务,而后马上unlock tables，然后执行导出,导出过程不影响其它事务或业务连接，但只支持类似innodb多版本特性的引擎，因为必须保证即使导出期间其它操作(事务点t2)改变了数据，而导出时仍能取出导出开始的事务点t1时的数据。而lock-all-tables则一开始就 FLUSH TABLES WITH READ LOCK; 加全局读锁，直到dump完毕。
-# -- 关于一致性快照，简单地说，就是通过回滚段能记录不同的事务点的各版本数据
-# -- single-transaction 的流程如下：
-
-[mysqld]
-# basic settings #
-user = mysql #mysql以什么用户运行 #-u, --user=name     Run mysqld daemon as user.
-# sql_mode = &amp;quot;STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER&amp;quot;
-# STRICT_TRANS_TABLES：严格模式，在该模式下，如果一个值不能插入到一个事务表中，则中断当前的操作，对非事务表不做任何限制
-# NO_ZERO_IN_DATE：在严格模式，不接受月或日部分为0的日期。如果使用IGNORE选项，我们为类似的日期插入&amp;apos;0000-00-00&amp;apos;。在非严格模式，可以接受该日期，但会生成警告。
-# NO_ZERO_DATE：在严格模式，不要将 &amp;apos;0000-00-00&amp;apos;做为合法日期。你仍然可以用IGNORE选项插入零日期。在非严格模式，可以接受该日期，但会生成警告
-# ERROR_FOR_DIVISION_BY_ZERO：在严格模式，在INSERT或UPDATE过程中，如果被零除(或MOD(X，0))，则产生错误(否则为警告)。如果未给出该模式，被零除时MySQL返回NULL。如果用到INSERT IGNORE或UPDATE IGNORE中，MySQL生成被零除警告，但操作结果为NULL
-# NO_AUTO_CREATE_USER：防止GRANT自动创建新用户，除非还指定了密码。
-# NO_ENGINE_SUBSTITUTION：如果需要的存储引擎被禁用或未编译，那么抛出错误。不设置此值时，用默认的存储引擎替代，并抛出一个异常autocommit = 1
-server_id=8888 #指定服务器ID。此变量由--server-id选项设置 。在复制主服务器和每个复制从服务器上， 必须指定--server-id用于建立1到2 32到1范围内的唯一复制ID 的 选项。 “ 唯一 ”表示每个ID必须与任何正在使用的其他ID不同其他复制主机或从机。
-character_set_server= utf8  #即使在配置文件里根本就没有配置character_set_database，重启mysql后character_set_database变量值也会和character_set_server保持一致，故只需要配置character_set_server就行了。如果库里有latin1，character_set_database会显示为latin1，需要把latin1的库改为utf8，character_set_database无法直接在配置文件里设置，会报错The server quit without updating PID file [FAILED]ysql/mysql/data/mysql.pid).
-basedir=/home/mysql/mysql #MySQL安装基目录的路径
-datadir=/home/mysql/mysql/data #MySQL服务器数据目录的路径。
-transaction_isolation=READ-COMMITTED #事务隔离级别RC 如果您的查询和事务很短：请使用默认的REPEATABLE-READ模式！如果您的查询很长并且读取了很多可能被其他事务并行修改的数据：那么使用READ-COMMITTED模式 - 这将允许您在查询进行时读取已提交的更改并避免丢失而不是扫描旧页面图像（正如PeterZ在他的故事中向你展示的那样;-)）
-explicit_defaults_for_timestamp = 1 #主要解决默认值为NULL的问题，应该放弃timestamp类型，此参数就不用设置了
-max_allowed_packet=1073741824 #设置1G #MySQL根据配置文件会限制Server接受的数据包大小。有时候大的插入和更新会受 max_allowed_packet 参数限制，导致写入或者更新失败。
-event_scheduler = 1 #全局变量event_scheduler用来设定是否服务器端运行执行计划任务，该变量有如下三种值：
-# OFF：计划任务处于停止状态，event scheduler线程没有运行。是event_scheduler的默认值（执行一下任意一条命令关闭）；
-# ON：计划任务处于运行状态，event scheduler线程启动，并执行所有的计划任务（执行一下任意一条命令开启）；
-# DISABLED：该值将致使计划任务不可运行
-lower_case_table_names=1 #0敏感1不敏感2不敏感     unix、linux下lower_case_table_names默认值为 0 .Windows下默认值是 1 .Mac OS X下默认值是 2 ,linux下不生效.
-open_files_limit=65536 #操作系统允许mysqld打开的文件数 。此变量在运行时的值是系统允许的实际值，可能与您在服务器启动时指定的值不同。在MySQL无法更改打开文件数的系统上，该值为0。
-default_storage_engine=INNODB
-
-# connection #
-interactive_timeout = 1800 
-wait_timeout = 1800 #1. 控制连接最大空闲时长的wait_timeout参数。
-# 2. 对于非交互式连接，类似于jdbc连接，wait_timeout的值继承自服务器端全局变量wait_timeout。对于交互式连接，类似于mysql客户单连接，wait_timeout的值继承自服务器端全局变量interactive_timeout。
-# 3. 判断一个连接的空闲时间，可通过show processlist输出中Sleep状态的时间
-lock_wait_timeout = 1800 #此变量指定尝试获取元数据锁的超时（以秒为单位）。允许值范围为1到31536000（1年）。默认值为31536000。此超时适用于使用元数据锁的所有语句。这些措施包括对表，视图DML和DDL操作，存储过程和存储功能，以及 LOCK TABLES， FLUSH TABLES WITH READ LOCK和HANDLER语句。
-skip_name_resolve = 1 #此变量是从--skip-name-resolve选项的值设置的 。如果是OFF，mysqld 在检查客户端连接时解析主机名。如果是 ON，mysqld只使用IP号码; 在这种情况下，Host授权表中的所有列值必须是IP地址或 localhost。
-max_connections = 4500 #允许的最大同时客户端连接数。默认情况下是151
-max_user_connections = 256 #允许任何给定MySQL用户帐户的最大并发连接数。值0（默认值）表示 “ 无限制。”
-max_connect_errors = 1000000 #如果来自主机的多个连续连接请求在没有成功连接的情况下中断，则服务器会阻止该主机进一步连接。您可以通过刷新主机缓存来取消阻止阻止的主机。为此，请发出FLUSH HOSTS声明或执行mysqladmin flush-hosts 命令。如果max_connect_errors 在先前连接中断后少于尝试的连接成功建立连接，则主机的错误计数将清零。但是，一旦主机被阻止，刷新主机缓存是解除阻塞的唯一方法。默认值为100。
-
-
-# table cache performance settings
-table_open_cache = 4096 #所有线程的打开表的数量。
-table_definition_cache = 4096 #.frm可以存储在定义高速缓存中 的表定义（来自文件）的数量 。如果使用大量表，则可以创建大型表定义高速缓存以加快表的打开速度。与普通表缓存不同，表定义缓存占用的空间更少，不使用文件描述符。
-table_open_cache_instances = 64 #打开表缓存实例的数量（默认为1）。为了通过减少会话之间的争用来提高可伸缩性，可以将开放表缓存划分为几个较小的大小table_open_cache/的 缓存实例 table_open_cache_instances。会话需要仅锁定一个实例以访问DML语句。这会在实例之间对高速缓存进行分段，从而在有许多会话访问表时允许使用高速缓存的操作具有更高的性能。（DDL语句仍然需要锁定整个缓存，但这些语句比DML语句要频繁得多。）对于常规使用16个或更多内核的系统，建议使用值8或16。
-
-# session memory settings #
-read_buffer_size = 16M #对于所有存储引擎，此选项也在以下上下文中使用：在为行排序时，用于缓存临时文件（不是临时表）中的索引ORDER BY。用于批量插入分区。用于缓存嵌套查询的结果。
-read_rnd_buffer_size = 32M #此变量用于从MyISAM 表中读取，对于任何存储引擎，用于多范围读取优化。将变量设置为较大的值可以大大提高ORDER BY 性能。但是，这是为每个客户端分配的缓冲区，因此不应将全局变量设置为较大的值。而是仅从需要运行大型查询的客户端中更改会话变量。
-sort_buffer_size = 32M #必须执行排序的每个会话都会分配此大小的缓冲区。sort_buffer_size 并非特定于任何存储引擎，并且以一般方式应用于优化。至少该 sort_buffer_size值必须足够大，以容纳排序缓冲区中的十五个元组。此外，增加价值 max_sort_length可能需要增加价值 sort_buffer_size。
-tmp_table_size = 64M #内部内存临时表的最大大小。此变量不适用于用户创建的 MEMORY表。实际限制是根据tmp_table_size和 max_heap_table_size的较小值确定的 。如果内存中的临时表超出限制，MySQL会自动将其转换为磁盘上的 MyISAM表。如果您执行许多高级 查询并且内存很多tmp_table_size，max_heap_table_size则增加（以及 必要时）的值 GROUP BY。您可以将创建的内部磁盘上临时表的数量与通过比较Created_tmp_disk_tables和 Created_tmp_tables 变量的值创建的内部临时表的总数进行比较 。
-join_buffer_size = 128M
-thread_cache_size = 64
-
-# log settings #
-log_error=error.log #错误日志 默认保存在data目录
-log_bin = binlog  #是否启用了二进制日志。如果使用该 --log-bin选项，则该变量的值为ON; 否则就是OFF。
-general_log_file = general.log #通用日志文件的名称。默认值为 host_name.log，但可以使用该--general_log_file选项更改初始值 。
-slow_query_log = 1  #是否启用慢查询日志。该值可以是0（或 OFF）以禁用日志，或1（或 ON）以启用日志。默认值取决于是否--slow_query_log给出了该选项。日志输出的目标由log_output系统变量控制 ; 如果该值为NONE，则即使启用了日志，也不会写入日志条目。
-slow_query_log_file = slow.log #慢查询日志，默认值为 host_name-slow.log，但可以使用该--slow_query_log_file选项更改初始值 。 默认保存在data目录
-log_queries_not_using_indexes = 1 #是否将不使用索引的查询记录到慢查询日志中。
-log_slow_admin_statements = 1 #在写入慢查询日志的语句中包含慢速管理语句。行政陈述包括ALTER TABLE， ANALYZE TABLE， CHECK TABLE， CREATE INDEX， DROP INDEX， OPTIMIZE TABLE，和 REPAIR TABLE。
-log_slow_slave_statements = 1 #启用慢速查询日志时，此变量将启用long_query_time对从服务器上执行时间超过几秒的查询的日志记录 。这个变量是在MySQL 5.6.11中添加的。请注意，即使log_slow_slave_statements已启用，也不会在主服务器的慢速日志中记录主服务器中以行格式记录的所有语句 。
-log_throttle_queries_not_using_indexes = 10 #如果 log_queries_not_using_indexes 启用，则 log_throttle_queries_not_using_indexes 变量限制可以写入慢查询日志的每分钟此类查询的数量。值0（默认值）表示“ 无限制 ”。
-expire_logs_days = 90 #自动二进制日志文件删除的天数。默认值为0，表示“ 不自动删除。“可能的删除发生在启动时和刷新二进制日志时。发生日志刷新，如第5.4节“MySQL服务器日志”中所示。要手动删除二进制日志文件，请使用该 PURGE BINARY LOGS语句。
-long_query_time = 2 #如果查询花费的时间超过此秒数，则服务器会递增Slow_queries 状态变量。如果启用了慢查询日志，则查询将记录到慢查询日志文件中。此值是实时测量的，而不是CPU时间，因此在负载较轻的系统上低于阈值的查询可能会高于严重负载的阈值。最小值和默认值分别long_query_time为0和10。该值可以指定为微秒的分辨率。对于记录到文件，写入包括微秒部分的时间。对于记录到表，只写入整数倍; 微秒部分被忽略。
-min_examined_row_limit = 100 #检查少于此行数的查询不会记录到慢查询日志中。
-log_bin_trust_function_creators = 1 #启用二进制日志记录时，此变量适用。它控制是否可以信任存储的函数创建者不创建将导致不安全事件写入二进制日志的存储函数。如果设置为0（默认值），用户不允许创建或更改存储功能，除非他们有SUPER 除了特权CREATE ROUTINE或ALTER ROUTINE特权。设置为0还强制执行必须使用DETERMINISTIC特征或使用 READS SQL DATA或声明函数的限制 NO SQL特性。如果变量设置为1，则MySQL不会对存储的函数创建强制实施这些限制。此变量也适用于触发器创建。
-log_slave_updates = 1 #从服务器从主服务器接收的更新是否应记录到从属服务器自己的二进制日志中。必须在从站上启用二进制日志记录才能使此变量生效。
-
-# innodb settings #
-innodb_page_size = 16384 #InnoDB页面大小（默认为16KB）。许多值都以页数计算; 页面大小使它们可以轻松转换为字节。
-innodb_buffer_pool_size = 500M #在一个独立的只使用InnoDB引擎的MySQL服务器中，根据经验，推荐设置innodb-buffer-pool-size为服务器总可用内存的80%。
-# 为什么不是90%或者100%呢？
-# 因为其它的东西也需要内存：
-# * 每个查询至少需要几K的内存(有时候是几M)
-# * 有各种其它内部的MySQL结构和缓存
-# * InnoDB有一些结构是不用缓冲池的内存的(字典缓存，文件系统，锁系统和页哈希表等)
-# * 也有一些MySQL文件是在OS缓存里的(binary日志，relay日志,innodb事务日志等)
-# * 此处，你也必须为操作系统留出些内存
-innodb_buffer_pool_instances = 16 #InnoDB 缓冲池分区 的区域数。对于具有数千兆字节范围的缓冲池的系统，将缓冲池划分为单独的实例可以通过减少不同线程读取和写入缓存页面时的争用来提高并发性。存储在缓冲池中或从缓冲池读取的每个页面都使用散列函数随机分配给其中一个缓冲池实例。每个缓冲池管理自己的空闲列表， 刷新列表， LRU以及连接到缓冲池的所有其他数据结构，并受其自己的缓冲池互斥锁保护。
-innodb_buffer_pool_load_at_startup = 1  #指定在MySQL服务器启动时， 通过加载较早时保存的相同页面来自动预热InnoDB 缓冲池。通常与innodb_buffer_pool_dump_at_shutdown结合使用 。 
-innodb_buffer_pool_dump_at_shutdown = 1 #指定在MySQL服务器关闭时是否记录InnoDB 缓冲池中缓存的页面 ，以便在下次重新启动时缩短 预热过程。通常与innodb_buffer_pool_load_at_startup。结合使用 。
-innodb_lru_scan_depth = 4096 #影响缓冲池刷新操作 的算法和启发式的参数。主要是性能专家调整I / O密集型工作负载的兴趣。它为每个缓冲池实例指定缓冲池LRU页面列表向下清除页面清理器线程扫描查找要刷新的脏页的距离。这是每秒执行一次的后台操作。 小于默认值的设置通常适用于大多数工作负载。高于必要值的值可能会影响性能。如果在典型工作负载下具有备用I / O容量，则仅考虑增加该值。相反，如果写入密集型工作负载使I / O容量饱和，请减小该值，尤其是在大型缓冲池的情况下。调整时innodb_lru_scan_depth，从较低的值开始并向上配置设置，目标是很少看到零空闲页面。此外，考虑innodb_lru_scan_depth在更改缓冲池实例的数量时进行调整，因为 innodb_lru_scan_depth* innodb_buffer_pool_instances 定义页清除程序线程每秒执行的工作量。
-innodb_lock_wait_timeout = 5 #放弃之前InnoDB 事务等待行锁定的时间长度（以秒为单位）。默认值为50秒。尝试访问由另一个InnoDB事务锁定的行的 事务在发出以下错误之前最多等待这一行以便对该行进行写访问：ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction发生锁定等待超时时，将回滚当前语句 （而不是整个事务）。要使整个事务回滚，请使用该--innodb_rollback_on_timeout 选项启动服务器 
-innodb_io_capacity = 200 #该innodb_io_capacity 参数设置InnoDB后台任务每秒执行的I / O操作数的上限，例如 从缓冲池刷新页面和合并来自更改缓冲区的数据 。该innodb_io_capacity限制适用于所有缓冲池实例总限额。刷新脏页时，限制在缓冲池实例之间平均分配。innodb_io_capacity应设置为大约系统每秒可执行的I / O操作数。理想情况下，保持设置尽可能低，但不要低到背景活动落后。如果该值太高，则会从缓冲池中删除数据并过快地插入缓冲区以进行缓存以提供显着的好处。默认值为200.对于具有更高I / O速率的繁忙系统，可以设置更高的值以帮助服务器处理与高速行更改相关的后台维护工作。通常，您可以根据InnoDB I / O 使用的驱动器数量增加该值。例如，您可以增加使用多个磁盘或固态磁盘（SSD）的系统的值。对于低端SSD，默认设置200通常就足够了。对于更高端的总线连接SSD，请考虑更高的设置，例如1000。对于具有单独5400 RPM或7200 RPM驱动器的系统，您可以将值降低到100，这表示可执行大约100 IOPS的旧一代磁盘驱动器可用的每秒I / O操作（IOPS）的估计比例。虽然您可以指定一个非常高的值，例如一百万，但实际上这样的大值几乎没有任何好处。通常，建议不要使用20000或更高的值，除非您已经证明较低的值不足以满足您的工作负载。
-innodb_io_capacity_max = 400 #如果冲洗活动落后，InnoDB 可以比施加的限制更积极地冲洗 innodb_io_capacity。 在这种情况下innodb_io_capacity_max，InnoDB后台任务定义每秒执行的I / O操作数的上限 。该innodb_io_capacity_max 设置是所有缓冲池实例的总限制。如果innodb_io_capacity在启动时指定 设置但未指定值 innodb_io_capacity_max，则 innodb_io_capacity_max默认值为值的两倍 innodb_io_capacity，最小值为2000。配置时innodb_io_capacity_max，两倍innodb_io_capacity 往往是一个很好的起点。默认值2000适用于使用固态磁盘（SSD）或多个常规磁盘驱动器的工作负载。对于不使用SSD或多个磁盘驱动器的工作负载，2000的设置可能太高，并且可能允许过多的刷新。对于单个常规磁盘驱动器，建议设置介于200和400之间。对于高端，总线连接的SSD，请考虑更高的设置，例如2500.与 innodb_io_capacity设置一样，保持设置尽可能低，但不要太低 ，如果必要，InnoDB不能充分扩展到超出innodb_io_capacity限制。
-innodb_flush_method = O_DIRECT #定义用于将 数据刷新到 InnoDB 数据文件和日志文件的方法，这可能会影响I / O吞吐量。如果innodb_flush_method设置为 NULL类Unix系统，则fsync默认使用该 选项。如果 在Windows上innodb_flush_method设置为 NULL，则async_unbuffered默认使用该 选项。innodb_flush_method类Unix系统 的选项包括：
-# fsync：InnoDB使用fsync()系统调用来刷新数据和日志文件。fsync是默认设置。
-# O_DSYNC：InnoDB用于 O_SYNC打开和刷新日志文件，以及fsync()刷新数据文件。 InnoDB不O_DSYNC直接使用 ，因为在很多种Unix上都存在问题。
-# littlesync：此选项用于内部性能测试，目前不受支持。使用风险由您自己承担。
-# nosync：此选项用于内部性能测试，目前不受支持。使用风险由您自己承担。
-# O_DIRECT：InnoDB 使用O_DIRECT（或 directio()在Solaris上）打开数据文件，并用于fsync()刷新数据和日志文件。某些GNU / Linux版本，FreeBSD和Solaris上提供了此选项。
-# O_DIRECT_NO_FSYNC： 在刷新I / O期间InnoDB使用O_DIRECT，但之后跳过 fsync()系统调用。此设置适用于某些类型的文件系统，但不适用于其他类型。例如，它不适合XFS。如果您不确定您使用的文件系统是否需要 fsync()（例如保留所有文件元数据），请O_DIRECT改用。
-innodb_undo_logs = 128 #定义InnoDB回滚段的数量。innodb_undo_logs是innodb_rollback_segments的别名。定义 用于生成撤消记录的数据修改事务所使用的回滚段数 InnoDB。每个回滚段最多可支持1023个数据修改事务。如果您观察到与撤消日志相关的互斥争用，则此设置适用于调整性​​能。虽然您可以增加或减少使用的回滚段InnoDB数，但系统中实际存在的回滚段数不会减少。因此，您可以从此参数的低值开始并逐渐增加它，以避免分配不需要的回滚段。的 innodb_rollback_segments 默认值是128，这也是最大值。
-#innodb_undo_tablespaces = 3 #回滚段表空间数量。默认值为0。由于在长时间运行的事务期间undo日志会变大，因此在多个表空间中使用撤消日志会减少任何一个表空间的最大大小。撤消表空间文件是在定义的位置创建的 innodb_undo_directory，其名称形式为 ，其中是表示空间ID的一系列整数（包括前导零）。undo表空间文件的默认大小为10MiB。 undoNN重要innodb_undo_tablespaces只能在初始化MySQL实例之前配置，之后不能更改。如果未指定任何值，则使用默认设置0初始化实例。尝试InnoDB使用比MySQL实例初始化时指定的更多数量的撤消表空间重新启动会导致启动失败并显示错误，指出InnoDB未找到预期的撤消表空间的数量。
-innodb_flush_neighbors = 0 #指定是否刷从一个页面InnoDB缓冲池也可以清空其他脏页在相同的段。默认值1从缓冲池中刷新相同范围内的连续脏页。设置为0将 innodb_flush_neighbors关闭，并且不会从缓冲池中刷新其他脏页。设置为2会从缓冲池中刷新相同范围内的脏页。当表数据存储在传统 HDD存储设备上时， 与在不同时间刷新各个页面相比，在一次操作中刷新这些邻居页面减少了I / O开销（主要用于磁盘搜索操作）。对于存储在SSD上的表数据 ，查找时间不是一个重要因素，您可以关闭此设置以分散写入操作。
-innodb_log_file_size = 1G #在每个字节大小日志文件在日志组。日志文件（innodb_log_file_size* innodb_log_files_in_group）的总大小不能超过略小于512GB的最大值。例如，一对255 GB的日志文件接近限制但不超过它。默认值为48MB。通常，日志文件的总大小应该足够大，以至于服务器可以消除工作负载活动中的高峰和低谷，这通常意味着有足够的重做日志空间来处理超过一小时的写入活动。值越大，缓冲池中需要的检查点刷新活动越少，从而节省磁盘I / O. 较大的日志文件也会使崩溃恢复速度变慢，但MySQL 5.5及更高版本中恢复性能的改进使得日志文件大小不再考虑。
-innodb_log_files_in_group = 2 #数日志文件 中日志组。 InnoDB以循环方式写入文件。默认（和推荐）值为2.文件的位置由innodb_log_group_home_dir。指定 。日志文件（innodb_log_file_size* innodb_log_files_in_group）的总大小最大可达512GB。
-innodb_log_buffer_size = 64M #InnoDB 用于写入磁盘上日志文件 的缓冲区的大小（以字节为单位）。默认值为8MB。大型 日志缓冲区使大型事务能够运行，而无需在事务提交之前将日志写入磁盘。因此，如果您有更新，插入或删除许多行的事务，则使日志缓冲区更大可以节省磁盘I / O. 
-innodb_purge_threads = 4 #InnoDB专用于清除操作的后台线程数 。默认值和最小值1表示清除操作始终由后台线程执行，而不是作为主线程的一部分 。在一个或多个后台线程中运行清除操作有助于减少内部争用 InnoDB，从而提高可伸缩性。将值增加到大于1会创建许多单独的清除线程，这可以提高在多个表上执行DML操作的系统的效率 。最大值为32。
-innodb_large_prefix = 1 #启用此选项以允许InnoDB使用DYNAMIC 或 COMPRESSED 行格式的表的 索引键前缀长度超过767字节（最多3072字节）。（创建此类表也需要选项值 innodb_file_format=barracuda 和 innodb_file_per_table=true。）有关与各种设置下的索引键前缀关联的最大值，
-innodb_thread_concurrency = 64 #InnoDB尝试将操作系统线程的数量同时保持在 InnoDB小于或等于此变量给定的限制（InnoDB使用操作系统线程来处理用户事务）。一旦线程数达到此限制，额外的线程被置于等待状态一内“ 先入先出 ” （FIFO）队列以供执行。等待锁的线程不计入并发执行线程的数量。此变量的范围是0到1000.值0（默认值）被解释为无限并发（无并发检查）。禁用线程并发检查可以InnoDB根据需要创建任意数量的线程。值0也禁用queries inside InnoDB和queries in queue counters在ROW OPERATIONS 第SHOW ENGINE INNODB STATUS 输出。如果您的MySQL实例与其他应用程序共享CPU资源，或者您的工作负载或并发用户数正在增长，请考虑设置此变量。正确的设置取决于工作负载，计算环境以及您运行的MySQL版本。您需要测试一系列值以确定提供最佳性能的设置。innodb_thread_concurrency是一个动态变量，它允许您在实时测试系统上试验不同的设置。如果特定设置表现不佳，您可以快速设置 innodb_thread_concurrency回0。使用以下准则来帮助查找和维护适当的设置：如果工作负载的并发用户线程数小于64，请进行设置 innodb_thread_concurrency=0。如果您的工作负载一直很大或偶尔会出现峰值，请先设置 innodb_thread_concurrency=128然后将值降低到96,80,64等，直到找到提供最佳性能的线程数。例如，假设您的系统通常有40到50个用户，但是这个数字会定期增加到60,70甚至200.您会发现80个并发用户的性能稳定但开始显示高于此数字的回归。在这种情况下，您将设置 innodb_thread_concurrency=80为避免影响性能。如果您不希望InnoDB为用户线程使用超过一定数量的虚拟CPU（例如，20个虚拟CPU），请设置 innodb_thread_concurrency为此数字（或者可能更低，具体取决于性能结果）。如果您的目标是将MySQL与其他应用程序隔离，则可以考虑将该mysqld进程专门绑定 到虚拟CPU。但请注意，如果mysqld进程不是一直很忙，那么独占绑定可能会导致非最佳硬件使用 。在这种情况下，您可以绑定 mysqld 处理虚拟CPU但也允许其他应用程序使用部分或全部虚拟CPU。
-innodb_print_all_deadlocks = 1 #当启用该选项，所有信息 死锁在 InnoDB用户交易被记录在 mysqld 错误日志。否则，您将使用该SHOW ENGINE INNODB STATUS命令查看有关上次死锁的信息。偶尔的 InnoDB死锁不一定是个问题，因为InnoDB立即检测到条件并自动回滚其中一个事务。如果应用程序没有适当的错误处理逻辑来检测回滚并重试其操作，则可以使用此选项来解决发生死锁的原因。大量死锁可能表明需要重构为多个表发出 DML或SELECT ... FOR UPDATE语句的事务，以便每个事务以相同的顺序访问表，从而避免死锁条件。
-innodb_strict_mode = 1 #当innodb_strict_mode启用时， InnoDB将返回错误，而不是警告了一定的条件。严格模式有助于防止SQL中忽略的拼写错误和语法错误，或操作模式和SQL语句的各种组合的其他意外后果。当 innodb_strict_mode启用时， InnoDB提出了在某些情况下错误条件，而不是发出警告和处理指定的声明（也许无意的行为）。这类似于 sql_modeMySQL，它控制MySQL接受的SQL语法，并确定它是否默默地忽略错误，或验证输入语法和数据值。
-innodb_sort_buffer_size = 128M #指定在创建InnoDB索引期间用于对数据进行排序的排序缓冲区的大小。指定的大小定义读入内存以进行内部排序然后写入磁盘的数据量。该过程称为“ 运行 ”。在合并阶段，读入并合并指定大小的缓冲区对。设置越大，运行和合并的次数就越少。此排序区域仅在索引创建期间用于合并排序，而不是在以后的索引维护操作期间。索引创建完成后，将释放缓冲区。
-innodb_write_io_threads = 16 #用于写入操作的I / O线程数 InnoDB。默认值为4.
-innodb_read_io_threads = 16 #用于读取操作的I / O线程数 InnoDB。
-innodb_file_per_table = 1 #当innodb_file_per_table启用（默认），InnoDB存储数据和索引在一个单独的每个新创建的表 .ibd 文件，而不是系统表空间。删除或截断表时，将回收这些表的存储。此设置启用 InnoDB表压缩等功能 。
-innodb_stats_persistent_sample_pages = 64 #估计索引列的基数和其他 统计信息时要采样 的索引页数，例如计算的列 。增加该值会提高索引统计信息的准确性，从而可以提高查询执行计划的执行过程中，在增加的I / O的费用 为表。
-innodb_autoinc_lock_mode = 2 #用于生成 自动增量值的锁定模式。对于传统，连续或交错，允许值分别为0,1或2。默认设置为1（连续）。 当innodb_autoinc_lock_mode设置为2时，所有insert种类的SQL都可以立马获得锁并释放，这时的效率最高。但是会引入一个新的问题：当binlog_format为statement时，这时的复制没法保证安全，因为批量的insert，比如insert ..select..语句在这个情况下，也可以立马获取到一大批的自增id值，不必锁整个表，slave在回放这个sql时必然会产生错乱。我们做个测试验证复制不是安全的。
-innodb_online_alter_log_max_size=1G #指定在表的联机DDL操作期间使用的临时日志文件大小的上限（以字节为单位）InnoDB。每个正在创建的索引或要更改的表都有一个这样的日志文件。此日志文件存储在DDL操作期间在表中插入，更新或删除的数据。临时日志文件在需要时扩展为值 innodb_sort_buffer_size，最大为指定的最大值 innodb_online_alter_log_max_size。如果临时日志文件超过了大小上限，则 ALTER TABLE操作失败，并回滚所有未提交的并发DML操作。因此，此选项的较大值允许在联机DDL操作期间发生更多DML，但在表被锁定以应用日志中的数据时，还会延长DDL操作结束时的时间段。
-innodb_open_files=4096 #仅当您使用多个InnoDB 表空间时，此配置选项才有意义 。它指定MySQL一次可以保持打开的最大.ibd 文件数 。最小值为10.从MySQL 5.6.6开始，如果innodb_file_per_table未启用，则默认值为300;如果不启用， 则默认值为300 table_open_cache。在5.6.6之前，默认值为300。用于文件的文件描述符仅.ibd用于InnoDB表。它们独立于--open-files-limit服务器选项指定的那些 ，并且不影响表缓存的操作。
-
-# replication settings #
-master_info_repository = TABLE #该文件保存slave连接master的状态以及配置信息，如用户名，密码，日志执行的位置等。在5.6版本之前，都是使用master.info文件，从5.6开始，通过在my.cnf  中配置 --master-info-repository=TABLE。这些信息会被写入mysql.slave_master_info 表中，代替原来的master.info文件了。
-relay_log_info_repository = TABLE #该文件保存slave上relay log的执行位置。在5.6版本之前，都是使用relay-log.info文件，从5.6开始，通过在my.cnf中配置 --relay-log-info-repository=TABLE，使用mysql.slave_relay_log_info表代替原来的文件。每次当slave上执行start slave时，就会读取该表中的位置信息。
-sync_binlog = 1 #sync_binlog参数来控制数据库的binlog刷到磁盘上去。最安全的就是sync_binlog=1了，表示每次事务提交，MySQL都会把binlog刷下去，是最安全但是性能损耗最大的设置。
-gtid_mode = on #开启GTID复制
-enforce_gtid_consistency = 1 #保证GTID安全的参数
-log_slave_updates  #relay-log里的日志内容再记录到slave本地的binlog里
-binlog_format = ROW #此变量设置二进制日志格式，并且可以是任何一个STATEMENT，ROW或MIXED。
-binlog_rows_query_log_events = 1 #可以在binlog_format=row中记录执行的具体SQL语句。
-relay_log = relay.log #开启中继日志
-relay_log_recovery = 1 #当slave从库宕机后，假如relay-log损坏了，导致一部分中继日志没有处理，则自动放弃所有未执行的relay-log，并且重新从master上获取日志，这样就保证了relay-log的完整性。默认情况下该功能是关闭的，将relay_log_recovery的值设置为1时，可在slave从库上开启该功能，建议开启。
-slave_skip_errors = ddl_exist_errors #复制经常会遇到错误而导致slave端复制中断，这个时候一般就需要人工干预，跳过错误才能继续 ddl_exist_errors值却比较特别，它代表了一组errorCode的组合，分别是：
-# 1007：数据库已存在，创建数据库失败
-# 1008：数据库不存在，删除数据库失败
-# 1050：数据表已存在，创建数据表失败
-# 1050：数据表不存在，删除数据表失败
-# 1054：字段不存在，或程序文件跟数据库有冲突
-# 1060：字段重复，导致无法插入
-# 1061：重复键名
-# 1068：定义了多个主键
-# 1094：位置线程ID
-# 1146：数据表缺失，请恢复数据库
-slave_rows_search_algorithms = &amp;apos;INDEX_SCAN,HASH_SCAN&amp;apos; #部分解决无主键表导致的复制延迟问题，其基本思路是对于在一个ROWS EVENT中的所有前镜像收集起来，然后在一次扫描全表时，判断HASH中的每一条记录进行更新。
-skip_slave_start=0 #auto_start_slave
-&lt;/code&gt;&lt;/pre&gt;</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;最近两天整理的参数文件详细说明，常用的参数都涉及到了，主要适用于MySQL 5.6，参考姜承尧老师的mysql_best_configuration，时间匆忙，后续发现错误会及时更正。&lt;br&gt;&lt;a href=&quot;https://github.com/jdaaaaaa
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="性能" scheme="http://idber.github.io/tags/%E6%80%A7%E8%83%BD/"/>
     
   </entry>
   
