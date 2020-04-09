@@ -19,7 +19,7 @@
 <meta property="og:site_name" content="似水年华--沉浮">
 <meta property="og:description" content="我们知道，在Percona XtraBackup执行增量恢复的时候有一步是加参数redo-only，如果不加这个参数，后面的增量是无法合并的。关于这个参数的作用，Percona XtraBackup官方文档的说明如下：  --redo-only This option should be used when preparing the base full backup and when merg">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-04-07T10:14:47.574Z">
+<meta property="og:updated_time" content="2020-04-09T03:44:19.538Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于Percona XtraBackup的redo-Only参数">
 <meta name="twitter:description" content="我们知道，在Percona XtraBackup执行增量恢复的时候有一步是加参数redo-only，如果不加这个参数，后面的增量是无法合并的。关于这个参数的作用，Percona XtraBackup官方文档的说明如下：  --redo-only This option should be used when preparing the base full backup and when merg">
@@ -109,7 +109,8 @@ This option should be used when preparing the base full backup and when merging 
 <blockquote>
 <p>Warning: Ifyoudonotusethextrabackup –apply-log-onlyoptiontopreventtherollbackphase,then your incremental backups will be useless. After transactions have been rolled back, further incremental backups cannot be applied.</p>
 </blockquote>
-<p>大致意思是，redo-only除最后一次增量备份外，前面的增量备份在合并的时候都需要加上这个参数，即只进行前滚，不回滚，在备份进行时有事务未提交，很可能在下次增量备份的时候提交。如果执行了回滚，后面的备份将无法使用，至于为什么，官方文档里没说。其他也没找到有用信息。<br>有的说法是<br>后续恢复增备文件时，redo继续回放了全备未提交事务的后一部分，如果回滚会导致最终的数据文件中丢失了事务第一部分的数据，问题是如果增备时候间隔太长，redo被覆盖了呢，怎么回放未提交的事务？<br>所以，个人理解为这里的备份是基本lsn的，每个数据文件都有lsn，一般回滚的代价是大于提交的，回滚未提交的事务全备最后的lsn就会向前推，会大于增量备份的第一个数据块的lsn，这样就无法连接数据块，所以后面的增备就无法合并了。</p>
+<p>大致意思是，redo-only除最后一次增量备份外，前面的增量备份在合并的时候都需要加上这个参数，即只进行前滚，不回滚，在备份进行时有事务未提交，很可能在下次增量备份的时候提交。如果执行了回滚，后面的备份将无法使用。</p>
+<p>我们知道，redo是物理日志，记录数据库页的改变，全备事务未提交，redo只写了一半的事务数据，假使是个大事务，需要写多个数据页，前M个数据页已写完，事务还没提交，增备的时候写完后面N个数据页，这样完整的事务是M+N的数据页，由于前M个数据页LSN未更新，增备的时候是不会备份这M个数据页的，如果应用undo，这样全备的M个数据页就会被回滚丢失，完整的事务就不是M+N个数据页了，只有增备的N个数据页，这样就丢失了M个数据页的数据。  </p>
   
 	</div>
 		<footer class="article-footer clearfix">
