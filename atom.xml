@@ -1766,20 +1766,26 @@ SELECT id,LENGTH(data), CHAR_LENGTH(data),data,hex(data),comment  from t order b
     <link href="http://idber.github.io/2019/04/28-MySQL%E7%9A%84%E4%B8%89%E7%A7%8D%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95.html"/>
     <id>http://idber.github.io/2019/04/28-MySQL的三种排序算法.html</id>
     <published>2019-04-28T02:01:56.000Z</published>
-    <updated>2020-04-02T02:16:09.869Z</updated>
+    <updated>2020-04-11T03:08:04.427Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;p&gt;MySQL内部实现排序主要有3种方式，常规排序，优化排序和优先队列排序，主要涉及3种排序算法：快速排序、归并排序和堆排序。&lt;/p&gt;
 &lt;p&gt;关于排序算法，Youtube上有套有意思的3D机器人演示视频命令，方便理解。&lt;br&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=aXXWXz5rF64&amp;amp;index=2&amp;amp;list=PL2aHrV9pFqNRS2b2XX2BvgQIPKh72xREP&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;via&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&quot;快速排序&quot;&gt;&lt;a href=&quot;#快速排序&quot; class=&quot;headerlink&quot; title=&quot;快速排序&quot;&gt;&lt;/a&gt;快速排序&lt;/h1&gt;&lt;p&gt;快速排序（英语：Quicksort），又称划分交换排序（partition-exchange sort），简称快排，一种排序算法，最早由东尼·霍尔提出。它的基本思想是：通过一趟排序将要排序的数据分割成独立的两部分，其中一部分的所有数据都比另外一部分的所有数据都要小，然后再按此方法对这两部分数据分别进行快速排序，整个排序过程可以递归进行，以此达到整个数据变成有序序列。&lt;/p&gt;
+&lt;h1 id=&quot;快速排序&quot;&gt;&lt;a href=&quot;#快速排序&quot; class=&quot;headerlink&quot; title=&quot;快速排序&quot;&gt;&lt;/a&gt;快速排序&lt;/h1&gt;&lt;p&gt;&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/1940317-6d01faf07a21e730.gif?imageMogr2/auto-orient/strip&quot; alt=&quot;快速排序动画&quot;&gt;&lt;br&gt;快速排序视频动画，56秒开始，前面是冒泡法排序&lt;/p&gt;
+&lt;iframe src=&quot;//player.bilibili.com/player.html?aid=50732977&amp;bvid=BV114411b7qE&amp;cid=88823395&amp;page=1&quot; scrolling=&quot;no&quot; border=&quot;0&quot; frameborder=&quot;no&quot; framespacing=&quot;0&quot; allowfullscreen=&quot;true&quot;&gt; &lt;/iframe&gt;
+
+&lt;p&gt;快速排序（英语：Quicksort），又称划分交换排序（partition-exchange sort），简称快排，一种排序算法，最早由东尼·霍尔提出。它的基本思想是：通过一趟排序将要排序的数据分割成独立的两部分，其中一部分的所有数据都比另外一部分的所有数据都要小，然后再按此方法对这两部分数据分别进行快速排序，整个排序过程可以递归进行，以此达到整个数据变成有序序列。&lt;/p&gt;
 &lt;p&gt;快速排序是对冒泡排序的一种改进。在区间中随机挑选一个元素作基准，将小于基准的元素放在基准之前，大于基准的元素放在基准之后，再分别对小数区与大数区进行排序。&lt;/p&gt;
 &lt;p&gt;快速排序使用分治法（Divide and conquer， 在计算机科学中，分治法是建基于多项分支递归的一种很重要的算法范式。字面上的解释是“分而治之”，就是把一个复杂的问题分成两个或更多的相同或相似的子问题，直到最后子问题可以简单的直接求解，原问题的解即子问题的解的合并。）策略来把一个序列（list）分为较小和较大的2个子序列，然后递归地排序两个子序列。&lt;/p&gt;
 &lt;p&gt;步骤为：&lt;br&gt;挑选基准值：从数列中挑出一个元素，称为“基准”（pivot），&lt;br&gt;分割：重新排序数列，所有比基准值小的元素摆放在基准前面，所有比基准值大的元素摆在基准后面（与基准值相等的数可以到任何一边）。在这个分割结束之后，对基准值的排序就已经完成，&lt;br&gt;递归排序子序列：递归地将小于基准值元素的子序列和大于基准值元素的子序列排序。&lt;br&gt;递归到最底部的判断条件是数列的大小是零或一，此时该数列显然已经有序。&lt;/p&gt;
 &lt;p&gt;由于基准是随机的，所以快速排序是不稳定排序。&lt;/p&gt;
-&lt;h1 id=&quot;归并排序&quot;&gt;&lt;a href=&quot;#归并排序&quot; class=&quot;headerlink&quot; title=&quot;归并排序&quot;&gt;&lt;/a&gt;归并排序&lt;/h1&gt;&lt;p&gt;归并排序（英语：Merge sort，或mergesort），是创建在归并操作上的一种有效的排序算法。1945年由约翰·冯·诺伊曼首次提出。该算法是采用分治法（Divide and Conquer）的一个非常典型的应用，且各层分治递归可以同时进行。&lt;br&gt;把数据分为两段，从两段中逐个选最小的元素移入新数据段的末尾。&lt;br&gt;可从上到下或从下到上进行。&lt;/p&gt;
+&lt;h1 id=&quot;归并排序&quot;&gt;&lt;a href=&quot;#归并排序&quot; class=&quot;headerlink&quot; title=&quot;归并排序&quot;&gt;&lt;/a&gt;归并排序&lt;/h1&gt;&lt;p&gt;&lt;img src=&quot;https://bucket-1257126549.cos.ap-guangzhou.myqcloud.com/20181120110141.gif&quot; alt=&quot;归并排序动画&quot;&gt;&lt;/p&gt;
+&lt;iframe src=&quot;//player.bilibili.com/player.html?aid=50490785&amp;bvid=BV1w4411h7yq&amp;cid=88817956&amp;page=1&quot; scrolling=&quot;no&quot; border=&quot;0&quot; frameborder=&quot;no&quot; framespacing=&quot;0&quot; allowfullscreen=&quot;true&quot;&gt; &lt;/iframe&gt;
+
+&lt;p&gt;归并排序（英语：Merge sort，或mergesort），是创建在归并操作上的一种有效的排序算法。1945年由约翰·冯·诺伊曼首次提出。该算法是采用分治法（Divide and Conquer）的一个非常典型的应用，且各层分治递归可以同时进行。&lt;br&gt;把数据分为两段，从两段中逐个选最小的元素移入新数据段的末尾。&lt;br&gt;可从上到下或从下到上进行。&lt;/p&gt;
 &lt;p&gt;归并操作&lt;br&gt;归并操作（merge），也叫归并算法，指的是将两个已经排序的序列合并成一个序列的操作。归并排序算法依赖归并操作。&lt;/p&gt;
 &lt;p&gt;步骤为：&lt;br&gt;申请空间，使其大小为两个已经排序序列之和，该空间用来存放合并后的序列&lt;br&gt;设定两个指针，最初位置分别为两个已经排序序列的起始位置&lt;br&gt;比较两个指针所指向的元素，选择相对小的元素放入到合并空间，并移动指针到下一位置&lt;br&gt;重复步骤3直到某一指针到达序列尾&lt;br&gt;将另一序列剩下的所有元素直接复制到合并序列尾&lt;/p&gt;
-&lt;h1 id=&quot;堆排序&quot;&gt;&lt;a href=&quot;#堆排序&quot; class=&quot;headerlink&quot; title=&quot;堆排序&quot;&gt;&lt;/a&gt;堆排序&lt;/h1&gt;&lt;p&gt;堆排序（英语：Heapsort）是指利用堆这种数据结构所设计的一种排序算法。堆是一个近似完全二叉树的结构，并同时满足堆积的性质：即子节点的键值或索引总是小于（或者大于）它的父节点。&lt;br&gt;从堆顶把根卸出来放在有序区之前，再恢复堆。&lt;/p&gt;
+&lt;h1 id=&quot;堆排序&quot;&gt;&lt;a href=&quot;#堆排序&quot; class=&quot;headerlink&quot; title=&quot;堆排序&quot;&gt;&lt;/a&gt;堆排序&lt;/h1&gt;&lt;p&gt;&lt;img src=&quot;https://upload-images.jianshu.io/upload_images/1940317-64e671a84ec27769.gif?imageMogr2/auto-orient/strip&quot; alt=&quot;堆排序动画&quot;&gt;&lt;br&gt;堆排序（英语：Heapsort）是指利用堆这种数据结构所设计的一种排序算法。堆是一个近似完全二叉树的结构，并同时满足堆积的性质：即子节点的键值或索引总是小于（或者大于）它的父节点。&lt;br&gt;从堆顶把根卸出来放在有序区之前，再恢复堆。&lt;/p&gt;
 &lt;p&gt;若以升序排序说明，把数组转换成最大堆积(Max-Heap Heap)，这是一种满足最大堆积性质(Max-Heap Property)的二叉树：对于除了根之外的每个节点i, A[parent(i)] ≥ A[i]。&lt;/p&gt;
 &lt;p&gt;重复从最大堆积取出数值最大的结点(把根结点和最后一个结点交换，把交换后的最后一个结点移出堆)，并让残余的堆积维持最大堆积性质。&lt;/p&gt;
 &lt;p&gt;堆的操作&lt;br&gt;在堆的数据结构中，堆中的最大值总是位于根节点（在优先队列中使用堆的话堆中的最小值位于根节点）。堆中定义以下几种操作：&lt;br&gt;最大堆调整（Max Heapify）：将堆的末端子节点作调整，使得子节点永远小于父节点&lt;br&gt;创建最大堆（Build Max Heap）：将堆中的所有数据重新排序&lt;br&gt;堆排序（HeapSort）：移除位在第一个数据的根节点，并做最大堆调整的递归运算&lt;/p&gt;
