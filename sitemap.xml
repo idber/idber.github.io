@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://idber.github.io/2020/09/25-Redis%E5%BC%BA%E5%A4%A7%E7%9A%84%E5%A4%87%E4%BB%BD%E5%90%8C%E6%AD%A5%E5%B7%A5%E5%85%B7Redis-Shake.html</loc>
+    
+    <lastmod>2020-09-25T03:49:00.529Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://idber.github.io/2019/04/28-MySQL%E7%9A%84%E4%B8%89%E7%A7%8D%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95.html</loc>
     
     <lastmod>2020-04-11T03:08:04.427Z</lastmod>
@@ -114,13 +121,6 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/categories/index.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.940Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://idber.github.io/tags/index.html</loc>
     
     <lastmod>2019-04-22T01:41:16.940Z</lastmod>
@@ -128,9 +128,9 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2018/08/15-%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB.html</loc>
+    <loc>http://idber.github.io/categories/index.html</loc>
     
-    <lastmod>2019-04-22T01:41:16.939Z</lastmod>
+    <lastmod>2019-04-22T01:41:16.940Z</lastmod>
     
   </url>
   
@@ -142,14 +142,14 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/03/29-%E8%87%AA%E5%8A%A8%E5%8C%96%E9%87%87%E9%9B%86%E8%84%9A%E6%9C%AC.html</loc>
+    <loc>http://idber.github.io/2018/08/15-%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB.html</loc>
     
-    <lastmod>2019-04-22T01:41:16.938Z</lastmod>
+    <lastmod>2019-04-22T01:41:16.939Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/03/19-%E8%81%94%E6%8E%A5%E4%B8%8E%E9%9B%86%E5%90%88%E6%93%8D%E4%BD%9C%E4%BA%8C--%E5%85%B6%E4%BB%96%E8%81%94%E6%8E%A5.html</loc>
+    <loc>http://idber.github.io/2016/03/21-%E8%81%94%E6%8E%A5%E4%B8%8E%E9%9B%86%E5%90%88%E6%93%8D%E4%BD%9C%E4%B8%89--%E9%9B%86%E5%90%88%E6%93%8D%E4%BD%9C.html</loc>
     
     <lastmod>2019-04-22T01:41:16.938Z</lastmod>
     
@@ -163,9 +163,23 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/03/21-%E8%81%94%E6%8E%A5%E4%B8%8E%E9%9B%86%E5%90%88%E6%93%8D%E4%BD%9C%E4%B8%89--%E9%9B%86%E5%90%88%E6%93%8D%E4%BD%9C.html</loc>
+    <loc>http://idber.github.io/2016/03/19-%E8%81%94%E6%8E%A5%E4%B8%8E%E9%9B%86%E5%90%88%E6%93%8D%E4%BD%9C%E4%BA%8C--%E5%85%B6%E4%BB%96%E8%81%94%E6%8E%A5.html</loc>
     
     <lastmod>2019-04-22T01:41:16.938Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2016/03/29-%E8%87%AA%E5%8A%A8%E5%8C%96%E9%87%87%E9%9B%86%E8%84%9A%E6%9C%AC.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.938Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2017/06/22-%E6%B5%8B%E8%AF%95%E7%89%88%E6%9C%AC.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.937Z</lastmod>
     
   </url>
   
@@ -177,9 +191,9 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2017/06/22-%E6%B5%8B%E8%AF%95%E7%89%88%E6%9C%AC.html</loc>
+    <loc>http://idber.github.io/2016/03/23-%E6%9C%80%E5%B0%8F%E7%BC%BA%E5%A4%B1%E5%80%BC%E9%97%AE%E9%A2%98.html</loc>
     
-    <lastmod>2019-04-22T01:41:16.937Z</lastmod>
+    <lastmod>2019-04-22T01:41:16.936Z</lastmod>
     
   </url>
   
@@ -198,14 +212,7 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/03/23-%E6%9C%80%E5%B0%8F%E7%BC%BA%E5%A4%B1%E5%80%BC%E9%97%AE%E9%A2%98.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.936Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://idber.github.io/2018/08/11-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E5%88%A9%E5%99%A8-otter%E7%9A%84%E6%90%AD%E5%BB%BA%E5%8F%8A%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E.html</loc>
+    <loc>http://idber.github.io/2017/11/17-%E5%AD%90%E6%9F%A5%E8%AF%A2%E4%B8%8D%E5%AD%98%E5%9C%A8%E5%AD%97%E6%AE%B5.html</loc>
     
     <lastmod>2019-04-22T01:41:16.935Z</lastmod>
     
@@ -226,14 +233,7 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/05/13-%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.935Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://idber.github.io/2017/11/17-%E5%AD%90%E6%9F%A5%E8%AF%A2%E4%B8%8D%E5%AD%98%E5%9C%A8%E5%AD%97%E6%AE%B5.html</loc>
+    <loc>http://idber.github.io/2018/08/11-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E5%88%A9%E5%99%A8-otter%E7%9A%84%E6%90%AD%E5%BB%BA%E5%8F%8A%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E.html</loc>
     
     <lastmod>2019-04-22T01:41:16.935Z</lastmod>
     
@@ -241,6 +241,13 @@
   
   <url>
     <loc>http://idber.github.io/2016/03/07-%E5%8D%95%E8%8A%82%E7%82%B9Hive%E5%AE%89%E8%A3%85%E8%AF%A6%E7%BB%86%E6%AD%A5%E9%AA%A4.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.935Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2016/05/13-%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7.html</loc>
     
     <lastmod>2019-04-22T01:41:16.935Z</lastmod>
     
@@ -268,7 +275,7 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/03/22-SQL_MODE%E8%AE%BE%E7%BD%AE.html</loc>
+    <loc>http://idber.github.io/2015/01/26-Welcome.html</loc>
     
     <lastmod>2019-04-22T01:41:16.933Z</lastmod>
     
@@ -282,7 +289,7 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2015/01/26-Welcome.html</loc>
+    <loc>http://idber.github.io/2016/03/22-SQL_MODE%E8%AE%BE%E7%BD%AE.html</loc>
     
     <lastmod>2019-04-22T01:41:16.933Z</lastmod>
     
@@ -352,20 +359,6 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/01/26-MySQL%E6%8F%90%E7%A4%BA-The%20server%20quit%20without%20updating%20PID%20file(%E2%80%A6)%E5%A4%B1%E8%B4%A5.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.930Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://idber.github.io/2016/03/16-MySQL%E5%AD%90%E6%9F%A5%E8%AF%A2.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.930Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://idber.github.io/2015/09/11-MySQL%E5%9F%BA%E4%BA%8Ebinlog%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E9%85%8D%E7%BD%AE.html</loc>
     
     <lastmod>2019-04-22T01:41:16.930Z</lastmod>
@@ -380,7 +373,21 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/06/16-MySQL%20Online%20DDL%20%E5%B7%A5%E5%85%B7%E4%B9%8Bpt-online-schema-change.html</loc>
+    <loc>http://idber.github.io/2016/03/16-MySQL%E5%AD%90%E6%9F%A5%E8%AF%A2.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.930Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2016/01/26-MySQL%E6%8F%90%E7%A4%BA-The%20server%20quit%20without%20updating%20PID%20file(%E2%80%A6)%E5%A4%B1%E8%B4%A5.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.930Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2018/08/24-MySQL%205.7%E6%96%B0%E7%89%B9%E6%80%A7%E7%B3%BB%E5%88%97%E4%BA%8C.html</loc>
     
     <lastmod>2019-04-22T01:41:16.929Z</lastmod>
     
@@ -388,13 +395,6 @@
   
   <url>
     <loc>http://idber.github.io/2018/08/17-MySQL%205.7%E6%96%B0%E7%89%B9%E6%80%A7%E7%B3%BB%E5%88%97%E4%B8%80.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.929Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://idber.github.io/2018/08/03-MySQL%20Insert%E9%94%81%E6%9C%BA%E5%88%B6.html</loc>
     
     <lastmod>2019-04-22T01:41:16.929Z</lastmod>
     
@@ -415,9 +415,30 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2018/08/24-MySQL%205.7%E6%96%B0%E7%89%B9%E6%80%A7%E7%B3%BB%E5%88%97%E4%BA%8C.html</loc>
+    <loc>http://idber.github.io/2018/08/03-MySQL%20Insert%E9%94%81%E6%9C%BA%E5%88%B6.html</loc>
     
     <lastmod>2019-04-22T01:41:16.929Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2016/06/16-MySQL%20Online%20DDL%20%E5%B7%A5%E5%85%B7%E4%B9%8Bpt-online-schema-change.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.929Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2018/08/18-MySQL%205.7%E4%B8%ADInnoDB%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%BD%B1%E5%93%8D.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.928Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2016/04/15-InnoDB%E9%80%BB%E8%BE%91%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.928Z</lastmod>
     
   </url>
   
@@ -436,20 +457,6 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/04/15-InnoDB%E9%80%BB%E8%BE%91%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.928Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://idber.github.io/2018/08/18-MySQL%205.7%E4%B8%ADInnoDB%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%BD%B1%E5%93%8D.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.928Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://idber.github.io/2016/04/06-InnoDB%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E--%E4%B8%A4%E6%AC%A1%E5%86%99.html</loc>
     
     <lastmod>2019-04-22T01:41:16.928Z</lastmod>
@@ -457,7 +464,7 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2018/08/14-InnoDB%20buffer%20pool%20flush%E7%AD%96%E7%95%A5%E6%BC%AB%E8%B0%88.html</loc>
+    <loc>http://idber.github.io/2016/03/08-CDH%E5%A4%A7%E6%95%B0%E6%8D%AE%E9%9B%86%E7%BE%A4%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA.html</loc>
     
     <lastmod>2019-04-22T01:41:16.927Z</lastmod>
     
@@ -471,21 +478,21 @@
   </url>
   
   <url>
-    <loc>http://idber.github.io/2016/03/31-CAP%E5%AE%9A%E7%90%86.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.927Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://idber.github.io/2016/03/08-CDH%E5%A4%A7%E6%95%B0%E6%8D%AE%E9%9B%86%E7%BE%A4%E5%B9%B3%E5%8F%B0%E6%90%AD%E5%BB%BA.html</loc>
-    
-    <lastmod>2019-04-22T01:41:16.927Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://idber.github.io/2016/01/21-CentOS%206.3%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%AE%89%E8%A3%85MongoDB%203.2.1.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.927Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2018/08/14-InnoDB%20buffer%20pool%20flush%E7%AD%96%E7%95%A5%E6%BC%AB%E8%B0%88.html</loc>
+    
+    <lastmod>2019-04-22T01:41:16.927Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://idber.github.io/2016/03/31-CAP%E5%AE%9A%E7%90%86.html</loc>
     
     <lastmod>2019-04-22T01:41:16.927Z</lastmod>
     

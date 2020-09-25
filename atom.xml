@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-04-09T03:44:19.538Z</updated>
+  <updated>2020-09-25T03:49:00.529Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,277 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Redis强大的备份同步工具Redis-Shake</title>
+    <link href="http://idber.github.io/2020/09/25-Redis%E5%BC%BA%E5%A4%A7%E7%9A%84%E5%A4%87%E4%BB%BD%E5%90%8C%E6%AD%A5%E5%B7%A5%E5%85%B7Redis-Shake.html"/>
+    <id>http://idber.github.io/2020/09/25-Redis强大的备份同步工具Redis-Shake.html</id>
+    <published>2020-09-25T02:01:56.000Z</published>
+    <updated>2020-09-25T03:49:00.529Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;blockquote&gt;
+&lt;p&gt;redis-shake是阿里云Redis&amp;amp;MongoDB团队开源的用于redis数据同步的工具。下载地址：&lt;a href=&quot;https://github.com/alibaba/RedisShake/releases&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;这里&lt;/a&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&quot;基本功能&quot;&gt;&lt;a href=&quot;#基本功能&quot; class=&quot;headerlink&quot; title=&quot;基本功能&quot;&gt;&lt;/a&gt;基本功能&lt;/h1&gt;&lt;p&gt;redis-shake是我们基于redis-port基础上进行改进的一款产品。它支持解析、恢复、备份、同步四个功能。以下主要介绍同步sync。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;恢复restore：将RDB文件恢复到目的redis数据库。&lt;/li&gt;
+&lt;li&gt;备份dump：将源redis的全量数据通过RDB文件备份起来。&lt;/li&gt;
+&lt;li&gt;解析decode：对RDB文件进行读取，并以json格式解析存储。&lt;/li&gt;
+&lt;li&gt;同步sync：支持源redis和目的redis的数据同步，支持全量和增量数据的迁移，支持从云下到阿里云云上的同步，也支持云下到云下不同环境的同步，支持单节点、主从版、集群版之间的互相同步。需要注意的是，如果源端是集群版，可以启动一个RedisShake，从不同的db结点进行拉取，同时源端不能开启move slot功能；对于目的端，如果是集群版，写入可以是1个或者多个db结点。&lt;/li&gt;
+&lt;li&gt;同步rump：支持源redis和目的redis的数据同步，仅支持全量的迁移。采用scan和restore命令进行迁移，支持不同云厂商不同redis版本的迁移。&lt;/li&gt;
+&lt;li&gt;指定Key恢复:filter.key.whitelist可以过滤指定前辍的key，但是只适用于&lt;code&gt;restore&lt;/code&gt;, &lt;code&gt;sync&lt;/code&gt; and &lt;code&gt;rump&lt;/code&gt;三种模式。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;基本原理&quot;&gt;&lt;a href=&quot;#基本原理&quot; class=&quot;headerlink&quot; title=&quot;基本原理&quot;&gt;&lt;/a&gt;基本原理&lt;/h1&gt;&lt;p&gt;redis-shake的基本原理就是模拟一个从节点加入源redis集群，首先进行全量拉取并回放，然后进行增量的拉取（通过psync命令）。如下图所示：&lt;br&gt;&lt;img src=&quot;https://yqfile.alicdn.com/79f799fd8a5c75a91f6290a15be26587863950f5.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;  &lt;br&gt;  如果源端是集群模式，只需要启动一个redis-shake进行拉取，同时不能开启源端的move slot操作。如果目的端是集群模式，可以写入到一个结点，然后再进行slot的迁移，当然也可以多对多写入。&lt;br&gt;  目前，redis-shake到目的端采用单链路实现，对于正常情况下，这不会成为瓶颈，但对于极端情况，qps比较大的时候，此部分性能可能成为瓶颈，后续我们可能会计划对此进行优化。另外，redis-shake到目的端的数据同步采用异步的方式，读写分离在2个线程操作，降低因为网络时延带来的同步性能下降。&lt;/p&gt;
+&lt;h1 id=&quot;高效性&quot;&gt;&lt;a href=&quot;#高效性&quot; class=&quot;headerlink&quot; title=&quot;高效性&quot;&gt;&lt;/a&gt;高效性&lt;/h1&gt;&lt;p&gt;   全量同步阶段并发执行，增量同步阶段异步执行，能够达到毫秒级别延迟（取决于网络延迟）。同时，我们还对大key同步进行分批拉取，优化同步性能。&lt;/p&gt;
+&lt;h1 id=&quot;监控&quot;&gt;&lt;a href=&quot;#监控&quot; class=&quot;headerlink&quot; title=&quot;监控&quot;&gt;&lt;/a&gt;监控&lt;/h1&gt;&lt;p&gt;   用户可以通过我们提供的restful拉取metric来对redis-shake进行实时监控：curl 127.0.0.1:9320/metric。&lt;/p&gt;
+&lt;h1 id=&quot;校验&quot;&gt;&lt;a href=&quot;#校验&quot; class=&quot;headerlink&quot; title=&quot;校验&quot;&gt;&lt;/a&gt;校验&lt;/h1&gt;&lt;p&gt;   如何校验同步的正确性？可以采用我们开源的redis-full-check，具体原理可以参考这篇博客。&lt;/p&gt;
+&lt;h1 id=&quot;支持&quot;&gt;&lt;a href=&quot;#支持&quot; class=&quot;headerlink&quot; title=&quot;支持&quot;&gt;&lt;/a&gt;支持&lt;/h1&gt;&lt;p&gt;支持2.8-5.0版本的同步。&lt;br&gt;支持codis。&lt;br&gt;支持云下到云上，云上到云上，云上到云下（阿里云目前支持主从版），其他云到阿里云等链路，帮助用户灵活构建混合云场景。&lt;/p&gt;
+&lt;h1 id=&quot;开发中的功能&quot;&gt;&lt;a href=&quot;#开发中的功能&quot; class=&quot;headerlink&quot; title=&quot;开发中的功能&quot;&gt;&lt;/a&gt;开发中的功能&lt;/h1&gt;&lt;p&gt;断点续传。支持断开后按offset恢复，降低因主备切换、网络抖动造成链路断开重新同步拉取全量的性能影响。&lt;/p&gt;
+&lt;h1 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h1&gt;&lt;p&gt;多活支持的支持，需要依赖内核的能力，目前单单依赖通道层面无法解决该问题。redis内核层面需要提供gtid的概念，以及CRDT的解决冲突的方式才可以。&lt;/p&gt;
+&lt;h1 id=&quot;参数解释：&quot;&gt;&lt;a href=&quot;#参数解释：&quot; class=&quot;headerlink&quot; title=&quot;参数解释：&quot;&gt;&lt;/a&gt;参数解释：&lt;/h1&gt;&lt;p&gt;启动示例（以sync举例）：&lt;br&gt;vinllen@ ~/redis-shake/bin$ ./redis-shake -type=sync -conf=../conf/redis-shake.conf&lt;br&gt;conf路径下的redis-shake.conf存放的是配置文件，其内容及部分中文注释如下&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# this is the configuration of redis-shake.
+# if you have any problem, please visit https://github.com/alibaba/RedisShake/wiki/FAQ
+
+# current configuration version, do not modify.
+# 当前配置文件的版本号，请不要修改该值。
+conf.version = 1
+
+# ------------------------------------------------------
+# id
+id = redis-shake
+
+# log file，日志文件，不配置将打印到stdout (e.g. /var/log/redis-shake.log )
+log.file =
+# log level: &amp;quot;none&amp;quot;, &amp;quot;error&amp;quot;, &amp;quot;warn&amp;quot;, &amp;quot;info&amp;quot;, &amp;quot;debug&amp;quot;. default is &amp;quot;info&amp;quot;.
+log.level = info
+# pid path，进程文件存储地址（e.g. /var/run/)，不配置将默认输出到执行下面,
+# 注意这个是目录，真正的pid是`{pid_path}/{id}.pid`
+pid_path = 
+
+# pprof port.
+system_profile = 9310
+# restful port, set -1 means disable, in `restore` mode RedisShake will exit once finish restoring RDB only if this value
+# is -1, otherwise, it&amp;apos;ll wait forever.
+# restful port，查看metric端口, -1表示不启用，如果是`restore`模式，只有设置为-1才会在完成RDB恢复后退出，否则会一直block。
+http_profile = 9320
+
+# parallel routines number used in RDB file syncing. default is 64.
+# 启动多少个并发线程同步一个RDB文件。
+parallel = 32
+
+# source redis configuration.
+# used in `dump`, `sync` and `rump`.
+# source redis type, e.g. &amp;quot;standalone&amp;quot; (default), &amp;quot;sentinel&amp;quot; or &amp;quot;cluster&amp;quot;.
+#   1. &amp;quot;standalone&amp;quot;: standalone db mode.
+#   2. &amp;quot;sentinel&amp;quot;: the redis address is read from sentinel.
+#   3. &amp;quot;cluster&amp;quot;: the source redis has several db.
+#   4. &amp;quot;proxy&amp;quot;: the proxy address, currently, only used in &amp;quot;rump&amp;quot; mode.
+# 源端redis的类型，支持standalone，sentinel，cluster和proxy四种模式，注意：目前proxy只用于rump模式。
+source.type = standalone
+# ip:port
+# the source address can be the following:
+#   1. single db address. for &amp;quot;standalone&amp;quot; type.
+#   2. ${sentinel_master_name}:${master or slave}@sentinel single/cluster address, e.g., mymaster:master@127.0.0.1:26379;127.0.0.1:26380, or @127.0.0.1:26379;127.0.0.1:26380. for &amp;quot;sentinel&amp;quot; type.
+#   3. cluster that has several db nodes split by semicolon(;). for &amp;quot;cluster&amp;quot; type. e.g., 10.1.1.1:20331;10.1.1.2:20441.
+#   4. proxy address(used in &amp;quot;rump&amp;quot; mode only). for &amp;quot;proxy&amp;quot; type.
+# 源redis地址。对于sentinel或者开源cluster模式，输入格式为&amp;quot;master名字:拉取角色为master或者slave@sentinel的地址&amp;quot;，别的cluster
+# 架构，比如codis, twemproxy, aliyun proxy等需要配置所有master或者slave的db地址。
+source.address = 127.0.0.1:20441
+# password of db/proxy. even if type is sentinel.
+source.password_raw = 123456
+# auth type, don&amp;apos;t modify it
+source.auth_type = auth
+# tls enable, true or false. Currently, only support standalone.
+# open source redis does NOT support tls so far, but some cloud versions do.
+source.tls_enable = false
+# input RDB file.
+# used in `decode` and `restore`.
+# if the input is list split by semicolon(;), redis-shake will restore the list one by one.
+# 如果是decode或者restore，这个参数表示读取的rdb文件。支持输入列表，例如：rdb.0;rdb.1;rdb.2
+# redis-shake将会挨个进行恢复。
+source.rdb.input = local
+# the concurrence of RDB syncing, default is len(source.address) or len(source.rdb.input).
+# used in `dump`, `sync` and `restore`. 0 means default.
+# This is useless when source.type isn&amp;apos;t cluster or only input is only one RDB.
+# 拉取的并发度，如果是`dump`或者`sync`，默认是source.address中db的个数，`restore`模式默认len(source.rdb.input)。
+# 假如db节点/输入的rdb有5个，但rdb.parallel=3，那么一次只会
+# 并发拉取3个db的全量数据，直到某个db的rdb拉取完毕并进入增量，才会拉取第4个db节点的rdb，
+# 以此类推，最后会有len(source.address)或者len(rdb.input)个增量线程同时存在。
+source.rdb.parallel = 0
+# for special cloud vendor: ucloud
+# used in `decode` and `restore`.
+# ucloud集群版的rdb文件添加了slot前缀，进行特判剥离: ucloud_cluster。
+source.rdb.special_cloud = 
+
+# target redis configuration. used in `restore`, `sync` and `rump`.
+# the type of target redis can be &amp;quot;standalone&amp;quot;, &amp;quot;proxy&amp;quot; or &amp;quot;cluster&amp;quot;.
+#   1. &amp;quot;standalone&amp;quot;: standalone db mode.
+#   2. &amp;quot;sentinel&amp;quot;: the redis address is read from sentinel.
+#   3. &amp;quot;cluster&amp;quot;: open source cluster (not supported currently).
+#   4. &amp;quot;proxy&amp;quot;: proxy layer ahead redis. Data will be inserted in a round-robin way if more than 1 proxy given.
+# 目的redis的类型，支持standalone，sentinel，cluster和proxy四种模式。
+target.type = standalone
+# ip:port
+# the target address can be the following:
+#   1. single db address. for &amp;quot;standalone&amp;quot; type.
+#   2. ${sentinel_master_name}:${master or slave}@sentinel single/cluster address, e.g., mymaster:master@127.0.0.1:26379;127.0.0.1:26380, or @127.0.0.1:26379;127.0.0.1:26380. for &amp;quot;sentinel&amp;quot; type.
+#   3. cluster that has several db nodes split by semicolon(;). for &amp;quot;cluster&amp;quot; type.
+#   4. proxy address. for &amp;quot;proxy&amp;quot; type.
+target.address = 127.0.0.1:20551
+# password of db/proxy. even if type is sentinel.
+target.password_raw =
+# auth type, don&amp;apos;t modify it
+target.auth_type = auth
+# all the data will be written into this db. &amp;lt; 0 means disable.
+target.db = -1
+# tls enable, true or false. Currently, only support standalone.
+# open source redis does NOT support tls so far, but some cloud versions do.
+target.tls_enable = false
+# output RDB file prefix.
+# used in `decode` and `dump`.
+# 如果是decode或者dump，这个参数表示输出的rdb前缀，比如输入有3个db，那么dump分别是:
+# ${output_rdb}.0, ${output_rdb}.1, ${output_rdb}.2
+target.rdb.output = local_dump
+# some redis proxy like twemproxy doesn&amp;apos;t support to fetch version, so please set it here.
+# e.g., target.version = 4.0
+target.version =
+
+# use for expire key, set the time gap when source and target timestamp are not the same.
+# 用于处理过期的键值，当迁移两端不一致的时候，目的端需要加上这个值
+fake_time =
+
+# how to solve when destination restore has the same key.
+# rewrite: overwrite. 
+# none: panic directly.
+# ignore: skip this key. not used in rump mode.
+# used in `restore`, `sync` and `rump`.
+# 当源目的有重复key，是否进行覆写
+# rewrite表示源端覆盖目的端。
+# none表示一旦发生进程直接退出。
+# ignore表示保留目的端key，忽略源端的同步key。该值在rump模式下没有用。
+key_exists = none
+
+# filter db, key, slot, lua.
+# filter db.
+# used in `restore`, `sync` and `rump`.
+# e.g., &amp;quot;0;5;10&amp;quot; means match db0, db5 and db10.
+# at most one of `filter.db.whitelist` and `filter.db.blacklist` parameters can be given.
+# if the filter.db.whitelist is not empty, the given db list will be passed while others filtered.
+# if the filter.db.blacklist is not empty, the given db list will be filtered while others passed.
+# all dbs will be passed if no condition given.
+# 指定的db被通过，比如0;5;10将会使db0, db5, db10通过, 其他的被过滤
+filter.db.whitelist =
+# 指定的db被过滤，比如0;5;10将会使db0, db5, db10过滤，其他的被通过
+filter.db.blacklist =
+# filter key with prefix string. multiple keys are separated by &amp;apos;;&amp;apos;.
+# e.g., &amp;quot;abc;bzz&amp;quot; match let &amp;quot;abc&amp;quot;, &amp;quot;abc1&amp;quot;, &amp;quot;abcxxx&amp;quot;, &amp;quot;bzz&amp;quot; and &amp;quot;bzzwww&amp;quot;.
+# used in `restore`, `sync` and `rump`.
+# at most one of `filter.key.whitelist` and `filter.key.blacklist` parameters can be given.
+# if the filter.key.whitelist is not empty, the given keys will be passed while others filtered.
+# if the filter.key.blacklist is not empty, the given keys will be filtered while others passed.
+# all the namespace will be passed if no condition given.
+# 支持按前缀过滤key，只让指定前缀的key通过，分号分隔。比如指定abc，将会通过abc, abc1, abcxxx
+filter.key.whitelist =
+# 支持按前缀过滤key，不让指定前缀的key通过，分号分隔。比如指定abc，将会阻塞abc, abc1, abcxxx
+filter.key.blacklist =
+# filter given slot, multiple slots are separated by &amp;apos;;&amp;apos;.
+# e.g., 1;2;3
+# used in `sync`.
+# 指定过滤slot，只让指定的slot通过
+filter.slot =
+# filter lua script. true means not pass. However, in redis 5.0, the lua 
+# converts to transaction(multi+{commands}+exec) which will be passed.
+# 控制不让lua脚本通过，true表示不通过
+filter.lua = false
+
+# big key threshold, the default is 500 * 1024 * 1024 bytes. If the value is bigger than
+# this given value, all the field will be spilt and write into the target in order. If
+# the target Redis type is Codis, this should be set to 1, please checkout FAQ to find 
+# the reason.
+# 正常key如果不大，那么都是直接调用restore写入到目的端，如果key对应的value字节超过了给定
+# 的值，那么会分批依次一个一个写入。如果目的端是Codis，这个需要置为1，具体原因请查看FAQ。
+# 如果目的端大版本小于源端，也建议设置为1。
+big_key_threshold = 524288000
+
+# enable metric
+# used in `sync`.
+# 是否启用metric
+metric = true
+# print in log
+# 是否将metric打印到log中
+metric.print_log = false
+
+# sender information.
+# sender flush buffer size of byte.
+# used in `sync`.
+# 发送缓存的字节长度，超过这个阈值将会强行刷缓存发送
+sender.size = 104857600
+# sender flush buffer size of oplog number.
+# used in `sync`. flush sender buffer when bigger than this threshold.
+# 发送缓存的报文个数，超过这个阈值将会强行刷缓存发送，对于目的端是cluster的情况，这个值
+# 的调大将会占用部分内存。
+sender.count = 4095
+# delay channel size. once one oplog is sent to target redis, the oplog id and timestamp will also
+# stored in this delay queue. this timestamp will be used to calculate the time delay when receiving
+# ack from target redis.
+# used in `sync`.
+# 用于metric统计时延的队列
+sender.delay_channel_size = 65535
+
+# enable keep_alive option in TCP when connecting redis.
+# the unit is second.
+# 0 means disable.
+# TCP keep-alive保活参数，单位秒，0表示不启用。
+keep_alive = 0
+
+# used in `rump`.
+# number of keys captured each time. default is 100.
+# 每次scan的个数，不配置则默认100.
+scan.key_number = 50
+# used in `rump`.
+# we support some special redis types that don&amp;apos;t use default `scan` command like alibaba cloud and tencent cloud.
+# 有些版本具有特殊的格式，与普通的scan命令有所不同，我们进行了特殊的适配。目前支持腾讯云的集群版&amp;quot;tencent_cluster&amp;quot;
+# 和阿里云的集群版&amp;quot;aliyun_cluster&amp;quot;，注释主从版不需要配置，只针对集群版。
+scan.special_cloud =
+# used in `rump`.
+# we support to fetching data from given file which marks the key list.
+# 有些云版本，既不支持sync/psync，也不支持scan，我们支持从文件中进行读取所有key列表并进行抓取：一行一个key。
+scan.key_file =
+
+# limit the rate of transmission. Only used in `rump` currently.
+# e.g., qps = 1000 means pass 1000 keys per second. default is 500,000(0 means default)
+qps = 200000
+
+# enable resume from break point, please visit xxx to see more details.
+# 断点续传开关
+resume_from_break_point = false
+
+# ----------------splitter----------------
+# below variables are useless for current open source version so don&amp;apos;t set.
+
+# replace hash tag.
+# used in `sync`.
+replace_hash_tag = false
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;开源地址&lt;br&gt;redis-shake: &lt;a href=&quot;https://github.com/aliyun/redis-shake&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/aliyun/redis-shake&lt;/a&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;blockquote&gt;
+&lt;p&gt;redis-shake是阿里云Redis&amp;amp;MongoDB团队开源的用于redis数据同步的工具。下载地址：&lt;a href=&quot;https://github.com/alibaba/RedisShake/releases&quot; targe
+    
+    </summary>
+    
+      <category term="Redis" scheme="http://idber.github.io/categories/Redis/"/>
+    
+    
+      <category term="Redis" scheme="http://idber.github.io/tags/Redis/"/>
+    
+      <category term="备份，Key过滤" scheme="http://idber.github.io/tags/%E5%A4%87%E4%BB%BD%EF%BC%8CKey%E8%BF%87%E6%BB%A4/"/>
+    
+  </entry>
   
   <entry>
     <title>关于Percona XtraBackup的redo-Only参数</title>
@@ -3193,151 +3464,6 @@ MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="性能" scheme="http://idber.github.io/tags/%E6%80%A7%E8%83%BD/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>MySQL 5.7新特性系列二</title>
-    <link href="http://idber.github.io/2018/08/24-MySQL%205.7%E6%96%B0%E7%89%B9%E6%80%A7%E7%B3%BB%E5%88%97%E4%BA%8C.html"/>
-    <id>http://idber.github.io/2018/08/24-MySQL 5.7新特性系列二.html</id>
-    <published>2018-08-23T22:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.929Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;ol&gt;
-&lt;li&gt;系统变量&lt;br&gt;5.7以后System and status 变量需要从performance_schema中进行获取，information_schema仍然保留了GLOBAL_STATUS，GLOBAL_VARIABLES两个表做兼容。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;[兼容性]&lt;br&gt;如果希望沿用information_schema中进行查询的习惯，5.7提供了show_compatibility_56参数，设置为ON可以兼容5.7之前的用法，否则就会报错：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;ERROR 3167 (HY000): The &amp;apos;INFORMATION_SCHEMA.GLOBAL_STATUS&amp;apos; feature is disabled; see the documentation for &amp;apos;show_compatibility_56&amp;apos;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;5.7.6之后，在performance_schema新增了如下的表：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;performance_schema.global_variables
-performance_schema.session_variables
-performance_schema.variables_by_thread
-performance_schema.global_status
-performance_schema.session_status
-performance_schema.status_by_thread
-performance_schema.status_by_account
-performance_schema.status_by_host
-performance_schema.status_by_user
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;5.7.9之前，需要有SELECT_ACL权限才能进行show查询，但5.7.9之后，默认这些表是不需要任何权限就可以访问了。&lt;/p&gt;
-&lt;ol start=&quot;2&quot;&gt;
-&lt;li&gt;sys schema&lt;br&gt;新增了sys数据库，主要是performance_schema收集的信息，帮助DBA和开发人员方便诊断问题。 sys下的一共包括三种对象：1. view，2. procedure 3 function 这些对象都是基于performance_schema下的表，进行了可读性的聚合，没有真正存储数据，只存储了定义。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;[兼容性]&lt;br&gt;mysql_install_db可以选择–skip-sys-schema跳过安装过程， 但默认mysql_upgrade会帮你创建sys下面的对象。不存在兼容性的问题&lt;/p&gt;
-&lt;ol start=&quot;3&quot;&gt;
-&lt;li&gt;&lt;p&gt;异常栈&lt;br&gt;5.7开始支持异常诊断栈信息，通过GET STACKED DIAGNOSTICS可以获取栈内的信息。 具体的使用方法参考：&lt;a href=&quot;https://dev.mysql.com/doc/refman/5.7/en/diagnostics-area.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://dev.mysql.com/doc/refman/5.7/en/diagnostics-area.html&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Triggers&lt;br&gt;支持在一个table对象上建多个trigger。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Generated Columns&lt;br&gt;5.7.6开始，支持生成列，这个列可以是虚拟的列，也可以是实体存储数据的列。 比如：&lt;/p&gt;
-&lt;p&gt; CREATE TABLE triangle (&lt;br&gt;   sidea DOUBLE,&lt;br&gt;   sideb DOUBLE,&lt;br&gt;   sidec DOUBLE AS (SQRT(sidea &lt;em&gt; sidea + sideb &lt;/em&gt; sideb))&lt;br&gt; );&lt;br&gt;VIRTUAL： 表示这个字段是虚拟列，并不进行存储，查询的时候，通过计算得到&lt;br&gt;STORED： 需要存储空间，并且可以被索引的列&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;exchange partition不验证&lt;br&gt;这个是在oracle分区表上支持的功能，dba在做大表维护的时候，非常有用。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;语法： ALTER TABLE … EXCHANGE PARTITION WITHOUT VALIDATION&lt;br&gt;如果不验证，那么只有元数据信息的更改，就可以完成exchange，否则，就需要读取每一行数据进行验证，维护时间将根据这个表大小有关系。&lt;/p&gt;
-&lt;ol start=&quot;7&quot;&gt;
-&lt;li&gt;&lt;p&gt;dump线程增强&lt;br&gt;5.7.2之前，master dump线程需要持有LOCK_log锁去读取binlog然后发送到备库，而这时会阻塞client端去写入binlog。5.7.2之后，dump线程只需要持有LOCK_binlog_end_pos这个锁去读取binlog的当前的位置，来决定是否发送到备库去，这样就可以做到不阻塞任何binlog的写入。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;多源复制&lt;br&gt;多源复制可以从多个master复制到一个slave端，在数据库集群进行扩容和缩容的时候，非常有用。我们会在后面的系列单独来介绍。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;在线更改replication master&lt;br&gt;可以不用stop slave，然后在线更改replication master信息。 但这里并不是不需要slave停掉， 而是change master涉及到几个动作：&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;如果只是更改当前relay的信息，那么只需要sql线程是不工作的就可以了，IO thread可以继续&lt;br&gt;如果只是更改主库的信息，那么只需要IO线程不工作就可以了。 sql thread可以继续&lt;br&gt;如果需要重新启动主库和备库的恢复信息，比如master_auto_positioin=1，那么就需要IO和sql线程都停掉。&lt;/p&gt;
-&lt;ol start=&quot;10&quot;&gt;
-&lt;li&gt;Group Replication&lt;br&gt;并行复制支持按照主库组提交的形式在备库进行回放。下一个系列进行单独来介绍&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;下面单独介绍一下MySQL 5.7对临时表进行的改动。&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;背景&lt;br&gt;MySQL包括两类临时表，一类是通过create temporary table创建的临时表，一类是在query过程中using temporary而创建的临时表。 5.7之前，using temporary创建的临时表，默认只能使用myisam引擎，而在5.7之后，可以选择InnoDB引擎来创建。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;临时表的引擎选择使用下面的这两个参数来决定：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show global variables like &amp;apos;%tmp%&amp;apos;;
-+----------------------------------+---------------------------------------+
-| Variable_name                    | Value                                 |
-+----------------------------------+---------------------------------------+
-| default_tmp_storage_engine       | InnoDB                                |
-| internal_tmp_disk_storage_engine | InnoDB                                |
-&lt;/code&gt;&lt;/pre&gt;&lt;ol start=&quot;2&quot;&gt;
-&lt;li&gt;临时表空间&lt;br&gt;5.7之后，使用了独立的临时表空间来存储临时表数据，但不能是压缩表。临时表空间在实例启动的时候进行创建，shutdown的时候进行删除。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;例如如下的配置：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;mysql&amp;gt; show global variables like &amp;apos;%innodb_temp%&amp;apos;; 
-+----------------------------+-----------------------+
-| Variable_name              | Value                 |
-+----------------------------+-----------------------+
-| innodb_temp_data_file_path | ibtmp1:12M:autoextend |
-+----------------------------+-----------------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;create temporary table和using temporary table将共用这个临时表空间。&lt;/p&gt;
-&lt;ol start=&quot;3&quot;&gt;
-&lt;li&gt;临时表优化&lt;br&gt;临时表会伴随着大量的数据写入和读取，尤其是internal_tmp_table。所以，InnoDB专门对临时表进行了优化。&lt;br&gt;InnoDB使用如下两个标示临时表：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;dict_tf2_temporary： 表示普通临时表&lt;br&gt;dict_tf2_intrinsic： 表示内部临时表&lt;br&gt;这两个标示，会在IBD文件的segment header占用两个bit位。intrinsic一定是temproary，也就是temproary上进行的优化 完全适用于intrinsic表上。&lt;/p&gt;
-&lt;p&gt;下面来看下具体的优化：&lt;/p&gt;
-&lt;p&gt;3.1. redo&lt;br&gt;临时表在连接断开或者数据库实例关闭的时候，会进行删除，所以，临时表的数据不需要redo来保护，即recovery的过程中 不恢复临时表，只有临时表的metadata使用了redo保护，保护元数据的完整性，以便异常启动后进行清理工作。&lt;/p&gt;
-&lt;p&gt;临时表的元数据，5.7之后，使用了一个独立的表进行保存，这样就不要使用redo保护，元数据也只保存在内存中。 但这有一个前提，必须使用共享的临时表空间，如果使用file-per-table，仍然需要持久化元数据，以便异常恢复清理。&lt;/p&gt;
-&lt;p&gt;3.2 undo&lt;br&gt;temporary table仍然需要语句级的回滚，所以，需要为数据生成undo。但intrinsic table不需要回滚，所以，intrinsic table 减少了undo的生成，性能更高。&lt;/p&gt;
-&lt;p&gt;3.3 lock&lt;br&gt;因为临时表只有本线程可以看见，所以减少了InnoDB的加锁过程。&lt;/p&gt;
-&lt;p&gt;可以看下insert的时候，进行的分支判断：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt; row_insert_for_mysql(
-    const byte*        mysql_rec,
-    row_prebuilt_t*        prebuilt)
-{
-    /* For intrinsic tables there a lot of restrictions that can be
-    relaxed including locking of table, transaction handling, etc.
-    Use direct cursor interface for inserting to intrinsic tables. */
-    if (dict_table_is_intrinsic(prebuilt-&amp;gt;table)) {
-        return(row_insert_for_mysql_using_cursor(mysql_rec, prebuilt));
-    } else {
-        return(row_insert_for_mysql_using_ins_graph(
-            mysql_rec, prebuilt));
-    }
-}
-row_insert_for_mysql_using_cursor直接跳过了加锁的lock_table过程。
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;然后，如果是intrinsic table，就直接插入，减少了undo的生成。&lt;br&gt;如果不是，需要加lock，并生成undo信息。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;if (dict_table_is_intrinsic(index-&amp;gt;table)) {
-
-            index-&amp;gt;rec_cache.rec_size = rec_size;
-
-            *rec = page_cur_tuple_direct_insert(
-                page_cursor, entry, index, n_ext, mtr);
-        } else {
-            /* Check locks and write to the undo log,
-            if specified */
-            err = btr_cur_ins_lock_and_undo(flags, cursor, entry,
-                            thr, mtr, &amp;amp;inherit);
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;插入的时候，如果是临时表。就关闭redo的生成。如下面的代码所示：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;if (dict_table_is_temporary(index-&amp;gt;table)) {
-        /* Disable REDO logging as the lifetime of temp-tables is
-        limited to server or connection lifetime and so REDO
-        information is not needed on restart for recovery.
-        Disable locking as temp-tables are local to a connection. */
-
-        ut_ad(flags &amp;amp; BTR_NO_LOCKING_FLAG);
-        ut_ad(!dict_table_is_intrinsic(index-&amp;gt;table)
-              || (flags &amp;amp; BTR_NO_UNDO_LOG_FLAG));
-
-        mtr.set_log_mode(MTR_LOG_NO_REDO);
-    }
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;未完待续，下一个系列，我们将介绍一下undo的新特性，包括online truncated undo。&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;ol&gt;
-&lt;li&gt;系统变量&lt;br&gt;5.7以后System and status 变量需要从performance_schema中进行获取，information_schema仍然保留了GLOBAL_STATUS，GLOBAL_VARIABLES两个表做兼容。&lt;/li&gt;
-
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="新特性" scheme="http://idber.github.io/tags/%E6%96%B0%E7%89%B9%E6%80%A7/"/>
     
   </entry>
   
