@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-09-25T03:49:00.529Z</updated>
+  <updated>2020-09-25T12:41:51.716Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,72 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>MySQL源码调试方法</title>
+    <link href="http://idber.github.io/2020/09/25-MySQL%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95.html"/>
+    <id>http://idber.github.io/2020/09/25-MySQL源码调试方法.html</id>
+    <published>2020-09-25T09:01:56.000Z</published>
+    <updated>2020-09-25T12:41:51.716Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;p&gt;实验如下:&lt;br&gt;下载MySQL 5.6.26的源码&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-5.7.26.tar.gz
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;安装依赖&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;yum -y install perl perl-devel libaio libaio-devel perl-Time-HiRes perl-DBD-MySQL perl-TermReadKey.x86_64  zlib openssl sshpass bash-completion unzip make gcc-c++ cmake bison-devel  ncurses-devel gdb
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;编译,注意增加 DEBUG 选项。（cmake的版本要求在2.8.2以上）&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cmake \
+-DCMAKE_INSTALL_PREFIX=/home/mysql/mysql \
+-DMYSQL_DATADIR=/data \
+-DSYSCONFDIR=/etc \
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \
+-DWITH_READLINE=1 \
+-DWITH_DEBUG=1 \
+-DMYSQL_UNIX_ADDR=/data/mysql.sock \
+-DMYSQL_TCP_PORT=3306 \
+-DENABLED_LOCAL_INFILE=1 \
+-DEXTRA_CHARSETS=all \
+-DDEFAULT_CHARSET=utf8 \
+-DDEFAULT_COLLATION=utf8_general_ci
+
+make &amp;amp;&amp;amp; make install
+
+scripts/mysql_install_db --user=mysql --basedir=/home/mysql/mysql --datadir=/data
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;源码安装完MySQL之后,mysql用户使用Debug模式启动&lt;br&gt;mysqld –debug –console &amp;amp;&lt;/p&gt;
+&lt;p&gt;然后重头戏来了&lt;/p&gt;
+&lt;p&gt;先找到MySQL的PID&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;[mysql@mysql ~]$ ps -ef|grep mysqld
+mysql    15487     1  0 18:02 pts/0    00:00:01 ./mysqld --debug --console
+mysql    15546  1587  0 18:14 pts/0    00:00:00 grep --color=auto mysqld
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;这时候,tail -f /tmp/mysqld.trace&lt;br&gt;可以看到,任何在MySQL的操作,调用的函数信息都记录在这个trace文件中.&lt;/p&gt;
+&lt;p&gt;找到其中任意一行,比如 PROFILING::status_change&lt;/p&gt;
+&lt;p&gt;使用命令gdb调试.&lt;br&gt;gdb –pid 15487 –tui&lt;/p&gt;
+&lt;p&gt;将上述函数打断点.&lt;br&gt;break PROFILING::status_change&lt;/p&gt;
+&lt;p&gt;开启另外一个MySQL终端.执行查询,然后进入gdb的断点.&lt;/p&gt;
+&lt;p&gt;可以看到源码,并且单步执行,打印变量.&lt;/p&gt;
+&lt;p&gt;看静态的代码一般比较枯燥,用这种方式感觉比较好入门.&lt;/p&gt;
+&lt;p&gt;同样的方式,也适用于Redis&lt;/p&gt;
+&lt;p&gt;参考文献：&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/likui360/p/6082581.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MySQL 编译安装并且开启DEBUG模式&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://idber.github.io/2016/03/28-MySQL%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2.html&quot;&gt;MySQL自动化安装部署&lt;/a&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;实验如下:&lt;br&gt;下载MySQL 5.6.26的源码&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-5.7.26.tar.gz
+&lt;/code&gt;&lt;/pre&gt;
+    
+    </summary>
+    
+      <category term="Redis" scheme="http://idber.github.io/categories/Redis/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="源码" scheme="http://idber.github.io/tags/%E6%BA%90%E7%A0%81/"/>
+    
+  </entry>
   
   <entry>
     <title>Redis强大的备份同步工具Redis-Shake</title>
@@ -3368,102 +3434,6 @@ proxysql:metrics  proxysql6032   42004       YES      admin:***@tcp(127.0.0.1:60
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="读写分离" scheme="http://idber.github.io/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>内存的80％？应该如何调整你的innodb_buffer_pool_size</title>
-    <link href="http://idber.github.io/2018/08/26-%E5%86%85%E5%AD%98%E7%9A%8480%EF%BC%85%EF%BC%9F%E5%BA%94%E8%AF%A5%E5%A6%82%E4%BD%95%E8%B0%83%E6%95%B4%E4%BD%A0%E7%9A%84innodb_buffer_pool_size.html"/>
-    <id>http://idber.github.io/2018/08/26-内存的80％？应该如何调整你的innodb_buffer_pool_size.html</id>
-    <published>2018-08-26T02:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.935Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;p&gt;现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。&lt;a href=&quot;https://dev.mysql.com/doc/refman/5.6/en/innodb-parameters.html#sysvar_innodb_buffer_pool_size&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MySQL手册&lt;/a&gt;引用了这个规则，那么谁能责怪DBA呢？问题是：这有意义吗？&lt;/p&gt;
-&lt;h1 id=&quot;什么使用服务器上的内存？&quot;&gt;&lt;a href=&quot;#什么使用服务器上的内存？&quot; class=&quot;headerlink&quot; title=&quot;什么使用服务器上的内存？&quot;&gt;&lt;/a&gt;什么使用服务器上的内存？&lt;/h1&gt;&lt;p&gt;在我们质疑这样的建议之前，让我们考虑一下在典型的MySQL服务器中可以占用RAM的广泛类别。这个列表不一定完整，但我认为它概述了MySQL服务器消耗内存的大面积。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;操作系统：内核，正在运行的进程，文件系统缓存等。
-MySQL固定使用：查询缓存，InnoDB缓冲池大小，mysqld rss等。
-基于MySQL工作负载的使用：连接，每个查询缓冲区（连接缓冲区，排序缓冲区等）
-MySQL复制：  二进制日志缓存，复制连接，Galera gcache和证书索引等。
-同一服务器上的任何其他服务： Web服务器，缓存服务器，cronjobs等。
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;毫无疑问，对于调优InnoDB，innodb_buffer_pool_size是最重要的变量。预计它将占用专用MySQL / Innodb服务器上的大部分RAM，但当然其他本地服务可能会影响它的调整方式。如果它（以及服务器上的其他内存消耗）太大，交换可能会启动并迅速降低性能。&lt;/p&gt;
-&lt;p&gt;此外，MySQL服务器本身的工作量可能会导致很多变化。服务器是否有大量的开放连接和活动查询工作负载消耗内存？由此引起的内存消耗可能与服务器有很大不同。&lt;/p&gt;
-&lt;p&gt;最后，像Galera这样的复制机制有自己的内存使用模式，可能需要对缓冲池进行一些调整。&lt;/p&gt;
-&lt;p&gt;我们可以清楚地看到，80％的规则并不像现实那样微妙。&lt;/p&gt;
-&lt;h1 id=&quot;经验法则&quot;&gt;&lt;a href=&quot;#经验法则&quot; class=&quot;headerlink&quot; title=&quot;经验法则&quot;&gt;&lt;/a&gt;经验法则&lt;/h1&gt;&lt;p&gt;但是，为了论证，让我们说80％的规则是一个起点。根据经验，帮助我们获得快速调整数字以使服务器运行。假设我们对系统的工作负载还不知道，但我们知道该系统专用于InnoDB，我们的80％规则怎么能发挥作用呢？&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;服务器总RAM&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;具有80％规则的缓冲池&lt;/th&gt;
-&lt;th style=&quot;text-align:center&quot;&gt;剩余的RAM&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;1G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;800MB&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;200MB&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;16G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;13G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;3G&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;32G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;26G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;6G&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;64G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;51G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;13G&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;128G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;102G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;26G&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;256G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;205G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;51G&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;512G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;409G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;103G&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;1024G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;819G&lt;/td&gt;
-&lt;td style=&quot;text-align:center&quot;&gt;205G&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;数字较低，我们的80％规则看起来很合理。然而，当我们进入大型服务器时，它似乎开始变得不那么理智了。要使规则成立，它必须意味着工作负载内存消耗与缓冲池所需大小成比例增加，但通常情况并非如此。我们的服务器具有1TB的RAM可能不需要205G来处理连接和查询之类的东西（可能MySQL无法处理那么多活动连接和查询）。&lt;/p&gt;
-&lt;p&gt;那么，如果你真的把所有的钱花在了一台强大的服务器上，你是否真的想因为这个经验法则对该资源征收20％的税？&lt;/p&gt;
-&lt;h1 id=&quot;规则的起源&quot;&gt;&lt;a href=&quot;#规则的起源&quot; class=&quot;headerlink&quot; title=&quot;规则的起源&quot;&gt;&lt;/a&gt;规则的起源&lt;/h1&gt;&lt;p&gt;在我的第一次MySQL会议上，可能是在2006-2007我在雅虎工作时，我参加了由Heikki Tuuri（InnoDB的原作者）和Peter Zaitsev主持的InnoDB调优讲座。我清楚地记得询问80％的规则，因为当时雅虎有一些强大的64G服务器而且规则并不适合我。&lt;/p&gt;
-&lt;p&gt;Heikki的答案让我印象深刻。他说了一些（不是直接引用）的结果：“好吧，我测试的服务器有1GB内存，80％似乎是正确的”。然后，如果记忆服务，他澄清了它并说它不会适用于更大的服务器。&lt;/p&gt;
-&lt;h1 id=&quot;你应该如何调整？&quot;&gt;&lt;a href=&quot;#你应该如何调整？&quot; class=&quot;headerlink&quot; title=&quot;你应该如何调整？&quot;&gt;&lt;/a&gt;你应该如何调整？&lt;/h1&gt;&lt;p&gt;80％可能是一个很好的开始和经验法则。您确实希望确保服务器有足够的可用RAM用于操作系统和通常未知的工作负载。但是，正如我们上面所看到的，服务器越大，规则就越有可能浪费RAM。我认为对于大多数人来说，它以经验法则开始和结束，主要是因为更改InnoDB缓冲池需要在当前版本中重新启动。&lt;/p&gt;
-&lt;p&gt;那么什么是更好的经验法则？我的规则是，当系统运行生产工作负载时，您可以在不使用swap的情况下调整innodb_buffer_pool_size尽可能大。原则上听起来不错，但同样需要一堆重启，说起来容易做起来难。&lt;/p&gt;
-&lt;p&gt;幸运的是，  MySQL 5.7及其在线缓冲池调整大小功能应该使这个原则更容易理解。看到大量的空闲RAM（或者文件系统缓存使用）？动态调高缓冲池。看到一些交换活动？只需将其关闭即可，无需重启。在实践中，我怀疑使用此功能会有一些与性能相关的打嗝，但这至少是朝着正确方向迈出的一大步。&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;p&gt;现在看来，如果有人知道如何调优InnoDB，那就是你必须将innodb_buffer_pool_size调整到物理内存的80％。多数都是这样建议，它似乎深深植根于DBA的脑海中。&lt;a href=&quot;https://dev.mysql.com/doc/refman/5
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="性能" scheme="http://idber.github.io/tags/%E6%80%A7%E8%83%BD/"/>
     
   </entry>
   
