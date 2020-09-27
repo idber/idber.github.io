@@ -4,25 +4,25 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>MongoDB 3.0.8 权限管理 | 似水年华--沉浮</title>
+    <title>Gh-Ost 在线DDL变更工具​ | 似水年华--沉浮</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Michael Guo">
     
 
     
-    <meta name="description" content="MongoDB 3.0虽然管理上有所改变，但是还是没有太明显。千万不要相信百度上各种，3.0起没有root用户，授个userAdminAnyDatabase角色权限的用户就是root用户。不然用客户端连接会报下面一些错误mongo shell 中db.auth 授权后删除普通数据库报错 db.dropDatabase() {     &amp;quot;ok&amp;quot; : 0,     &amp;quot;er">
-<meta name="keywords" content="NoSQL">
+    <meta name="description" content="简介  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。开源地址：ht">
+<meta name="keywords" content="MySQL,DDL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MongoDB 3.0.8 权限管理">
-<meta property="og:url" content="http://idber.github.io/2016/01/24-MongoDB 3.0.8权限管理.html">
+<meta property="og:title" content="Gh-Ost 在线DDL变更工具​">
+<meta property="og:url" content="http://idber.github.io/2020/09/27-gh-ost 在线DDL变更工具​.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="MongoDB 3.0虽然管理上有所改变，但是还是没有太明显。千万不要相信百度上各种，3.0起没有root用户，授个userAdminAnyDatabase角色权限的用户就是root用户。不然用客户端连接会报下面一些错误mongo shell 中db.auth 授权后删除普通数据库报错 db.dropDatabase() {     &amp;quot;ok&amp;quot; : 0,     &amp;quot;er">
+<meta property="og:description" content="简介  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。开源地址：ht">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-22T01:41:16.928Z">
+<meta property="og:updated_time" content="2020-09-27T09:53:25.613Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MongoDB 3.0.8 权限管理">
-<meta name="twitter:description" content="MongoDB 3.0虽然管理上有所改变，但是还是没有太明显。千万不要相信百度上各种，3.0起没有root用户，授个userAdminAnyDatabase角色权限的用户就是root用户。不然用客户端连接会报下面一些错误mongo shell 中db.auth 授权后删除普通数据库报错 db.dropDatabase() {     &amp;quot;ok&amp;quot; : 0,     &amp;quot;er">
+<meta name="twitter:title" content="Gh-Ost 在线DDL变更工具​">
+<meta name="twitter:description" content="简介  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。开源地址：ht">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -77,14 +77,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/01/24-MongoDB 3.0.8权限管理.html" title="MongoDB 3.0.8 权限管理" itemprop="url">MongoDB 3.0.8 权限管理</a>
+      <a href="/2020/09/27-gh-ost 在线DDL变更工具​.html" title="Gh-Ost 在线DDL变更工具​" itemprop="url">Gh-Ost 在线DDL变更工具​</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Michael Guo" target="_blank" itemprop="author">Michael Guo</a>
 		
   <p class="article-time">
-    <time datetime="2016-01-24T09:21:36.000Z" itemprop="datePublished"> Published 2016-01-24</time>
+    <time datetime="2020-09-27T07:01:56.000Z" itemprop="datePublished"> Published 2020-09-27</time>
     
   </p>
 </header>
@@ -93,98 +93,85 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-创建一个超级用户"><span class="toc-number">1.</span> <span class="toc-text">1.创建一个超级用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-用新创建的用户登录"><span class="toc-number">2.</span> <span class="toc-text">2.用新创建的用户登录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-查看当前用户的权限"><span class="toc-number">3.</span> <span class="toc-text">3.查看当前用户的权限</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-创建一般用户，也是用createUser"><span class="toc-number">4.</span> <span class="toc-text">4.创建一般用户，也是用createUser</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-创建一个不受访问限制的超级用户"><span class="toc-number">5.</span> <span class="toc-text">5.创建一个不受访问限制的超级用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-修改密码"><span class="toc-number">6.</span> <span class="toc-text">6.修改密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-查看用户信息"><span class="toc-number">7.</span> <span class="toc-text">7.查看用户信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-修改密码和用户信息"><span class="toc-number">8.</span> <span class="toc-text">8.修改密码和用户信息</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参数说明"><span class="toc-number">2.</span> <span class="toc-text">参数说明</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用"><span class="toc-number">3.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载安装"><span class="toc-number">3.1.</span> <span class="toc-text">下载安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行变更"><span class="toc-number">3.2.</span> <span class="toc-text">执行变更</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#错误忽略"><span class="toc-number">3.3.</span> <span class="toc-text">错误忽略</span></a></li></ol></li></ol>
 		
 		</div>
 		
-		<p>MongoDB 3.0虽然管理上有所改变，但是还是没有太明显。<br>千万不要相信百度上各种，3.0起没有root用户，授个userAdminAnyDatabase角色权限的用户就是root用户。<br>不然用客户端连接会报下面一些错误<br>mongo shell 中db.auth 授权后删除普通数据库报错</p>
-<pre><code>db.dropDatabase()
-{
-    &quot;ok&quot; : 0,
-    &quot;errmsg&quot; : &quot;not authorized on guo to execute command { dropDatabase: 1.0 }&quot;,
-    &quot;code&quot; : 13
-}
-</code></pre><p>这是因为userAdminAnyDatabase不包括删除数据库权限<br>客户端连接查看数据报错</p>
-<pre><code>{
-&quot;code&quot; : 13,
-&quot;errmsg&quot; : &quot;not authorized on admin to execute command { listCollections: true, filter: {}, cursor: {} }&quot;,
-&quot;message&quot; : &quot;not authorized on admin to execute command { listCollections: true, filter: {}, cursor: {} }&quot;,
-&quot;name&quot; : &quot;MongoError&quot;,
-&quot;ok&quot; : 0
-}
-</code></pre><p>或</p>
-<pre><code>Error encountered
-Element &apos;inprog&apos; not found.
-Type: System.Collections.Generic.KeyNotFoundException
-Stack:    在 MangoUI.ComServerView.RefreshCurrentOps(MMongo mo, TimeSpan&amp; data, TimeSpan&amp; gui, Boolean throwEx)
-</code></pre><p>   在 MangoUI.ComServerView.RenderMe()</p>
-<p>不仅有root角色，还有个超级无敌的__system角色不过官方不推荐使用，一般起用root角色即可。<br>详见：</p>
-<pre><code>https://docs.mongodb.org/manual/reference/built-in-roles/#userAdminAnyDatabase
-</code></pre><p>3.0版本还是有root的，如下面第5种方式建出的才是root超级权限的用户。</p>
-<p>mongodb从2.4版本中对用户权限管理做了全新的调整，把权限细化了，增强了安全性，越来越像mysql的权限管理了。</p>
-<h2 id="1-创建一个超级用户"><a href="#1-创建一个超级用户" class="headerlink" title="1.创建一个超级用户"></a>1.创建一个超级用户</h2><pre><code>use admin
-
-db.createUser(
-  {
-    user: &quot;adminUserName&quot;,
-    pwd: &quot;userPassword&quot;,
-    roles:
-    [
-      {
-        roles: &quot;userAdminAnyDatabase&quot;,
-        db: &quot;admin&quot;
-      }
-    ]
-  }
-)
-</code></pre><p>超级用户的role有两种，userAdmin或者userAdminAnyDatabase(比前一种多加了对所有数据库的访问)。</p>
-<p>db是指定数据库的名字，admin是管理数据库。</p>
-<h2 id="2-用新创建的用户登录"><a href="#2-用新创建的用户登录" class="headerlink" title="2.用新创建的用户登录"></a>2.用新创建的用户登录</h2><pre><code>mongo --host xxx -u adminUserName -p userPassword --authenticationDatabase admin
-</code></pre><h2 id="3-查看当前用户的权限"><a href="#3-查看当前用户的权限" class="headerlink" title="3.查看当前用户的权限"></a>3.查看当前用户的权限</h2><pre><code>db.runCommand(
-  {
-    usersInfo:&quot;userName&quot;,
-    showPrivileges:true
-  }
-)
-</code></pre><h2 id="4-创建一般用户，也是用createUser"><a href="#4-创建一般用户，也是用createUser" class="headerlink" title="4.创建一般用户，也是用createUser"></a>4.创建一般用户，也是用createUser</h2><pre><code>use db01
-db.createUser(
-  {
-    user:&quot;oneUser&quot;,
-    pwd:&quot;12345&quot;,
-    roles:[
-      {role:&quot;read&quot;,db:&quot;db01&quot;},
-      {role:&quot;read&quot;,db:&quot;db02&quot;},
-      {role:&quot;read&quot;,db:&quot;db03&quot;}
-    ]
-  }
-)
-</code></pre><h2 id="5-创建一个不受访问限制的超级用户"><a href="#5-创建一个不受访问限制的超级用户" class="headerlink" title="5.创建一个不受访问限制的超级用户"></a>5.创建一个不受访问限制的超级用户</h2><pre><code>use admin
-db.createUser(
-  {
-    user:&quot;superuser&quot;,
-    pwd:&quot;pwd&quot;,
-    roles:[&quot;root&quot;]
-  }
- )
-</code></pre><h2 id="6-修改密码"><a href="#6-修改密码" class="headerlink" title="6.修改密码"></a>6.修改密码</h2><pre><code>use admin
-
-db.changeUserPassword(&quot;username&quot;, &quot;xxx&quot;)
-</code></pre><h2 id="7-查看用户信息"><a href="#7-查看用户信息" class="headerlink" title="7.查看用户信息"></a>7.查看用户信息</h2><pre><code>db.runCommand({usersInfo:&quot;userName&quot;})
-</code></pre><h2 id="8-修改密码和用户信息"><a href="#8-修改密码和用户信息" class="headerlink" title="8.修改密码和用户信息"></a>8.修改密码和用户信息</h2><pre><code>db.runCommand(
-{
-    updateUser:&quot;username&quot;,
-    pwd:&quot;xxx&quot;,
-    customData:{title:&quot;xxx&quot;}
-}
- )
-</code></pre><p>注：</p>
+		<hr>
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>  我们知道，MySQL 5.7以前的DLL采用的是：<br>新建临时表–&gt;修改临时表结构–&gt;然后导入数据–&gt;drop原表–&gt;重命名临时表为原表<br>MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。<br>开源地址：<br><a href="https://github.com/github/gh-ost" target="_blank" rel="noopener">https://github.com/github/gh-ost
+</a></p>
+<p>本文使用的gh-ost版本：v1.1.0</p>
+<h1 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h1><pre><code>-allow-master-master: 是否允许gh-ost运行在双主复制架构中，一般与-assume-master-host参数一起使用
+-allow-nullable-unique-key: 允许gh-ost在数据迁移依赖的唯一键可以为NULL，默认为不允许为NULL的唯一键。如果数据迁移(migrate)依赖的唯一键允许NULL值，则可能造成数据不正确，请谨慎使用。
+-allow-on-master: 允许gh-ost直接运行在主库上。默认gh-ost连接的从库。
+-alter string:DDL语句
+-assume-master-host string:为gh-ost指定一个主库，格式为”ip:port”或者”hostname:port”。在这主主架构里比较有用，或则在gh-ost发现不到主的时候有用。
+-assume-rbr:确认gh-ost连接的数据库实例的binlog_format=ROW的情况下，可以指定-assume-rbr，这样可以禁止从库上运行stop slave,start slave,执行gh-ost用户也不需要SUPER权限。
+-chunk-size int:在每次迭代中处理的行数量(允许范围：100-100000)，默认值为1000。
+-concurrent-rowcount:该参数如果为True(默认值)，则进行row-copy之后，估算统计行数(使用explain select count(*)方式)，并调整ETA时间，否则，gh-ost首先预估统计行数，然后开始row-copy。
+-conf string:gh-ost的配置文件路径。
+-critical-load string:一系列逗号分隔的status-name=values组成，当MySQL中status超过对应的values，gh-ost将会退出。-critical-load Threads_connected=20,Connections=1500，指的是当MySQL中的状态值Threads_connected&gt;20,Connections&gt;1500的时候，gh-ost将会由于该数据库严重负载而停止并退出。
+-critical-load-hibernate-seconds int :负载达到critical-load时，gh-ost在指定的时间内进入休眠状态。 它不会读/写任何来自任何服务器的任何内容。
+-critical-load-interval-millis int:当值为0时，当达到-critical-load，gh-ost立即退出。当值不为0时，当达到-critical-load，gh-ost会在-critical-load-interval-millis秒数后，再次进行检查，再次检查依旧达到-critical-load，gh-ost将会退出。
+-cut-over string:选择cut-over类型:atomic/two-step，atomic(默认)类型的cut-over是github的算法，two-step采用的是facebook-OSC的算法。
+-cut-over-exponential-backoff
+-cut-over-lock-timeout-seconds int:gh-ost在cut-over阶段最大的锁等待时间，当锁超时时，gh-ost的cut-over将重试。(默认值：3)
+-database string:数据库名称。
+-default-retries int:各种操作在panick前重试次数。(默认为60)
+-dml-batch-size int:在单个事务中应用DML事件的批量大小（范围1-100）（默认值为10）
+-exact-rowcount:准确统计表行数(使用select count(*)的方式)，得到更准确的预估时间。
+-execute:实际执行alter&amp;migrate表，默认为noop，不执行，仅仅做测试并退出，如果想要ALTER TABLE语句真正落实到数据库中去，需要明确指定-execute
+-exponential-backoff-max-interval int
+-force-named-cut-over:如果为true，则&apos;unpostpone | cut-over&apos;交互式命令必须命名迁移的表
+-heartbeat-interval-millis int:gh-ost心跳频率值，默认为500
+-initially-drop-ghost-table:gh-ost操作之前，检查并删除已经存在的ghost表。该参数不建议使用，请手动处理原来存在的ghost表。默认不启用该参数，gh-ost直接退出操作。
+-initially-drop-old-table:gh-ost操作之前，检查并删除已经存在的旧表。该参数不建议使用，请手动处理原来存在的ghost表。默认不启用该参数，gh-ost直接退出操作。
+-initially-drop-socket-file:gh-ost强制删除已经存在的socket文件。该参数不建议使用，可能会删除一个正在运行的gh-ost程序，导致DDL失败。
+-max-lag-millis int:主从复制最大延迟时间，当主从复制延迟时间超过该值后，gh-ost将采取节流(throttle)措施，默认值：1500s。
+-max-load string:逗号分隔状态名称=阈值，如：&apos;Threads_running=30,Threads_connected=500&apos;. 表面如果在执行gh-ost的过程中出现Threads_running=30则暂停gh-ost的执行, Threads_running即活跃连接数    -migrate-on-replica:gh-ost的数据迁移(migrate)运行在从库上，而不是主库上。 
+-nice-ratio float:每次chunk时间段的休眠时间，范围[0.0…100.0]。0：每个chunk时间段不休眠，即一个chunk接着一个chunk执行；1：每row-copy 1毫秒，则另外休眠1毫秒；0.7：每row-copy 10毫秒，则另外休眠7毫秒。
+-ok-to-drop-table: gh-ost操作结束后，删除旧表，默认状态是不删除旧表，会存在_tablename_del表。
+-panic-flag-file string:当这个文件被创建，gh-ost将会立即退出。
+-password string :MySQL密码
+-port int ：MySQL端口，最好用从库
+-postpone-cut-over-flag-file string：当这个文件存在的时候，gh-ost的cut-over阶段将会被推迟，数据仍然在复制，直到该文件被删除。
+-skip-foreign-key-checks:确定你的表上没有外键时，设置为&apos;true&apos;，并且希望跳过gh-ost验证的时间-skip-renamed-columns ALTER
+-switch-to-rbr:让gh-ost自动将从库的binlog_format转换为ROW格式。
+-table string:表名
+-throttle-additional-flag-file string:当该文件被创建后，gh-ost操作立即停止。该参数可以用在多个gh-ost同时操作的时候，创建一个文件，让所有的gh-ost操作停止，或者删除这个文件，让所有的gh-ost操作恢复。
+-throttle-control-replicas string:列出所有需要被检查主从复制延迟的从库。
+-throttle-flag-file string:当该文件被创建后，gh-ost操作立即停止。该参数适合控制单个gh-ost操作。-throttle-additional-flag-file string适合控制多个gh-ost操作。
+-throttle-query string:节流查询。每秒钟执行一次。当返回值=0时不需要节流，当返回值&gt;0时，需要执行节流操作。该查询会在数据迁移(migrated)服务器上操作，所以请确保该查询是轻量级的。
+-timestamp-old-table:在旧表名中使用时间戳。这会使旧表名称具有唯一且无冲突的交叉迁移。
+-user string :MYSQL用户
+</code></pre><h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><h2 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h2><p>在github release页面下载<br><a href="https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm" target="_blank" rel="noopener">https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm
+</a><br>上传到服务器,安装</p>
+<pre><code>yum install gh-ost-1.1.0-1.x86_64.rpm
+</code></pre><h2 id="执行变更"><a href="#执行变更" class="headerlink" title="执行变更"></a>执行变更</h2><pre><code>gh-ost  --user=&quot;xxxx&quot; --password=&quot;xxxx&quot; --host=localhost --allow-on-master --database=&quot;guo_test&quot; --table=&quot;a&quot;  --alter=&quot;ADD COLUMN bcbde INT&quot;  --execute --assume-rbr --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table
+</code></pre><p>推荐使用参数：</p>
+<pre><code>--assume-rbr
+--max-load=Threads_running=30
+--critical-load=Threads_running=50
+--critical-load-interval-millis=5000
+--chunk-size=1000
+--heartbeat-interval-millis=2000
+</code></pre><p>上面参数具体数值，根据服务器实际压力情况修改</p>
+<p>特别说明:<br>针对几百G的大表做归档删除数据之后要重建表，以便减少表空间大小。重建完，进行cut-over切换幽灵表和原表时，默认不删除幽灵表。因为直接删除上百 G 会对磁盘 IO 有一定的影响.</p>
+<p>根据自己的情况去调整合适的参数，注意以下两个参数。</p>
+<pre><code>--ok-to-drop-table:gh-ost操作结束后，删除旧表，默认状态是不删除旧表，会存在_tablename_del表。
+--timestamp-old-table 最终rename的时候表名会加上时间戳后缀，每次执行的时候都会生成一个新的表名。
+</code></pre><h2 id="错误忽略"><a href="#错误忽略" class="headerlink" title="错误忽略"></a>错误忽略</h2><p>执行过程中会报一个error，日志如下：</p>
+<pre><code>Copy: 1/1 100.0%; Applied: 0; Backlog: 0/1000; Time: 3s(total), 1s(copy); streamer: binlog.000003:118844; Lag: 0.01s, State: migrating; ETA: due
+[2020/09/27 16:49:00] [info] binlogsyncer.go:164 syncer is closing...
+[2020/09/27 16:49:01] [error] binlogstreamer.go:77 close sync with err: sync is been closing...
+[2020/09/27 16:49:01] [info] binlogsyncer.go:179 syncer is closed
+# Done
+</code></pre><p>[error] binlogstreamer.go:77 close sync with err: sync is been closing…<br>对应issue：<br><a href="https://github.com/github/gh-ost/issues/749" target="_blank" rel="noopener">https://github.com/github/gh-ost/issues/749</a><br>开发者shlomi-noach的回复是</p>
 <blockquote>
-<ol>
-<li>和用户管理相关的操作基本都要在admin数据库下运行，要先use admin;</li>
-<li>如果在某个单一的数据库下，那只能对当前数据库的权限进行操作;</li>
-<li>db.addUser是老版本的操作，现在3.0版本已经不通使用，创建出来的user是带有root role的超级管理员。 </li>
-</ol>
+<p>Sorry for the late response. Yes, this has been reported multiple times; this is an error message from an underlying library that connects to MySQL; however, there is no gh-ost error here, as gh-ost retries connection/operation as needed. It is unfortunate that the log contains all these messages but I can’t control it.</p>
 </blockquote>
+<p>大意为：<br>这是来自连接到MySQL的基础库的错误消息；没有gh-ost错误，目前无法控制</p>
+<p>推荐阅读：<br><a href="https://www.cnblogs.com/zping/p/8876148.html" target="_blank" rel="noopener">初试GH-OST</a><br><a href="https://segmentfault.com/a/1190000006158503" target="_blank" rel="noopener">GitHub开源的MySQL在线更改Schema工具</a></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -192,13 +179,13 @@ db.changeUserPassword(&quot;username&quot;, &quot;xxx&quot;)
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/NoSQL/">NoSQL</a>
+  <a class="article-category-link" href="/categories/Redis/">Redis</a>
 </div>
 
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/NoSQL/">NoSQL</a>
+  <span></span> <a href="/tags/MySQL/">MySQL</a><a href="/tags/DDL/">DDL</a>
   </div>
 
 </div>
@@ -207,7 +194,7 @@ db.changeUserPassword(&quot;username&quot;, &quot;xxx&quot;)
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://idber.github.io/2016/01/24-MongoDB 3.0.8权限管理.html" data-title="MongoDB 3.0.8 权限管理 | 似水年华--沉浮" data-tsina="" class="share clearfix">
+	  <div data-url="http://idber.github.io/2020/09/27-gh-ost 在线DDL变更工具​.html" data-title="Gh-Ost 在线DDL变更工具​ | 似水年华--沉浮" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -220,19 +207,11 @@ db.changeUserPassword(&quot;username&quot;, &quot;xxx&quot;)
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2016/01/26-MySQL提示-The server quit without updating PID file(…)失败.html" title="MySQL提示:The Server Quit Without Updating PID File(…)失败">
-  <strong>上一篇：</strong><br/>
-  <span>
-  MySQL提示:The Server Quit Without Updating PID File(…)失败</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2016/01/21-CentOS 6.3下快速安装MongoDB 3.2.1.html"  title="CentOS 6.3下快速安装MongoDB 3.2.1">
+<a href="/2020/09/25-MySQL源码调试方法.html"  title="MySQL源码调试方法">
  <strong>下一篇：</strong><br/> 
- <span>CentOS 6.3下快速安装MongoDB 3.2.1
+ <span>MySQL源码调试方法
 </span>
 </a>
 </div>
@@ -255,7 +234,7 @@ db.changeUserPassword(&quot;username&quot;, &quot;xxx&quot;)
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-创建一个超级用户"><span class="toc-number">1.</span> <span class="toc-text">1.创建一个超级用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-用新创建的用户登录"><span class="toc-number">2.</span> <span class="toc-text">2.用新创建的用户登录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-查看当前用户的权限"><span class="toc-number">3.</span> <span class="toc-text">3.查看当前用户的权限</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-创建一般用户，也是用createUser"><span class="toc-number">4.</span> <span class="toc-text">4.创建一般用户，也是用createUser</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-创建一个不受访问限制的超级用户"><span class="toc-number">5.</span> <span class="toc-text">5.创建一个不受访问限制的超级用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-修改密码"><span class="toc-number">6.</span> <span class="toc-text">6.修改密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-查看用户信息"><span class="toc-number">7.</span> <span class="toc-text">7.查看用户信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-修改密码和用户信息"><span class="toc-number">8.</span> <span class="toc-text">8.修改密码和用户信息</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参数说明"><span class="toc-number">2.</span> <span class="toc-text">参数说明</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用"><span class="toc-number">3.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载安装"><span class="toc-number">3.1.</span> <span class="toc-text">下载安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行变更"><span class="toc-number">3.2.</span> <span class="toc-text">执行变更</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#错误忽略"><span class="toc-number">3.3.</span> <span class="toc-text">错误忽略</span></a></li></ol></li></ol>
  
   </div>
 

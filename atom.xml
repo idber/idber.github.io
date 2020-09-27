@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-09-27T02:41:33.436Z</updated>
+  <updated>2020-09-27T09:53:25.613Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -14,6 +14,106 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Gh-Ost 在线DDL变更工具​</title>
+    <link href="http://idber.github.io/2020/09/27-gh-ost%20%E5%9C%A8%E7%BA%BFDDL%E5%8F%98%E6%9B%B4%E5%B7%A5%E5%85%B7%E2%80%8B.html"/>
+    <id>http://idber.github.io/2020/09/27-gh-ost 在线DDL变更工具​.html</id>
+    <published>2020-09-27T07:01:56.000Z</published>
+    <updated>2020-09-27T09:53:25.613Z</updated>
+    
+    <content type="html">&lt;hr&gt;
+&lt;h1 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h1&gt;&lt;p&gt;  我们知道，MySQL 5.7以前的DLL采用的是：&lt;br&gt;新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表&lt;br&gt;MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。&lt;br&gt;开源地址：&lt;br&gt;&lt;a href=&quot;https://github.com/github/gh-ost&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/github/gh-ost
+&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;本文使用的gh-ost版本：v1.1.0&lt;/p&gt;
+&lt;h1 id=&quot;参数说明&quot;&gt;&lt;a href=&quot;#参数说明&quot; class=&quot;headerlink&quot; title=&quot;参数说明&quot;&gt;&lt;/a&gt;参数说明&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;-allow-master-master: 是否允许gh-ost运行在双主复制架构中，一般与-assume-master-host参数一起使用
+-allow-nullable-unique-key: 允许gh-ost在数据迁移依赖的唯一键可以为NULL，默认为不允许为NULL的唯一键。如果数据迁移(migrate)依赖的唯一键允许NULL值，则可能造成数据不正确，请谨慎使用。
+-allow-on-master: 允许gh-ost直接运行在主库上。默认gh-ost连接的从库。
+-alter string:DDL语句
+-assume-master-host string:为gh-ost指定一个主库，格式为”ip:port”或者”hostname:port”。在这主主架构里比较有用，或则在gh-ost发现不到主的时候有用。
+-assume-rbr:确认gh-ost连接的数据库实例的binlog_format=ROW的情况下，可以指定-assume-rbr，这样可以禁止从库上运行stop slave,start slave,执行gh-ost用户也不需要SUPER权限。
+-chunk-size int:在每次迭代中处理的行数量(允许范围：100-100000)，默认值为1000。
+-concurrent-rowcount:该参数如果为True(默认值)，则进行row-copy之后，估算统计行数(使用explain select count(*)方式)，并调整ETA时间，否则，gh-ost首先预估统计行数，然后开始row-copy。
+-conf string:gh-ost的配置文件路径。
+-critical-load string:一系列逗号分隔的status-name=values组成，当MySQL中status超过对应的values，gh-ost将会退出。-critical-load Threads_connected=20,Connections=1500，指的是当MySQL中的状态值Threads_connected&amp;gt;20,Connections&amp;gt;1500的时候，gh-ost将会由于该数据库严重负载而停止并退出。
+-critical-load-hibernate-seconds int :负载达到critical-load时，gh-ost在指定的时间内进入休眠状态。 它不会读/写任何来自任何服务器的任何内容。
+-critical-load-interval-millis int:当值为0时，当达到-critical-load，gh-ost立即退出。当值不为0时，当达到-critical-load，gh-ost会在-critical-load-interval-millis秒数后，再次进行检查，再次检查依旧达到-critical-load，gh-ost将会退出。
+-cut-over string:选择cut-over类型:atomic/two-step，atomic(默认)类型的cut-over是github的算法，two-step采用的是facebook-OSC的算法。
+-cut-over-exponential-backoff
+-cut-over-lock-timeout-seconds int:gh-ost在cut-over阶段最大的锁等待时间，当锁超时时，gh-ost的cut-over将重试。(默认值：3)
+-database string:数据库名称。
+-default-retries int:各种操作在panick前重试次数。(默认为60)
+-dml-batch-size int:在单个事务中应用DML事件的批量大小（范围1-100）（默认值为10）
+-exact-rowcount:准确统计表行数(使用select count(*)的方式)，得到更准确的预估时间。
+-execute:实际执行alter&amp;amp;migrate表，默认为noop，不执行，仅仅做测试并退出，如果想要ALTER TABLE语句真正落实到数据库中去，需要明确指定-execute
+-exponential-backoff-max-interval int
+-force-named-cut-over:如果为true，则&amp;apos;unpostpone | cut-over&amp;apos;交互式命令必须命名迁移的表
+-heartbeat-interval-millis int:gh-ost心跳频率值，默认为500
+-initially-drop-ghost-table:gh-ost操作之前，检查并删除已经存在的ghost表。该参数不建议使用，请手动处理原来存在的ghost表。默认不启用该参数，gh-ost直接退出操作。
+-initially-drop-old-table:gh-ost操作之前，检查并删除已经存在的旧表。该参数不建议使用，请手动处理原来存在的ghost表。默认不启用该参数，gh-ost直接退出操作。
+-initially-drop-socket-file:gh-ost强制删除已经存在的socket文件。该参数不建议使用，可能会删除一个正在运行的gh-ost程序，导致DDL失败。
+-max-lag-millis int:主从复制最大延迟时间，当主从复制延迟时间超过该值后，gh-ost将采取节流(throttle)措施，默认值：1500s。
+-max-load string:逗号分隔状态名称=阈值，如：&amp;apos;Threads_running=30,Threads_connected=500&amp;apos;. 表面如果在执行gh-ost的过程中出现Threads_running=30则暂停gh-ost的执行, Threads_running即活跃连接数    -migrate-on-replica:gh-ost的数据迁移(migrate)运行在从库上，而不是主库上。 
+-nice-ratio float:每次chunk时间段的休眠时间，范围[0.0…100.0]。0：每个chunk时间段不休眠，即一个chunk接着一个chunk执行；1：每row-copy 1毫秒，则另外休眠1毫秒；0.7：每row-copy 10毫秒，则另外休眠7毫秒。
+-ok-to-drop-table: gh-ost操作结束后，删除旧表，默认状态是不删除旧表，会存在_tablename_del表。
+-panic-flag-file string:当这个文件被创建，gh-ost将会立即退出。
+-password string :MySQL密码
+-port int ：MySQL端口，最好用从库
+-postpone-cut-over-flag-file string：当这个文件存在的时候，gh-ost的cut-over阶段将会被推迟，数据仍然在复制，直到该文件被删除。
+-skip-foreign-key-checks:确定你的表上没有外键时，设置为&amp;apos;true&amp;apos;，并且希望跳过gh-ost验证的时间-skip-renamed-columns ALTER
+-switch-to-rbr:让gh-ost自动将从库的binlog_format转换为ROW格式。
+-table string:表名
+-throttle-additional-flag-file string:当该文件被创建后，gh-ost操作立即停止。该参数可以用在多个gh-ost同时操作的时候，创建一个文件，让所有的gh-ost操作停止，或者删除这个文件，让所有的gh-ost操作恢复。
+-throttle-control-replicas string:列出所有需要被检查主从复制延迟的从库。
+-throttle-flag-file string:当该文件被创建后，gh-ost操作立即停止。该参数适合控制单个gh-ost操作。-throttle-additional-flag-file string适合控制多个gh-ost操作。
+-throttle-query string:节流查询。每秒钟执行一次。当返回值=0时不需要节流，当返回值&amp;gt;0时，需要执行节流操作。该查询会在数据迁移(migrated)服务器上操作，所以请确保该查询是轻量级的。
+-timestamp-old-table:在旧表名中使用时间戳。这会使旧表名称具有唯一且无冲突的交叉迁移。
+-user string :MYSQL用户
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;使用&quot;&gt;&lt;a href=&quot;#使用&quot; class=&quot;headerlink&quot; title=&quot;使用&quot;&gt;&lt;/a&gt;使用&lt;/h1&gt;&lt;h2 id=&quot;下载安装&quot;&gt;&lt;a href=&quot;#下载安装&quot; class=&quot;headerlink&quot; title=&quot;下载安装&quot;&gt;&lt;/a&gt;下载安装&lt;/h2&gt;&lt;p&gt;在github release页面下载&lt;br&gt;&lt;a href=&quot;https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm
+&lt;/a&gt;&lt;br&gt;上传到服务器,安装&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;yum install gh-ost-1.1.0-1.x86_64.rpm
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;执行变更&quot;&gt;&lt;a href=&quot;#执行变更&quot; class=&quot;headerlink&quot; title=&quot;执行变更&quot;&gt;&lt;/a&gt;执行变更&lt;/h2&gt;&lt;pre&gt;&lt;code&gt;gh-ost  --user=&amp;quot;xxxx&amp;quot; --password=&amp;quot;xxxx&amp;quot; --host=localhost --allow-on-master --database=&amp;quot;guo_test&amp;quot; --table=&amp;quot;a&amp;quot;  --alter=&amp;quot;ADD COLUMN bcbde INT&amp;quot;  --execute --assume-rbr --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;推荐使用参数：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;--assume-rbr
+--max-load=Threads_running=30
+--critical-load=Threads_running=50
+--critical-load-interval-millis=5000
+--chunk-size=1000
+--heartbeat-interval-millis=2000
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上面参数具体数值，根据服务器实际压力情况修改&lt;/p&gt;
+&lt;p&gt;特别说明:&lt;br&gt;针对几百G的大表做归档删除数据之后要重建表，以便减少表空间大小。重建完，进行cut-over切换幽灵表和原表时，默认不删除幽灵表。因为直接删除上百 G 会对磁盘 IO 有一定的影响.&lt;/p&gt;
+&lt;p&gt;根据自己的情况去调整合适的参数，注意以下两个参数。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;--ok-to-drop-table:gh-ost操作结束后，删除旧表，默认状态是不删除旧表，会存在_tablename_del表。
+--timestamp-old-table 最终rename的时候表名会加上时间戳后缀，每次执行的时候都会生成一个新的表名。
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;错误忽略&quot;&gt;&lt;a href=&quot;#错误忽略&quot; class=&quot;headerlink&quot; title=&quot;错误忽略&quot;&gt;&lt;/a&gt;错误忽略&lt;/h2&gt;&lt;p&gt;执行过程中会报一个error，日志如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Copy: 1/1 100.0%; Applied: 0; Backlog: 0/1000; Time: 3s(total), 1s(copy); streamer: binlog.000003:118844; Lag: 0.01s, State: migrating; ETA: due
+[2020/09/27 16:49:00] [info] binlogsyncer.go:164 syncer is closing...
+[2020/09/27 16:49:01] [error] binlogstreamer.go:77 close sync with err: sync is been closing...
+[2020/09/27 16:49:01] [info] binlogsyncer.go:179 syncer is closed
+# Done
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;[error] binlogstreamer.go:77 close sync with err: sync is been closing…&lt;br&gt;对应issue：&lt;br&gt;&lt;a href=&quot;https://github.com/github/gh-ost/issues/749&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/github/gh-ost/issues/749&lt;/a&gt;&lt;br&gt;开发者shlomi-noach的回复是&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Sorry for the late response. Yes, this has been reported multiple times; this is an error message from an underlying library that connects to MySQL; however, there is no gh-ost error here, as gh-ost retries connection/operation as needed. It is unfortunate that the log contains all these messages but I can’t control it.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;大意为：&lt;br&gt;这是来自连接到MySQL的基础库的错误消息；没有gh-ost错误，目前无法控制&lt;/p&gt;
+&lt;p&gt;推荐阅读：&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/zping/p/8876148.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;初试GH-OST&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000006158503&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;GitHub开源的MySQL在线更改Schema工具&lt;/a&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;h1 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h1&gt;&lt;p&gt;  我们知道，MySQL 5.7以前的DLL采用的是：&lt;br&gt;新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;d
+    
+    </summary>
+    
+      <category term="Redis" scheme="http://idber.github.io/categories/Redis/"/>
+    
+    
+      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
+    
+      <category term="DDL" scheme="http://idber.github.io/tags/DDL/"/>
+    
+  </entry>
   
   <entry>
     <title>MySQL源码调试方法</title>
@@ -2451,989 +2551,6 @@ mysql&amp;gt;
       <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
     
       <category term="备份恢复" scheme="http://idber.github.io/tags/%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>ProxySQL 安装配置详解及读写分离、负载均衡</title>
-    <link href="http://idber.github.io/2018/08/28-ProxySQL%20%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3%E5%8F%8A%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB%E3%80%81%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.html"/>
-    <id>http://idber.github.io/2018/08/28-ProxySQL 安装配置详解及读写分离、负载均衡.html</id>
-    <published>2018-08-27T22:01:56.000Z</published>
-    <updated>2019-04-22T01:41:16.932Z</updated>
-    
-    <content type="html">&lt;hr&gt;
-&lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;在MySQL的高可用集群环境中，中间件是不可缺少的一部分，它提供了读写分离、负载均衡等各种功能，满足集群的横向、纵向的可扩展。由于官方并没有在这方面推出好的产品，更多的是第三方的产品。如：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;ProxySQL #Percona&lt;/li&gt;
-&lt;li&gt;MaxScale #MariaDB&lt;/li&gt;
-&lt;li&gt;Atlas #360开源&lt;/li&gt;
-&lt;li&gt;OneProxy #平民软件楼方鑫&lt;/li&gt;
-&lt;li&gt;MyCat #社区推广&lt;/li&gt;
-&lt;li&gt;KingShard #原Atlas作者离职后使用go开发&lt;/li&gt;
-&lt;li&gt;TDDL #阿里巴巴开源&lt;/li&gt;
-&lt;li&gt;Cobar #阿里巴巴开源&lt;/li&gt;
-&lt;li&gt;DBProxy #美团在360Atlas上修改后开源&lt;/li&gt;
-&lt;li&gt;Fabric #官方产品&lt;/li&gt;
-&lt;li&gt;DRDS #阿里云分库分表产品&lt;/li&gt;
-&lt;li&gt;本次以测试ProxySQL为例，逐步了解ProxySQL的使用方式。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h1 id=&quot;准备&quot;&gt;&lt;a href=&quot;#准备&quot; class=&quot;headerlink&quot; title=&quot;准备&quot;&gt;&lt;/a&gt;准备&lt;/h1&gt;&lt;p&gt;环境：&lt;br&gt;ProxySQL: 1.4.1&lt;br&gt;Master: 192.168.56.101&lt;br&gt;Slave: 192.168.56.102&lt;/p&gt;
-&lt;h1 id=&quot;安装配置详解&quot;&gt;&lt;a href=&quot;#安装配置详解&quot; class=&quot;headerlink&quot; title=&quot;安装配置详解&quot;&gt;&lt;/a&gt;安装配置详解&lt;/h1&gt;&lt;p&gt;官网：&lt;a href=&quot;http://www.proxysql.com/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://www.proxysql.com/&lt;/a&gt;&lt;br&gt;Percona地址：&lt;a href=&quot;https://www.percona.com/downloads/proxysql/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://www.percona.com/downloads/proxysql/&lt;/a&gt;&lt;br&gt;Github地址：&lt;a href=&quot;https://github.com/sysown/proxysql/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/sysown/proxysql/&lt;/a&gt;&lt;br&gt;本文通过作者编译好的rpm安装，也可通过编译安装的方式安装，本文省略&lt;/p&gt;
-&lt;h2 id=&quot;安装&quot;&gt;&lt;a href=&quot;#安装&quot; class=&quot;headerlink&quot; title=&quot;安装&quot;&gt;&lt;/a&gt;安装&lt;/h2&gt;&lt;p&gt;下载proxysql可以有三种途径,分别为官网、Percona网站和Github网站&lt;br&gt;本文从github上下载最新稳定版本，这里选择centos67对应的rpm包&lt;br&gt;下载：wget -c -O proxysql-1.4.1-1-centos67.x86_64.rpm &lt;a href=&quot;https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos67.x86_64.rpm&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/sysown/proxysql/releases/download/v1.4.1/proxysql-1.4.1-1-centos67.x86_64.rpm&lt;/a&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;[root@mysql test]# yum localinstall -y proxysql-1.4.1-1-centos67.x86_64.rpm
-Loaded plugins: security
-docker-main-repo                                                                                                                                 | 2.9 kB     00:00     
-Setting up Install Process
-Resolving Dependencies
-There are unfinished transactions remaining. You might consider running yum-complete-transaction first to finish them.
---&amp;gt; Running transaction check
----&amp;gt; Package proxysql.x86_64 0:1.4.1-1 will be installed
---&amp;gt; Finished Dependency Resolution
-Dependencies Resolved
-========================================================================================================================================================================
- Package                           Arch                            Version                             Repository                                                  Size
-========================================================================================================================================================================
-Installing:
- proxysql                          x86_64                          1.4.1-1                             /proxysql-1.4.1-1-centos67.x86_64                           19 M
-Transaction Summary
-========================================================================================================================================================================
-Install       1 Package(s)
-Total size: 19 M
-Installed size: 19 M
-Downloading Packages:
-Running rpm_check_debug
-Running Transaction Test
-Transaction Test Succeeded
-Running Transaction
-  Installing : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
-  Verifying  : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
-Installed:
-  proxysql.x86_64 0:1.4.1-1                                                                                                                                             
-Complete!
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;ProxySQL默认配置文件为/etc/proxysql.cnf,只在第一次启动的时候有用,后续的所有配置都是通过对SQLite数据库的操作,并且不会更新到proxysql中,而是存储在/var/lib/proxysql/proxysql.db中&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;[root@mysql_slave test]#  proxysql --version    #查看版本
-ProxySQL version 1.4.1-45-gab4e6ee, codename Truls
-[root@mysql_slave test]# rpm -ql proxysql   #查看安装的具体内容
-/etc/init.d/proxysql                    #启动脚本
-/etc/proxysql.cnf                       #默认配置文件
-/usr/bin/proxysql                       #执行文件
-/usr/share/proxysql/tools/proxysql_galera_checker.sh    #ProxySQL调度程序检查pxc_maint_mode参数状态,持续检测各个节点的状态
-/usr/share/proxysql/tools/proxysql_galera_writer.pl #ProxySQL指定一个节点直接将流量写入galera
-[root@mysql_slave test]#
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;启动&quot;&gt;&lt;a href=&quot;#启动&quot; class=&quot;headerlink&quot; title=&quot;启动&quot;&gt;&lt;/a&gt;启动&lt;/h2&gt;&lt;p&gt;启动之后才会生成存储目录/var/lib/proxysql&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;[root@mysql_slave test]# /etc/init.d/proxysql start
-Starting ProxySQL: DONE!
-[root@mysql_slave test]# ll /var/lib/proxysql/
-总用量 108
--rw------- 1 root root 98304 8月  29 15:37 proxysql.db
--rw------- 1 root root  4306 8月  29 16:25 proxysql.log
--rw-r--r-- 1 root root     5 8月  29 16:25 proxysql.pid
-[root@mysql_slave test]#
-&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;内置对象介绍&quot;&gt;&lt;a href=&quot;#内置对象介绍&quot; class=&quot;headerlink&quot; title=&quot;内置对象介绍&quot;&gt;&lt;/a&gt;内置对象介绍&lt;/h1&gt;&lt;h2 id=&quot;登录&quot;&gt;&lt;a href=&quot;#登录&quot; class=&quot;headerlink&quot; title=&quot;登录&quot;&gt;&lt;/a&gt;登录&lt;/h2&gt;&lt;p&gt;启动了6032和6033两个端口,默认管理端口是6032,客户端服务端口是6033,默认的用户名密码都是 admin,通过mysql的客户端可以登录&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;[root@mysql_slave test]# netstat -tunlp|grep proxysql
-tcp        0      0 0.0.0.0:6032                0.0.0.0:*                   LISTEN      5181/proxysql       
-tcp        0      0 0.0.0.0:6033                0.0.0.0:*                   LISTEN      5181/proxysql       
-[root@mysql_slave test]# mysql -uadmin -padmin -h127.0.0.1 -P6032
-Warning: Using a password on the command line interface can be insecure.
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 1
-Server version: 5.5.30 (ProxySQL Admin Module)
-Copyright (c) 2009-2017 Percona LLC and/or its affiliates
-Copyright (c) 2000, 2017, Oracle and/or its affiliates. All rights reserved.
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-Type &amp;apos;help;&amp;apos; or &amp;apos;\h&amp;apos; for help. Type &amp;apos;\c&amp;apos; to clear the current input statement.
-MySQL [(none)] 16:28:32 &amp;gt; show databases;
-+-----+---------+-------------------------------+
-| seq | name    | file                          |
-+-----+---------+-------------------------------+
-| 0   | main    |                               |
-| 2   | disk    | /var/lib/proxysql/proxysql.db |
-| 3   | stats   |                               |
-| 4   | monitor |                               |
-+-----+---------+-------------------------------+
-4 rows in set (0.00 sec)
-MySQL [(none)] 16:28:41 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;内置库&quot;&gt;&lt;a href=&quot;#内置库&quot; class=&quot;headerlink&quot; title=&quot;内置库&quot;&gt;&lt;/a&gt;内置库&lt;/h2&gt;&lt;p&gt;main：默认数据库名,用于存放后端db实例、用户认证、路由规则等信息。表名以runtime开头的表示proxysql当前运行的配置内容，不能通过dml语句修改。只能修改对应的不以runtime开头的（在内存）里的表，然后LOAD使其生效，SAVE使其存到硬盘以供下次重启加载。&lt;br&gt;disk：是持久化到硬盘的配置，sqlite数据文件。&lt;br&gt;stats：是proxysql运行抓取的统计信息，包括到后端各命令的执行次数、流量、processlist、查询各类汇总、执行时间等。&lt;br&gt;monitor：库存储monitor模块收集的信息，主要是对后端db的健康、延迟检查。&lt;/p&gt;
-&lt;h3 id=&quot;main库&quot;&gt;&lt;a href=&quot;#main库&quot; class=&quot;headerlink&quot; title=&quot;main库&quot;&gt;&lt;/a&gt;main库&lt;/h3&gt;&lt;h4 id=&quot;runtime-表&quot;&gt;&lt;a href=&quot;#runtime-表&quot; class=&quot;headerlink&quot; title=&quot;runtime_表&quot;&gt;&lt;/a&gt;runtime_表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [main] 17:19:10 &amp;gt; use main
-Database changed
-MySQL [main] 17:22:15 &amp;gt; show tables;
-+--------------------------------------------+
-| tables                                     |
-+--------------------------------------------+
-| global_variables                           |
-| mysql_collations                           |
-| mysql_group_replication_hostgroups         |
-| mysql_query_rules                          |
-| mysql_replication_hostgroups               |
-| mysql_servers                              |
-| mysql_users                                |
-| proxysql_servers                           |
-| runtime_global_variables                   |
-| runtime_mysql_group_replication_hostgroups |
-| runtime_mysql_query_rules                  |
-| runtime_mysql_replication_hostgroups       |
-| runtime_mysql_servers                      |
-| runtime_mysql_users                        |
-| runtime_proxysql_servers                   |
-| runtime_scheduler                          |
-| scheduler                                  |
-+--------------------------------------------+
-17 rows in set (0.00 sec)
-MySQL [main] 17:22:16 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;其中，runtime_开关的表如下：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;runtime_global_variables：global_variables的运行时版本
-runtime_mysql_group_replication_hostgroups：mysql_group_replication_hostgroups的运行时版本
-runtime_mysql_query_rules：mysql_query_rules的运行时版本
-runtime_mysql_replication_hostgroups：mysql_replication_hostsgroups的运行时版本
-runtime_mysql_servers：mysql_servers的运行时版本
-runtime_mysql_users：mysql_users的运行时版本
-runtime_scheduler：scheduler调度程序的运行时版本
-
-global_variables表
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;内置参数表，参考下文&lt;/p&gt;
-&lt;h4 id=&quot;mysql-servers表&quot;&gt;&lt;a href=&quot;#mysql-servers表&quot; class=&quot;headerlink&quot; title=&quot;mysql_servers表&quot;&gt;&lt;/a&gt;mysql_servers表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [main] 17:22:16 &amp;gt; show create table mysql_servers\G
-*************************** 1. row ***************************
-       table: mysql_servers
-Create Table: CREATE TABLE mysql_servers (
-    hostgroup_id INT NOT NULL DEFAULT 0,
-    hostname VARCHAR NOT NULL,
-    port INT NOT NULL DEFAULT 3306,
-    status VARCHAR CHECK (UPPER(status) IN (&amp;apos;ONLINE&amp;apos;,&amp;apos;SHUNNED&amp;apos;,&amp;apos;OFFLINE_SOFT&amp;apos;, &amp;apos;OFFLINE_HARD&amp;apos;)) NOT NULL DEFAULT &amp;apos;ONLINE&amp;apos;,
-    weight INT CHECK (weight &amp;gt;= 0) NOT NULL DEFAULT 1,
-    compression INT CHECK (compression &amp;gt;=0 AND compression &amp;lt;= 102400) NOT NULL DEFAULT 0,
-    max_connections INT CHECK (max_connections &amp;gt;=0) NOT NULL DEFAULT 1000,
-    max_replication_lag INT CHECK (max_replication_lag &amp;gt;= 0 AND max_replication_lag &amp;lt;= 126144000) NOT NULL DEFAULT 0,
-    use_ssl INT CHECK (use_ssl IN(0,1)) NOT NULL DEFAULT 0,
-    max_latency_ms INT UNSIGNED CHECK (max_latency_ms&amp;gt;=0) NOT NULL DEFAULT 0,
-    comment VARCHAR NOT NULL DEFAULT &amp;apos;&amp;apos;,
-    PRIMARY KEY (hostgroup_id, hostname, port) )
-1 row in set (0.00 sec)
-MySQL [main] 17:34:05 &amp;gt;
-hostgroup_id：ProxySQL通过hostgroup的形式组织后端db实例,一个hostgroup代表同属于一个角色。
-表的主键是(hostgroup_id, hostname, port),以hostname:port在多个hostgroup中存在。
-一个hostgroup可以有多个实例，即是多个从库，可能通过weight分配权重。
-hostgroup_id 0是一个特殊的hostgroup，路由查询的时候，没有匹配到规则则默认选择hostgroup 0。
-
-status：
-ONLINE：当前后端实例状态正常。
-SHUNNED：临时被剔除，可能因为后端too many connection error，或者超过了max_replication_lag。
-OFFLINE_SOFT：软离线状态，不再接受新的连接，但已建立的连接会等待活跃事务完成。
-OFFLINE_HARD：硬离线状态，不再接受新的连接，已建立的连接或被强制中断，当后端实例宕机或网络不可达，会出现。
-max_connections：允许连接到该后端实例的最大连接数，不要大于MySQL的max_connections。
-如果后端实例hostname:port在多个hostgroup里，以较大者为准，而不是各自独立允许的最大连接数。
-max_replication_lag：允许的最大延迟，主库不受影响，默认为0，如果&amp;gt;0，monitor模块监控主从延迟大于阈值时，会临时把它的状态变更为SHUNNED。
-max_latency_ms：mysql_ping响应时间，大于这个阈值会把它从连接池剔除，即使是ONLINE。
-comment：备注，不建设为空。
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;其他的字段，可通过字面意思理解。&lt;/p&gt;
-&lt;h4 id=&quot;mysql-users表&quot;&gt;&lt;a href=&quot;#mysql-users表&quot; class=&quot;headerlink&quot; title=&quot;mysql_users表&quot;&gt;&lt;/a&gt;mysql_users表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [main] 09:13:02 &amp;gt; show create table mysql_users\G
-*************************** 1. row ***************************
-       table: mysql_users
-Create Table: CREATE TABLE mysql_users (
-    username VARCHAR NOT NULL,
-    password VARCHAR,
-    active INT CHECK (active IN (0,1)) NOT NULL DEFAULT 1,
-    use_ssl INT CHECK (use_ssl IN (0,1)) NOT NULL DEFAULT 0,
-    default_hostgroup INT NOT NULL DEFAULT 0,
-    default_schema VARCHAR,
-    schema_locked INT CHECK (schema_locked IN (0,1)) NOT NULL DEFAULT 0,
-    transaction_persistent INT CHECK (transaction_persistent IN (0,1)) NOT NULL DEFAULT 1,
-    fast_forward INT CHECK (fast_forward IN (0,1)) NOT NULL DEFAULT 0,
-    backend INT CHECK (backend IN (0,1)) NOT NULL DEFAULT 1,
-    frontend INT CHECK (frontend IN (0,1)) NOT NULL DEFAULT 1,
-    max_connections INT CHECK (max_connections &amp;gt;=0) NOT NULL DEFAULT 10000,
-    PRIMARY KEY (username, backend),
-    UNIQUE (username, frontend))
-1 row in set (0.00 sec)
-MySQL [main] 09:13:08 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;username,password：连接到后端MySQL或ProxySQL实例的凭证,参考密码管理。&lt;br&gt;密码可插入明文，也可通过PASSWORD()插入密文，proxysql以*开头判断插入是否是密文。&lt;br&gt;但是runtime_mysql_users里统一是密文，所以明文插入，再SAVE MYSQL USERS TO MEM，此时看到的也是HASH密文。&lt;/p&gt;
-&lt;p&gt;active：是否生效该用户，active=0的用户将在数据库中被跟踪，但不会加载到内存中的数据结构中。&lt;br&gt;default_hostgroup：这个用户的请求没有匹配到规则时，默认发到hostgroup，默认0。&lt;br&gt;default_schema：这个用户连接时没有指定schema时，默认使用的schema。&lt;br&gt;默认为NULL，实际上受变量mysql-default_schema的影响，默认为information_schema。&lt;br&gt;transaction_persistent： 如果设置为1，连接上ProxySQL的会话后，如果在一个hostgroup上开启了事务，那么后续的sql都继续维持在这个hostgroup上，不论是否会匹配上其它路由规则，直到事务结束。&lt;br&gt;frontend：如果设置为1，则用户名、密码对ProxySQL进行身份验证。&lt;br&gt;backend：如果设置为1，则用户名、密码根据任何主机组向mysqld服务器进行身份验证。&lt;br&gt;注意，目前所有用户都需要将“前端”和“后端“都设置为1，未来版本的ProxySQL将分离前端和后端之间的crendentials。以这种方式，前端将永远不会知道直接连接到后端的凭据，强制所有通过ProxySQL的连接并增加系统的安全性。&lt;/p&gt;
-&lt;p&gt;mysql_replication_hostgroups表&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [main] 10:18:15 &amp;gt; show create table mysql_replication_hostgroups\G
-*************************** 1. row ***************************
-       table: mysql_replication_hostgroups
-Create Table: CREATE TABLE mysql_replication_hostgroups (
-    writer_hostgroup INT CHECK (writer_hostgroup&amp;gt;=0) NOT NULL PRIMARY KEY,
-    reader_hostgroup INT NOT NULL CHECK (reader_hostgroup&amp;lt;&amp;gt;writer_hostgroup AND reader_hostgroup&amp;gt;0),
-    comment VARCHAR,
-    UNIQUE (reader_hostgroup))
-1 row in set (0.00 sec)
-MySQL [main] 10:18:22 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;定义hostgroup的主从关系。ProxySQL monitor模块会监控hostgroup后端所有servers的read_only变量，如果发现从库的read_only变为0、主库变为1，则认为角色互换了，自动改写mysql_servers表里面hostgroup关系，达到failover效果。&lt;/p&gt;
-&lt;h4 id=&quot;mysql-query-rules查询规则表&quot;&gt;&lt;a href=&quot;#mysql-query-rules查询规则表&quot; class=&quot;headerlink&quot; title=&quot;mysql_query_rules查询规则表&quot;&gt;&lt;/a&gt;mysql_query_rules查询规则表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [main] 10:25:22 &amp;gt; show create table mysql_query_rules\G           
-*************************** 1. row ***************************
-       table: mysql_query_rules
-Create Table: CREATE TABLE mysql_query_rules (
-    rule_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    active INT CHECK (active IN (0,1)) NOT NULL DEFAULT 0,
-    username VARCHAR,
-    schemaname VARCHAR,
-    flagIN INT NOT NULL DEFAULT 0,
-    client_addr VARCHAR,
-    proxy_addr VARCHAR,
-    proxy_port INT,
-    digest VARCHAR,
-    match_digest VARCHAR,
-    match_pattern VARCHAR,
-    negate_match_pattern INT CHECK (negate_match_pattern IN (0,1)) NOT NULL DEFAULT 0,
-    re_modifiers VARCHAR DEFAULT &amp;apos;CASELESS&amp;apos;,
-    flagOUT INT,
-    replace_pattern VARCHAR,
-    destination_hostgroup INT DEFAULT NULL,
-    cache_ttl INT CHECK(cache_ttl &amp;gt; 0),
-    reconnect INT CHECK (reconnect IN (0,1)) DEFAULT NULL,
-    timeout INT UNSIGNED,
-    retries INT CHECK (retries&amp;gt;=0 AND retries &amp;lt;=1000),
-    delay INT UNSIGNED,
-    next_query_flagIN INT UNSIGNED,
-    mirror_flagOUT INT UNSIGNED,
-    mirror_hostgroup INT UNSIGNED,
-    error_msg VARCHAR,
-    OK_msg VARCHAR,
-    sticky_conn INT CHECK (sticky_conn IN (0,1)),
-    multiplex INT CHECK (multiplex IN (0,1,2)),
-    log INT CHECK (log IN (0,1)),
-    apply INT CHECK(apply IN (0,1)) NOT NULL DEFAULT 0,
-    comment VARCHAR)
-1 row in set (0.00 sec)
-MySQL [main] 10:25:34 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;rule_id：表主键，自增，规则处理是以rule_id为顺序进行。&lt;/p&gt;
-&lt;p&gt;active：只有active=1时的规则才会参与匹配。&lt;br&gt;username：过滤匹配用户名的条件，如果是非空值，则仅当连接使用正确的用户名时，查询才匹配。&lt;br&gt;schemaname：匹配schemaname的过滤条件，如果是非空值，则仅当连接schemaname用作默认模式时，查询才匹配。&lt;br&gt;flagIN,flagOUT,apply：用来定义路由链chains of rules&lt;br&gt;首先会检查flagIN=0的规则，以rule_id的顺序；如果没有匹配上，则走这个用户的default_hostgroup。&lt;br&gt;当匹配一条规则后，会检查flagOUT。&lt;br&gt;如果不为NULL，并且flagIN!=flagOUT，则进入以flagIN为上一个flagOUT值的新规则链。&lt;br&gt;如果不为NULL，并且flagIN=flagOUT，则应用这条规则。&lt;br&gt;如果为NULL，或者apply=1，则结束，应用这条规则。&lt;br&gt;如果最终没有匹配到，则找到这个用户的default_hostgroup。&lt;br&gt;client_addr：匹配客户端来源IP。&lt;br&gt;proxy_addr,proxy_port：匹配本地proxysql的ip、端口。&lt;br&gt;digest：精确匹配的查询。&lt;br&gt;match_digest：正则匹配查询。query,digest是指对查询去掉具体值后进行”模糊化“后的查询，类似pt-query-digest的效果。&lt;br&gt;match_pattern：正则匹配查询。&lt;br&gt;以上都是匹配查询的规则，1.4版本可以通过变量mysql-query_processor_regex设置，支持RE2和PCRE，1.4版本开始默认为PCRE。&lt;br&gt;negate_match_pattern：反向匹配，相当于对match_digest/match_pattern的匹配取反。&lt;br&gt;re_modifiers：修改正则匹配的参数，比如默认的：忽略大小写CASELESS、禁用GLOBAL。&lt;br&gt;下面是匹配后的行为：&lt;br&gt;replace_pattern：查询重写，默认为空。&lt;br&gt;destination_hostgroup：路由查询到这个hostgroup，当然如果用户显式start transaction且transaction_persistent=1,那么即使匹配到了，也依然按照事务里第一条sql的路由规则去走的。&lt;br&gt;cache_ttl：查询结果缓存的毫秒数。&lt;br&gt;timeout：这一类查询执行的的最大时间(毫秒),超时则自动kill。&lt;br&gt;这是对后端DB的保护机制，相当于阿里云RDS的loose_max_statement_time变量的功能，但不同的是，阿里云这个变量的时间时不包括DML操作出现InnoDB行锁等待的时间，而ProxySQL的这个timeout是计算从发送sql到等待响应的时间。默认mysql-default_query_timeout是10h。&lt;br&gt;retries：语句在执行失败时，重试次数。默认由mysql-query_retries_on_failure变量指定，为1。建议不要重试，有风险。&lt;br&gt;delay：查询延迟执行，这是ProxySQL提供的限流机制，会让其它的查询优先执行。&lt;br&gt;默认值mysql-default_query_delay为0。&lt;br&gt;mirror_flagOUT,mirror_hostgroup：与镜像相关的设置。&lt;br&gt;error_msg：默认为NULL，如果指定了则这个查询直接被block掉，将error_msg返回给客户端。&lt;br&gt;multiplex：连接是否利用，请参考文章。&lt;br&gt;log：是否记录查询日志，可以看到log是否记录的对象是根据规则。&lt;br&gt;要开启日志记录，需要设置变量mysql-eventslog_filename来指定文件名，然后这个log标记为1。但是目前proxysql记录的日志是二进制格式，需要特定的工具才能读取：eventslog_reader_sample。这个工具在源码目录 tools下面。&lt;/p&gt;
-&lt;h4 id=&quot;scheduler调度表&quot;&gt;&lt;a href=&quot;#scheduler调度表&quot; class=&quot;headerlink&quot; title=&quot;scheduler调度表&quot;&gt;&lt;/a&gt;scheduler调度表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [main] 10:27:52 &amp;gt; show create table scheduler\G
-*************************** 1. row ***************************
-       table: scheduler
-Create Table: CREATE TABLE scheduler (
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    active INT CHECK (active IN (0,1)) NOT NULL DEFAULT 1,
-    interval_ms INTEGER CHECK (interval_ms&amp;gt;=100 AND interval_ms&amp;lt;=100000000) NOT NULL,
-    filename VARCHAR NOT NULL,
-    arg1 VARCHAR,
-    arg2 VARCHAR,
-    arg3 VARCHAR,
-    arg4 VARCHAR,
-    arg5 VARCHAR,
-    comment VARCHAR NOT NULL DEFAULT &amp;apos;&amp;apos;)
-1 row in set (0.00 sec)
-MySQL [main] 11:09:59 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;id：调度程序作业的唯一标识符。&lt;/p&gt;
-&lt;p&gt;active：如果设置为1，则作业处于活动状态。&lt;br&gt;interval_ms：工作的开始频率(以毫秒为单位)，最小interval_ms为100毫秒。&lt;br&gt;filename：可执行文件的完整路径。&lt;br&gt;arg1-arg5：传递作业的参数。最多5个。&lt;br&gt;comment：注释。&lt;br&gt;参考文档&lt;/p&gt;
-&lt;h3 id=&quot;disk库&quot;&gt;&lt;a href=&quot;#disk库&quot; class=&quot;headerlink&quot; title=&quot;disk库&quot;&gt;&lt;/a&gt;disk库&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;MySQL [main] 15:12:14 &amp;gt; show tables from disk;
-+------------------------------------+
-| tables                             |
-+------------------------------------+
-| global_variables                   |
-| mysql_collations                   |
-| mysql_group_replication_hostgroups |
-| mysql_query_rules                  |
-| mysql_replication_hostgroups       |
-| mysql_servers                      |
-| mysql_users                        |
-| proxysql_servers                   |
-| scheduler                          |
-+------------------------------------+
-9 rows in set (0.00 sec)
-MySQL [main] 15:12:26 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;具体的表介绍和main库一致。&lt;/p&gt;
-&lt;h3 id=&quot;stats库&quot;&gt;&lt;a href=&quot;#stats库&quot; class=&quot;headerlink&quot; title=&quot;stats库&quot;&gt;&lt;/a&gt;stats库&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;MySQL [main] 15:12:26 &amp;gt; show tables from stats;
-+-----------------------------------+
-| tables                            |
-+-----------------------------------+
-| global_variables                  |
-| stats_memory_metrics              |
-| stats_mysql_commands_counters     |
-| stats_mysql_connection_pool       |
-| stats_mysql_connection_pool_reset |
-| stats_mysql_global                |
-| stats_mysql_processlist           |
-| stats_mysql_query_digest          |
-| stats_mysql_query_digest_reset    |
-| stats_mysql_query_rules           |
-| stats_mysql_users                 |
-| stats_proxysql_servers_metrics    |
-| stats_proxysql_servers_status     |
-+-----------------------------------+
-13 rows in set (0.00 sec)
-MySQL [main] 15:13:53 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;stats-mysql-commands-counters表&quot;&gt;&lt;a href=&quot;#stats-mysql-commands-counters表&quot; class=&quot;headerlink&quot; title=&quot;stats_mysql_commands_counters表&quot;&gt;&lt;/a&gt;stats_mysql_commands_counters表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:15:36 &amp;gt; show create table stats.stats_mysql_commands_counters\G
-*************************** 1. row ***************************
-       table: stats_mysql_commands_counters
-Create Table: CREATE TABLE stats_mysql_commands_counters (
-    Command VARCHAR NOT NULL PRIMARY KEY,
-    Total_Time_us INT NOT NULL,
-    Total_cnt INT NOT NULL,
-    cnt_100us INT NOT NULL,
-    cnt_500us INT NOT NULL,
-    cnt_1ms INT NOT NULL,
-    cnt_5ms INT NOT NULL,
-    cnt_10ms INT NOT NULL,
-    cnt_50ms INT NOT NULL,
-    cnt_100ms INT NOT NULL,
-    cnt_500ms INT NOT NULL,
-    cnt_1s INT NOT NULL,
-    cnt_5s INT NOT NULL,
-    cnt_10s INT NOT NULL,
-    cnt_INFs)
-1 row in set (0.00 sec)
-MySQL [stats] 15:15:58 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;command：已执行的SQL命令的类型，如FLUSH、INSERT、KILL、SELECT FOR UPDATE等。&lt;br&gt;Total_Time_us：执行该类型命令的总时间(以毫秒为单位)。&lt;br&gt;Total_cnt：执行该类型的命令的总数。&lt;br&gt;cnt_100us-cnt_INFs：在指定的时间限制内执行的给定类型的命令总数和前一个命令的总数。&lt;/p&gt;
-&lt;h4 id=&quot;stats-mysql-connection-pool表&quot;&gt;&lt;a href=&quot;#stats-mysql-connection-pool表&quot; class=&quot;headerlink&quot; title=&quot;stats_mysql_connection_pool表&quot;&gt;&lt;/a&gt;stats_mysql_connection_pool表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:15:58 &amp;gt; show create table stats.stats_mysql_connection_pool \G 
-*************************** 1. row ***************************
-       table: stats_mysql_connection_pool
-Create Table: CREATE TABLE stats_mysql_connection_pool (
-    hostgroup INT,
-    srv_host VARCHAR,
-    srv_port INT,
-    status VARCHAR,
-    ConnUsed INT,
-    ConnFree INT,
-    ConnOK INT,
-    ConnERR INT,
-    Queries INT,
-    Bytes_data_sent INT,
-    Bytes_data_recv INT,
-    Latency_us INT)
-1 row in set (0.00 sec)
-MySQL [stats] 15:20:08 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;hostgroup：后端服务器所属的主机组，单个后端服务器可以属于多个主机组。&lt;/p&gt;
-&lt;p&gt;srv_host,srv_port：mysqld后端服务器正在侦听连接的TCP端点的IP和Port。&lt;br&gt;status：后端服务器的状态。可以有ONLINE，SHUNNED，OFFLINE_SOFT，OFFLINE_HARD。&lt;br&gt;ConnUsed：ProxySQL当前使用多少个连接来向后端服务器发送查询。&lt;br&gt;ConnFree：目前有多少个连接是空闲。&lt;br&gt;ConnOK：成功建立了多少个连接。&lt;br&gt;ConnERR：没有成功建立多少个连接。&lt;br&gt;Queries：路由到此特定后端服务器的查询数。&lt;br&gt;Bytes_data_sent：发送到后端的数据量。&lt;br&gt;Bytes_data_recv：从后端接收的数据量。&lt;br&gt;Latency_ms：从Monitor报告的当前ping以毫秒为单位的延迟时间。&lt;/p&gt;
-&lt;h4 id=&quot;stats-mysql-global表&quot;&gt;&lt;a href=&quot;#stats-mysql-global表&quot; class=&quot;headerlink&quot; title=&quot;stats_mysql_global表&quot;&gt;&lt;/a&gt;stats_mysql_global表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:20:08 &amp;gt; show create table stats.stats_mysql_global\G          
-*************************** 1. row ***************************
-       table: stats_mysql_global
-Create Table: CREATE TABLE stats_mysql_global (
-    Variable_Name VARCHAR NOT NULL PRIMARY KEY,
-    Variable_Value VARCHAR NOT NULL)
-1 row in set (0.00 sec)
-MySQL [stats] 15:22:35 &amp;gt;
-Variable_Name：代表与MySQL相关的代理级别的全局统计
-如Client_Connections_aborted：由于无效凭据或max_connections而导致的前端连接数已达到；
-如Client_Connections_connected：当前连接的前端连接数。
-如Client_Connections_created：到目前为止创建的前端连接数。等等。
-
-Variable_Value：统计所对应的值。
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;stats-mysql-processlist表&quot;&gt;&lt;a href=&quot;#stats-mysql-processlist表&quot; class=&quot;headerlink&quot; title=&quot;stats_mysql_processlist表&quot;&gt;&lt;/a&gt;stats_mysql_processlist表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:24:11 &amp;gt; show create table stats.stats_mysql_processlist\G
-*************************** 1. row ***************************
-       table: stats_mysql_processlist
-Create Table: CREATE TABLE stats_mysql_processlist (
-    ThreadID INT NOT NULL,
-    SessionID INTEGER PRIMARY KEY,
-    user VARCHAR,
-    db VARCHAR,
-    cli_host VARCHAR,
-    cli_port INT,
-    hostgroup INT,
-    l_srv_host VARCHAR,
-    l_srv_port INT,
-    srv_host VARCHAR,
-    srv_port INT,
-    command VARCHAR,
-    time_ms INT NOT NULL,
-    info VARCHAR)
-1 row in set (0.00 sec)
-MySQL [stats] 15:26:43 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;ThreadID：ProxySQL线程的内部ID。&lt;/p&gt;
-&lt;p&gt;SessionID：ProxySQL会话ID，通过这个ID可以进行kill操作。&lt;br&gt;user：与MySQL客户端连接到ProxySQL的用户。&lt;br&gt;db：当前选择的数据库。&lt;br&gt;cli_host,cli_port：连接ProxySQL的IP和TCP端口。&lt;br&gt;hostgroup：当前主机组。如果正在处理查询，则是查询已被路由或将要路由的主机组，或默认主机组。可以通过这个查看该SQL到底是到哪个HG里。&lt;br&gt;l_srv_host,l_srv_port：ProxySQL的IP和TCP端口。&lt;br&gt;srv_host,srv_port：后端MySQL服务器的IP和端口。&lt;br&gt;command：正在执行的MySQL查询的类型。&lt;br&gt;time_ms：命令执行的时间(以毫秒为单位)。&lt;br&gt;info：正在执行的SQL。&lt;/p&gt;
-&lt;h4 id=&quot;stats-mysql-query-digest表&quot;&gt;&lt;a href=&quot;#stats-mysql-query-digest表&quot; class=&quot;headerlink&quot; title=&quot;stats_mysql_query_digest表&quot;&gt;&lt;/a&gt;stats_mysql_query_digest表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:26:43 &amp;gt; show create table stats.stats_mysql_query_digest\G
-*************************** 1. row ***************************
-       table: stats_mysql_query_digest
-Create Table: CREATE TABLE stats_mysql_query_digest (
-    hostgroup INT,
-    schemaname VARCHAR NOT NULL,
-    username VARCHAR NOT NULL,
-    digest VARCHAR NOT NULL,
-    digest_text VARCHAR NOT NULL,
-    count_star INTEGER NOT NULL,
-    first_seen INTEGER NOT NULL,
-    last_seen INTEGER NOT NULL,
-    sum_time INTEGER NOT NULL,
-    min_time INTEGER NOT NULL,
-    max_time INTEGER NOT NULL,
-    PRIMARY KEY(hostgroup, schemaname, username, digest))
-1 row in set (0.00 sec)
-MySQL [stats] 15:29:27 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;hostgroup：发送查询的主机组。值-1表示查询查询缓存。&lt;/p&gt;
-&lt;p&gt;schemaname：查询的数据库。&lt;br&gt;user：连接ProxySQL的用户名。&lt;br&gt;digest：一个十六进制散列，表示其参数剥离的SQL。&lt;br&gt;digest_text：参数剥离的实际SQL文本&lt;br&gt;count_star：执行查询的总次数（参数的值不同）。&lt;br&gt;first_seen：unix时间戳，是通过代理路由查询的第一时刻。&lt;br&gt;last_seen：unix时间戳，当查询通过代理路由时的最后一刻（到目前为止）。&lt;br&gt;sum_time：执行此类查询的总时间（以微秒为单位）。&lt;br&gt;这对于确定应用程序工作负载中花费的最多时间在哪里是非常有用的，并为改进的地方提供了一个良好的起点。&lt;br&gt;min_time,max_time - 执行此类查询时期望的持续时间范围。&lt;br&gt;min_time是到目前为止所看到的最小执行时间，而max_time表示最大执行时间，以微秒为单位。&lt;/p&gt;
-&lt;h4 id=&quot;stats-mysql-query-rules表&quot;&gt;&lt;a href=&quot;#stats-mysql-query-rules表&quot; class=&quot;headerlink&quot; title=&quot;stats_mysql_query_rules表&quot;&gt;&lt;/a&gt;stats_mysql_query_rules表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:29:27 &amp;gt; show create table stats.stats_mysql_query_rules\G 
-*************************** 1. row ***************************
-       table: stats_mysql_query_rules
-Create Table: CREATE TABLE stats_mysql_query_rules (
-    rule_id INTEGER PRIMARY KEY,
-    hits INT NOT NULL)
-1 row in set (0.00 sec)
-MySQL [stats] 15:31:57 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;rule_id：路由规则的ID与main.mysql_query_rules的id对应。&lt;/p&gt;
-&lt;p&gt;hits：此路由规则的匹配总数。 如果当前传入的查询符合规则，则会记录一次命中。&lt;br&gt;monitor库&lt;/p&gt;
-&lt;p&gt;对后端MySQL的健康检查，由变量mysql-monitor_enabled来确定是否开启Monitor模块。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:35:32 &amp;gt; show tables from monitor;                               
-+------------------------------------+
-| tables                             |
-+------------------------------------+
-| mysql_server_connect               |
-| mysql_server_connect_log           |
-| mysql_server_group_replication_log |
-| mysql_server_ping                  |
-| mysql_server_ping_log              |
-| mysql_server_read_only_log         |
-| mysql_server_replication_lag_log   |
-+------------------------------------+
-7 rows in set (0.00 sec)
-MySQL [stats] 15:35:52 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;mysql-server-connect-mysql-server-connect-log表&quot;&gt;&lt;a href=&quot;#mysql-server-connect-mysql-server-connect-log表&quot; class=&quot;headerlink&quot; title=&quot;mysql_server_connect/mysql_server_connect_log表&quot;&gt;&lt;/a&gt;mysql_server_connect/mysql_server_connect_log表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:37:39 &amp;gt; show create table monitor.mysql_server_connect\G  
-*************************** 1. row ***************************
-       table: mysql_server_connect
-Create Table: CREATE TABLE mysql_server_connect (
-    hostname VARCHAR NOT NULL,
-    port INT NOT NULL DEFAULT 3306,
-    time_since INT NOT NULL DEFAULT 0,
-    time_until INT NOT NULL DEFAULT 0,
-    connect_success_count INT NOT NULL DEFAULT 0,
-    connect_success_first INT NOT NULL DEFAULT 0,
-    connect_success_last INT NOT NULL DEFAULT 0,
-    connect_success_time_min INT NOT NULL DEFAULT 0,
-    connect_success_time_max INT NOT NULL DEFAULT 0,
-    connect_success_time_total INT NOT NULL DEFAULT 0,
-    connect_failure_count INT NOT NULL DEFAULT 0,
-    connect_failure_first INT NOT NULL DEFAULT 0,
-    connect_failure_last INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (hostname, port))
-1 row in set (0.00 sec)
-MySQL [stats] 15:37:46 &amp;gt; show create table monitor.mysql_server_connect_log\G
-*************************** 1. row ***************************
-       table: mysql_server_connect_log
-Create Table: CREATE TABLE mysql_server_connect_log (
-    hostname VARCHAR NOT NULL,
-    port INT NOT NULL DEFAULT 3306,
-    time_start_us INT NOT NULL DEFAULT 0,
-    connect_success_time_us INT DEFAULT 0,
-    connect_error VARCHAR,
-    PRIMARY KEY (hostname, port, time_start_us))
-1 row in set (0.00 sec)
-MySQL [stats] 15:37:51 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;连接到所有MySQL服务器以检查它们是否可用，该表用来存放检测连接的日志。由变量mysql-monitor_connect_interval来控制其检测的时间间隔，由参数mysql-monitor_connect_timeout控制连接是否超时（默认200毫秒）。&lt;/p&gt;
-&lt;h4 id=&quot;mysql-server-ping-mysql-server-ping-log表&quot;&gt;&lt;a href=&quot;#mysql-server-ping-mysql-server-ping-log表&quot; class=&quot;headerlink&quot; title=&quot;mysql_server_ping/mysql_server_ping_log表&quot;&gt;&lt;/a&gt;mysql_server_ping/mysql_server_ping_log表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:39:23 &amp;gt; show create table monitor.mysql_server_ping\G       
-*************************** 1. row ***************************
-       table: mysql_server_ping
-Create Table: CREATE TABLE mysql_server_ping (
-    hostname VARCHAR NOT NULL,
-    port INT NOT NULL DEFAULT 3306,
-    time_since INT NOT NULL DEFAULT 0,
-    time_until INT NOT NULL DEFAULT 0,
-    ping_success_count INT NOT NULL DEFAULT 0,
-    ping_success_first INT NOT NULL DEFAULT 0, ping_success_last INT NOT NULL DEFAULT 0,
-    ping_success_time_min INT NOT NULL DEFAULT 0,
-    ping_success_time_max INT NOT NULL DEFAULT 0,
-    ping_success_time_total INT NOT NULL DEFAULT 0,
-    ping_failure_count INT NOT NULL DEFAULT 0,
-    ping_failure_first INT NOT NULL DEFAULT 0,
-    ping_failure_last INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (hostname, port))
-1 row in set (0.00 sec)
-MySQL [stats] 15:40:12 &amp;gt; show create table monitor.mysql_server_ping_log\G
-*************************** 1. row ***************************
-       table: mysql_server_ping_log
-Create Table: CREATE TABLE mysql_server_ping_log (
-     hostname VARCHAR NOT NULL,
-    port INT NOT NULL DEFAULT 3306,
-    time_start_us INT NOT NULL DEFAULT 0,
-    ping_success_time_us INT DEFAULT 0,
-    ping_error VARCHAR,
-    PRIMARY KEY (hostname, port, time_start_us))
-1 row in set (0.00 sec)
-MySQL [stats] 15:40:15 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;使用mysql_ping API ping后端MySQL服务器检查它们是否可用，该表用来存放ping的日志。由变量mysql-monitor_ping_interval控制ping的时间间隔，默认值：10000（毫秒，相当于10秒）。&lt;/p&gt;
-&lt;h4 id=&quot;mysql-server-replication-lag-log表&quot;&gt;&lt;a href=&quot;#mysql-server-replication-lag-log表&quot; class=&quot;headerlink&quot; title=&quot;mysql_server_replication_lag_log表&quot;&gt;&lt;/a&gt;mysql_server_replication_lag_log表&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;MySQL [stats] 15:40:53 &amp;gt; show create table monitor.mysql_server_replication_lag_log\G
-*************************** 1. row ***************************
-       table: mysql_server_replication_lag_log
-Create Table: CREATE TABLE mysql_server_replication_lag_log (
-     hostname VARCHAR NOT NULL,
-    port INT NOT NULL DEFAULT 3306,
-    time_start_us INT NOT NULL DEFAULT 0,
-    success_time_us INT DEFAULT 0,
-    repl_lag INT DEFAULT 0,
-    error VARCHAR,
-    PRIMARY KEY (hostname, port, time_start_us))
-1 row in set (0.00 sec)
-MySQL [stats] 15:41:12 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;后端MySQL服务主从延迟的检测。由参数mysql-monitor_replication_lag_interval控制检测间隔时间， 如果复制滞后太大，可以暂时关闭从。由mysql_servers.max_replication_lag列控制。默认值：10000（毫秒，相当于10秒）。&lt;/p&gt;
-&lt;h2 id=&quot;内置参数&quot;&gt;&lt;a href=&quot;#内置参数&quot; class=&quot;headerlink&quot; title=&quot;内置参数&quot;&gt;&lt;/a&gt;内置参数&lt;/h2&gt;&lt;p&gt;global_variables 1.4版本中有95个参数，参数较多，解释请参考文档。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [main] 11:16:22 &amp;gt; show variables;
-+-----------------------------------------------------+--------------------+
-| Variable_name                                       | Value              |
-+-----------------------------------------------------+--------------------+
-| admin-admin_credentials                             | admin:admin        |
-| admin-cluster_check_interval_ms                     | 1000               |
-| admin-cluster_password                              |                    |
-| admin-cluster_username                              |                    |
-| admin-hash_passwords                                | true               |
-| admin-mysql_ifaces                                  | 0.0.0.0:6032       |
-| admin-read_only                                     | false              |
-| admin-refresh_interval                              | 2000               |
-| admin-stats_credentials                             | stats:stats        |
-| admin-telnet_admin_ifaces                           | (null)             |
-| admin-telnet_stats_ifaces                           | (null)             |
-| admin-version                                       | 1.4.1-45-gab4e6ee  |
-| mysql-client_found_rows                             | true               |
-| mysql-commands_stats                                | true               |
-| mysql-connect_retries_delay                         | 1                  |
-| mysql-connect_retries_on_failure                    | 10                 |
-| mysql-connect_timeout_server                        | 3000               |
-| mysql-connect_timeout_server_max                    | 10000              |
-| mysql-connection_delay_multiplex_ms                 | 0                  |
-| mysql-connection_max_age_ms                         | 0                  |
-| mysql-default_charset                               | utf8               |
-| mysql-default_max_latency_ms                        | 1000               |
-| mysql-default_query_delay                           | 0                  |
-| mysql-default_query_timeout                         | 36000000           |
-| mysql-default_reconnect                             | true               |
-| mysql-default_schema                                | information_schema |
-| mysql-default_sql_mode                              |                    |
-| mysql-default_time_zone                             | SYSTEM             |
-| mysql-enforce_autocommit_on_reads                   | false              |
-| mysql-eventslog_filename                            |                    |
-| mysql-eventslog_filesize                            | 104857600          |
-| mysql-forward_autocommit                            | false              |
-| mysql-free_connections_pct                          | 10                 |
-| mysql-have_compress                                 | true               |
-| mysql-hostgroup_manager_verbose                     | 1                  |
-| mysql-init_connect                                  | (null)             |
-| mysql-interfaces                                    | 0.0.0.0:6033       |
-| mysql-long_query_time                               | 1000               |
-| mysql-max_allowed_packet                            | 4194304            |
-| mysql-max_connections                               | 2048               |
-| mysql-max_stmts_cache                               | 10000              |
-| mysql-max_stmts_per_connection                      | 20                 |
-| mysql-max_transaction_time                          | 14400000           |
-| mysql-mirror_max_concurrency                        | 16                 |
-| mysql-mirror_max_queue_length                       | 32000              |
-| mysql-monitor_connect_interval                      | 60000              |
-| mysql-monitor_connect_timeout                       | 600                |
-| mysql-monitor_enabled                               | true               |
-| mysql-monitor_groupreplication_healthcheck_interval | 5000               |
-| mysql-monitor_groupreplication_healthcheck_timeout  | 800                |
-| mysql-monitor_history                               | 600000             |
-| mysql-monitor_password                              | monitor            |
-| mysql-monitor_ping_interval                         | 10000              |
-| mysql-monitor_ping_max_failures                     | 3                  |
-| mysql-monitor_ping_timeout                          | 1000               |
-| mysql-monitor_query_interval                        | 60000              |
-| mysql-monitor_query_timeout                         | 100                |
-| mysql-monitor_read_only_interval                    | 1500               |
-| mysql-monitor_read_only_timeout                     | 500                |
-| mysql-monitor_replication_lag_interval              | 10000              |
-| mysql-monitor_replication_lag_timeout               | 1000               |
-| mysql-monitor_slave_lag_when_null                   | 60                 |
-| mysql-monitor_username                              | monitor            |
-| mysql-monitor_wait_timeout                          | true               |
-| mysql-monitor_writer_is_also_reader                 | true               |
-| mysql-multiplexing                                  | true               |
-| mysql-ping_interval_server_msec                     | 120000             |
-| mysql-ping_timeout_server                           | 500                |
-| mysql-poll_timeout                                  | 2000               |
-| mysql-poll_timeout_on_failure                       | 100                |
-| mysql-query_cache_size_MB                           | 256                |
-| mysql-query_digests                                 | true               |
-| mysql-query_digests_lowercase                       | false              |
-| mysql-query_digests_max_digest_length               | 2048               |
-| mysql-query_digests_max_query_length                | 65000              |
-| mysql-query_processor_iterations                    | 0                  |
-| mysql-query_processor_regex                         | 1                  |
-| mysql-query_retries_on_failure                      | 1                  |
-| mysql-server_capabilities                           | 45578              |
-| mysql-server_version                                | 5.5.30             |
-| mysql-servers_stats                                 | true               |
-| mysql-session_idle_ms                               | 1000               |
-| mysql-session_idle_show_processlist                 | true               |
-| mysql-sessions_sort                                 | true               |
-| mysql-shun_on_failures                              | 5                  |
-| mysql-shun_recovery_time_sec                        | 10                 |
-| mysql-ssl_p2s_ca                                    | (null)             |
-| mysql-ssl_p2s_cert                                  | (null)             |
-| mysql-ssl_p2s_cipher                                | (null)             |
-| mysql-ssl_p2s_key                                   | (null)             |
-| mysql-stacksize                                     | 1048576            |
-| mysql-threads                                       | 4                  |
-| mysql-threshold_query_length                        | 524288             |
-| mysql-threshold_resultset_size                      | 4194304            |
-| mysql-wait_timeout                                  | 28800000           |
-+-----------------------------------------------------+--------------------+
-95 rows in set (0.00 sec)
-MySQL [main] 11:16:33 &amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;ProxySQL多层配置设计&quot;&gt;&lt;a href=&quot;#ProxySQL多层配置设计&quot; class=&quot;headerlink&quot; title=&quot;ProxySQL多层配置设计&quot;&gt;&lt;/a&gt;ProxySQL多层配置设计&lt;/h2&gt;&lt;h3 id=&quot;ProxySQL设计模型介绍&quot;&gt;&lt;a href=&quot;#ProxySQL设计模型介绍&quot; class=&quot;headerlink&quot; title=&quot;ProxySQL设计模型介绍&quot;&gt;&lt;/a&gt;ProxySQL设计模型介绍&lt;/h3&gt;&lt;p&gt;ProxySQL使用多层配置系统，适合满足以下需求：&lt;/p&gt;
-&lt;p&gt;允许自动更新配置，与MySQL兼容管理界面；&lt;br&gt;允许在线修改配置，不用重启ProxySQL；&lt;br&gt;允许回滚配置；&lt;br&gt;多层配置系统的实现，如下图：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;+-------------------------+
-|         RUNTIME         |
-+-------------------------+
-       /|\          |
-        |           |
-    [1] |       [2] |
-        |          \|/
-+-------------------------+
-|         MEMORY          |
-+-------------------------+ _
-       /|\          |      |\
-        |           |        \
-    [3] |       [4] |         \ [5]
-        |          \|/         \
-+-------------------------+  +-------------------------+
-|          DISK           |  |       CONFIG FILE       |
-+-------------------------+  +-------------------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;RUNTIME代表ProxySQL当前生效的配置，包括global_variables、mysql_servers、mysql_users、mysql_query_rules。无法直接修改这里的配置，必须要从下一层load过来。&lt;/p&gt;
-&lt;p&gt;MEMORY(main)代表平时在mysql命令行修改的main里的配置，可以认为是SQLite数据库在内存的镜像。可修改以下：&lt;/p&gt;
-&lt;p&gt;mysql_server        后端服务器列表&lt;br&gt;mysql_users         连接到ProxySQL的用户列表及其凭据&lt;br&gt;mysql_query_rules   将流量路由到不同的后端服务器的规则列表&lt;br&gt;global_variables    全局变量列表&lt;br&gt;mysql_collat        MySQL排序规则列表&lt;br&gt;DISK和CONFIG FILE表示磁盘上SQLite数据库，默认位置在$datadir/proxysql.db，在重新启动过程中，内存中未被保存的配置将丢失。/etc/proxysql.cnf文件只在第一次初始化的时候用到。如要修改端口，还是需要在管理命令行里修改，再save到磁盘。&lt;/p&gt;
-&lt;p&gt;ProxySQL多层配置修改示例&lt;/p&gt;
-&lt;p&gt;mysql users&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;LOAD MYSQL USERS TO RUNTIME / LOAD MYSQL USERS FROM MEMORY
-SAVE MYSQL USERS TO MEMORY / SAVE MYSQL USERS FROM RUNTIME
-LOAD MYSQL USERS TO MEMORY / LOAD MYSQL USERS FROM DISK
-SAVE MYSQL USERS TO DISK /  SAVE MYSQL USERS FROM MEMORY
-LOAD MYSQL USERS FROM CONFIG
-mysql servers
-
-LOAD MYSQL SERVERS TO RUNTIME   让修改的配置生效
-SAVE MYSQL SERVERS TO MEMORY
-LOAD MYSQL SERVERS TO MEMORY
-SAVE MYSQL SERVERS TO DISK      将修改的配置持久化
-LOAD MYSQL SERVERS FROM CONFIG
-mysql query rules
-
-load mysql query rules to run
-save mysql query rules to mem
-load mysql query rules to mem
-save mysql query rules to disk
-load mysql query rules from config
-mysql variables
-
-load mysql variables to runtime
-save mysql variables to memory
-load mysql variables to memory
-save mysql variables to disk
-load mysql variables from config
-admin variables
-
-load admin variables to runtime
-save admin variables to memory
-load admin variables to memory
-save admin variables to disk
-load admin variables from config
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;参考&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/sysown/proxysql/wiki/Multi-layer-configuration-system&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/sysown/proxysql/wiki/Multi-layer-configuration-system&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://severalnines.com/blog/mysql-load-balancing-proxysql-overview&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://severalnines.com/blog/mysql-load-balancing-proxysql-overview&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://seanlook.com/2017/04/10/mysql-proxysql-install-config/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://seanlook.com/2017/04/10/mysql-proxysql-install-config/&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&quot;ProxySQL读写分离示例&quot;&gt;&lt;a href=&quot;#ProxySQL读写分离示例&quot; class=&quot;headerlink&quot; title=&quot;ProxySQL读写分离示例&quot;&gt;&lt;/a&gt;ProxySQL读写分离示例&lt;/h1&gt;&lt;h2 id=&quot;准备-1&quot;&gt;&lt;a href=&quot;#准备-1&quot; class=&quot;headerlink&quot; title=&quot;准备&quot;&gt;&lt;/a&gt;准备&lt;/h2&gt;&lt;p&gt;Master:192.168.56.101:3306&lt;br&gt;Slave :192.168.56.102:3306(192.168.56.102)&lt;br&gt;ProxySQL：192.168.56.102:3306(192.168.56.102)&lt;br&gt;版本：percona-server 5.7.18&lt;/p&gt;
-&lt;h2 id=&quot;安装配置&quot;&gt;&lt;a href=&quot;#安装配置&quot; class=&quot;headerlink&quot; title=&quot;安装配置&quot;&gt;&lt;/a&gt;安装配置&lt;/h2&gt;&lt;p&gt;主从安装配置省略。&lt;/p&gt;
-&lt;h2 id=&quot;示例目标&quot;&gt;&lt;a href=&quot;#示例目标&quot; class=&quot;headerlink&quot; title=&quot;示例目标&quot;&gt;&lt;/a&gt;示例目标&lt;/h2&gt;&lt;p&gt;客户端通过访问ProxySQL的ip，实际访问Master和Slave的效果。&lt;/p&gt;
-&lt;h2 id=&quot;添加后端DB服务&quot;&gt;&lt;a href=&quot;#添加后端DB服务&quot; class=&quot;headerlink&quot; title=&quot;添加后端DB服务&quot;&gt;&lt;/a&gt;添加后端DB服务&lt;/h2&gt;&lt;p&gt;100是主库，101是从库，同时主库也处理1/10的读请求，登录ProxySQL管理端设置：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 14:22:06 &amp;gt; insert into mysql_servers(hostgroup_id,hostname,port,weight,comment) values(100, &amp;apos;192.168.56.101&amp;apos;, 3306, 1, &amp;apos;db0,ReadWrite&amp;apos;),(101, &amp;apos;192.168.56.102&amp;apos;, 3306, 9, &amp;apos;db0,ReadOnly&amp;apos;);
-Query OK, 2 rows affected (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;添加访问用户&quot;&gt;&lt;a href=&quot;#添加访问用户&quot; class=&quot;headerlink&quot; title=&quot;添加访问用户&quot;&gt;&lt;/a&gt;添加访问用户&lt;/h2&gt;&lt;p&gt;登录Master主库设置监控用户和程序用户(由于是测试使用，权限较大，主机允许所有)：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 15:51:32 &amp;gt; create user &amp;apos;monitor&amp;apos;@&amp;apos;%&amp;apos; identified by &amp;apos;monitor&amp;apos;;
-Query OK, 0 rows affected (0.00 sec)
-MySQL [(none)] 15:51:37 &amp;gt; grant select,super,process,show databases,replication client,replication slave on *.* to &amp;apos;monitor&amp;apos;@&amp;apos;%&amp;apos;;
-Query OK, 0 rows affected (0.00 sec)
-MySQL [(none)] 15:45:23 &amp;gt; create user &amp;apos;user0&amp;apos;@&amp;apos;%&amp;apos; identified by &amp;apos;password0&amp;apos;;                   
-Query OK, 0 rows affected (0.00 sec)
-MySQL [(none)] 15:49:42 &amp;gt; GRANT SELECT, RELOAD, PROCESS, SHOW DATABASES, SUPER, LOCK TABLES, EXECUTE, SHOW VIEW, TRIGGER, EVENT ON *.* TO &amp;apos;read0&amp;apos;@&amp;apos;%&amp;apos;;
-Query OK, 0 rows affected (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;登录ProxySQL管理端设置：&lt;br&gt;这里default_hostgroup指定了hostgroup为100的主库，下文会设置SELECT …FOR UPDATE规则到100，SELECT到101，其他所有的SQL到default_hostgroup，也就是主库。&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 14:22:15 &amp;gt; INSERT INTO mysql_users (username, password, active, default_hostgroup, max_connections) VALUES (&amp;apos;user0&amp;apos;, &amp;apos;password0&amp;apos;, 1, 100, 1000); 
-Query OK, 2 rows affected (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;添加复制关系&quot;&gt;&lt;a href=&quot;#添加复制关系&quot; class=&quot;headerlink&quot; title=&quot;添加复制关系&quot;&gt;&lt;/a&gt;添加复制关系&lt;/h2&gt;&lt;p&gt;登录ProxySQL管理端设置：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [main] 17:32:46 &amp;gt; INSERT INTO mysql_replication_hostgroups VALUES(100,101,&amp;apos;db0&amp;apos;);
-Query OK, 1 row affected (0.00 sec)
-MySQL [main] 17:33:30 &amp;gt; load mysql variables to runtime;
-Query OK, 0 rows affected (0.00 sec)
-MySQL [main] 17:33:54 &amp;gt; save mysql variables to disk;
-Query OK, 83 rows affected (0.01 sec)
-MySQL [main] 17:35:53 &amp;gt; SELECT * FROM monitor.mysql_server_read_only_log ORDER BY time_start_us DESC LIMIT 10;
-+---------------+------+------------------+-----------------+-----------+-------+
-| hostname      | port | time_start_us    | success_time_us | read_only | error |
-+---------------+------+------------------+-----------------+-----------+-------+
-| 192.168.56.102  | 3306 | 1504085770195146 | 630             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504085770194710 | 23722           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504085768695087 | 650             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504085768694620 | 23706           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504085767194957 | 628             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504085767194507 | 23686           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504085765694834 | 634             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504085765694387 | 23669           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504085764194744 | 641             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504085764194301 | 23729           | 0         | NULL  |
-+---------------+------+------------------+-----------------+-----------+-------+
-10 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;修改全局变量&quot;&gt;&lt;a href=&quot;#修改全局变量&quot; class=&quot;headerlink&quot; title=&quot;修改全局变量&quot;&gt;&lt;/a&gt;修改全局变量&lt;/h2&gt;&lt;p&gt;登录ProxySQL管理端设置：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 14:25:07 &amp;gt; set mysql-query_retries_on_failure=0;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-max_stmts_per_connection=1000;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-eventslog_filename=&amp;apos;queries.log&amp;apos;;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-monitor_slave_lag_when_null=7200;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-ping_timeout_server=1500;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-monitor_connect_timeout=1000;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-default_max_latency_ms=2000;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-monitor_username=&amp;apos;monitor&amp;apos;;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-monitor_password=&amp;apos;monitor&amp;apos;;
-Query OK, 1 row affected (0.00 sec)
-MySQL [(none)] 14:25:07 &amp;gt; set mysql-server_version=&amp;apos;5.7.18&amp;apos;;
-Query OK, 1 row affected (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;全局变量生效并保存到磁盘：&lt;br&gt;登录ProxySQL管理端设置：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 14:25:07 &amp;gt; load mysql users to runtime;
-Query OK, 0 rows affected (0.00 sec)
-MySQL [(none)] 14:25:27 &amp;gt; load mysql servers to runtime;
-Query OK, 0 rows affected (0.00 sec)
-MySQL [(none)] 14:25:27 &amp;gt; load mysql variables to runtime;
-Query OK, 0 rows affected (0.00 sec)
-MySQL [(none)] 14:25:28 &amp;gt; save mysql users to disk;
-Query OK, 0 rows affected (0.02 sec)
-MySQL [(none)] 14:25:36 &amp;gt; save mysql servers to disk;
-save mysql variables to disk;Query OK, 0 rows affected (0.03 sec)
-MySQL [(none)] 14:25:37 &amp;gt; save mysql variables to disk;
-Query OK, 83 rows affected (0.01 sec)
-MySQL [(none)] 14:25:37 &amp;gt; save mysql users to mem;  -- 可以屏蔽看到的明文密码
-Query OK, 0 rows affected (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;路由规则&quot;&gt;&lt;a href=&quot;#路由规则&quot; class=&quot;headerlink&quot; title=&quot;路由规则&quot;&gt;&lt;/a&gt;路由规则&lt;/h2&gt;&lt;p&gt;ProxySQL使用查询规则来确定路由，如果没有规则用于查询，默认会访问hostgroup 0主机组，会报以下错误：&lt;/p&gt;
-&lt;p&gt;[root@mysql_slave ~]# mysql -uuser0 -ppassword0 -h 127.0.0.1 -P6033 -e “SELECT 1”&lt;br&gt;mysql: [Warning] Using a password on the command line interface can be insecure.&lt;br&gt;ERROR 9001 (HY000) at line 1: Max connect timeout reached while reaching hostgroup 1 after 2000ms&lt;br&gt;设置路由规则：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 09:29:14 &amp;gt; use main;
-Database changed
-MySQL [main] 09:29:17 &amp;gt; INSERT INTO mysql_query_rules (active, match_pattern, destination_hostgroup, cache_ttl) VALUES (1, &amp;apos;^.*&amp;apos;, 101, NULL);
-MySQL [main] 09:29:15 &amp;gt; INSERT INTO mysql_query_rules (active, match_pattern, destination_hostgroup, cache_ttl) VALUES (1, &amp;apos;^SELECT .* FOR UPDATE&amp;apos;, 100, NULL);
-Query OK, 1 row affected (0.00 sec)
-MySQL [main] 09:29:17 &amp;gt; INSERT INTO mysql_query_rules (active, match_pattern, destination_hostgroup, cache_ttl) VALUES (1, &amp;apos;^SELECT .*&amp;apos;, 101, NULL);
-Query OK, 1 row affected (0.00 sec)
-MySQL [main] 09:29:18 &amp;gt; load mysql query rules to run;
-Query OK, 0 rows affected (0.00 sec)
-MySQL [main] 09:29:56 &amp;gt; save mysql query rules to disk;
-Query OK, 0 rows affected (0.03 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;常用查询&quot;&gt;&lt;a href=&quot;#常用查询&quot; class=&quot;headerlink&quot; title=&quot;常用查询&quot;&gt;&lt;/a&gt;常用查询&lt;/h2&gt;&lt;p&gt;查询连接日志：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:45:08 &amp;gt; SELECT * FROM monitor.mysql_server_connect_log ORDER BY time_start_us DESC LIMIT 10;
-+---------------+------+------------------+-------------------------+---------------+
-| hostname      | port | time_start_us    | connect_success_time_us | connect_error |
-+---------------+------+------------------+-------------------------+---------------+
-| 192.168.56.102  | 3306 | 1504590343795072 | 410                     | NULL          |
-| 192.168.56.101 | 3306 | 1504590343780010 | 69662                   | NULL          |
-| 192.168.56.102  | 3306 | 1504590283795083 | 521                     | NULL          |
-| 192.168.56.101 | 3306 | 1504590283779977 | 68310                   | NULL          |
-| 192.168.56.102  | 3306 | 1504590223794987 | 533                     | NULL          |
-| 192.168.56.101 | 3306 | 1504590223779913 | 53220                   | NULL          |
-| 192.168.56.102  | 3306 | 1504590163794887 | 497                     | NULL          |
-| 192.168.56.101 | 3306 | 1504590163779772 | 71389                   | NULL          |
-| 192.168.56.102  | 3306 | 1504590103794788 | 487                     | NULL          |
-| 192.168.56.101 | 3306 | 1504590103779728 | 68372                   | NULL          |
-+---------------+------+------------------+-------------------------+---------------+
-10 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询ping日志：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:46:22 &amp;gt; SELECT * FROM monitor.mysql_server_ping_log ORDER BY time_start_us DESC LIMIT 10;
-+---------------+------+------------------+----------------------+------------+
-| hostname      | port | time_start_us    | ping_success_time_us | ping_error |
-+---------------+------+------------------+----------------------+------------+
-| 192.168.56.102  | 3306 | 1504590413773092 | 100                  | NULL       |
-| 192.168.56.101 | 3306 | 1504590413770521 | 23105                | NULL       |
-| 192.168.56.102  | 3306 | 1504590403773088 | 168                  | NULL       |
-| 192.168.56.101 | 3306 | 1504590403770479 | 23080                | NULL       |
-| 192.168.56.102  | 3306 | 1504590393772977 | 135                  | NULL       |
-| 192.168.56.101 | 3306 | 1504590393770364 | 23078                | NULL       |
-| 192.168.56.102  | 3306 | 1504590383772899 | 138                  | NULL       |
-| 192.168.56.101 | 3306 | 1504590383770309 | 23205                | NULL       |
-| 192.168.56.102  | 3306 | 1504590373772885 | 102                  | NULL       |
-| 192.168.56.101 | 3306 | 1504590373770291 | 23099                | NULL       |
-+---------------+------+------------------+----------------------+------------+
-10 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询后端DB状态&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:46:55 &amp;gt; SELECT * FROM mysql_servers;
-+--------------+---------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------------+
-| hostgroup_id | hostname      | port | status | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment       |
-+--------------+---------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------------+
-| 100          | 192.168.56.101 | 3306 | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              | db0,ReadWrite |
-| 101          | 192.168.56.102  | 3306 | ONLINE | 9      | 0           | 1000            | 0                   | 0       | 0              | db0,ReadOnly  |
-+--------------+---------------+------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------------+
-2 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询监控状态：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:47:56 &amp;gt; SELECT * FROM monitor.mysql_server_read_only_log ORDER BY time_start_us DESC LIMIT 10;   
-+---------------+------+------------------+-----------------+-----------+-------+
-| hostname      | port | time_start_us    | success_time_us | read_only | error |
-+---------------+------+------------------+-----------------+-----------+-------+
-| 192.168.56.102  | 3306 | 1504590524103828 | 577             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504590524103406 | 23499           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504590522603717 | 646             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504590522603268 | 23487           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504590521103641 | 629             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504590521103182 | 23497           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504590519603662 | 639             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504590519603201 | 23525           | 0         | NULL  |
-| 192.168.56.102  | 3306 | 1504590518103492 | 618             | 1         | NULL  |
-| 192.168.56.101 | 3306 | 1504590518103062 | 23508           | 0         | NULL  |
-+---------------+------+------------------+-----------------+-----------+-------+
-10 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询用户信息：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:49:28 &amp;gt;  SELECT * FROM mysql_users;   
-+----------+-----------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+
-| username | password  | active | use_ssl | default_hostgroup | default_schema | schema_locked | transaction_persistent | fast_forward | backend | frontend | max_connections |
-+----------+-----------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+
-| user0    | password0 | 1      | 0       | 100               | NULL           | 0             | 1                      | 0            | 1       | 1        | 1000            |
-+----------+-----------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+
-1 row in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询连接池：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:51:19 &amp;gt; SELECT * FROM stats.stats_mysql_connection_pool;
-+-----------+---------------+----------+--------+----------+----------+--------+---------+---------+-----------------+-----------------+------------+
-| hostgroup | srv_host      | srv_port | status | ConnUsed | ConnFree | ConnOK | ConnERR | Queries | Bytes_data_sent | Bytes_data_recv | Latency_us |
-+-----------+---------------+----------+--------+----------+----------+--------+---------+---------+-----------------+-----------------+------------+
-| 100       | 192.168.56.101 | 3306     | ONLINE | 0        | 1        | 1      | 0       | 3       | 58              | 233             | 23059      |
-| 101       | 192.168.56.102  | 3306     | ONLINE | 0        | 1        | 3      | 88      | 5       | 106             | 360             | 102        |
-+-----------+---------------+----------+--------+----------+----------+--------+---------+---------+-----------------+-----------------+------------+
-2 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询执行命令统计信息：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:51:47 &amp;gt; SELECT * FROM stats_mysql_commands_counters WHERE Total_cnt;
-+---------+---------------+-----------+-----------+-----------+---------+---------+----------+----------+-----------+-----------+--------+--------+---------+----------+
-| Command | Total_Time_us | Total_cnt | cnt_100us | cnt_500us | cnt_1ms | cnt_5ms | cnt_10ms | cnt_50ms | cnt_100ms | cnt_500ms | cnt_1s | cnt_5s | cnt_10s | cnt_INFs |
-+---------+---------------+-----------+-----------+-----------+---------+---------+----------+----------+-----------+-----------+--------+--------+---------+----------+
-| SELECT  | 167664        | 27        | 15        | 4         | 0       | 6       | 0        | 1        | 0         | 1         | 0      | 0      | 0       | 0        |
-| SET     | 0             | 2         | 2         | 0         | 0       | 0       | 0        | 0        | 0         | 0         | 0      | 0      | 0       | 0        |
-| SHOW    | 13818         | 1         | 0         | 0         | 0       | 0       | 0        | 1        | 0         | 0         | 0      | 0      | 0       | 0        |
-+---------+---------------+-----------+-----------+-----------+---------+---------+----------+----------+-----------+-----------+--------+--------+---------+----------+
-3 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询路由规则的详情：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:53:05 &amp;gt; SELECT * FROM stats_mysql_query_digest ORDER BY sum_time DESC;
-+-----------+--------------------+----------+--------------------+----------------------------------+------------+------------+------------+----------+----------+----------+
-| hostgroup | schemaname         | username | digest             | digest_text                      | count_star | first_seen | last_seen  | sum_time | min_time | max_time |
-+-----------+--------------------+----------+--------------------+----------------------------------+------------+------------+------------+----------+----------+----------+
-| 100       | information_schema | user0    | 0xA322907BCBC120DD | select * from tables limit ?     | 1          | 1504589288 | 1504589288 | 133826   | 133826   | 133826   |
-| 100       | information_schema | user0    | 0x02033E45904D3DF0 | show databases                   | 1          | 1504589886 | 1504589886 | 13818    | 13818    | 13818    |
-| 100       | information_schema | user0    | 0x3765930C7143F468 | select * from t1                 | 1          | 1504589311 | 1504589311 | 13466    | 13466    | 13466    |
-| 101       | information_schema | user0    | 0xA322907BCBC120DD | select * from tables limit ?     | 2          | 1504582304 | 1504583327 | 7325     | 3564     | 3761     |
-| 101       | test               | user0    | 0x814EDBB68FBACD5D | select * from neworders limit ?  | 2          | 1504583184 | 1504583242 | 5959     | 2964     | 2995     |
-| 101       | test               | user0    | 0x3765930C7143F468 | select * from t1                 | 3          | 1504583288 | 1504589859 | 3386     | 64       | 3056     |
-| 101       | test               | user0    | 0xA322907BCBC120DD | select * from tables limit ?     | 2          | 1504583168 | 1504583299 | 3095     | 117      | 2978     |
-| 101       | information_schema | user0    | 0x620B328FE9D6D71A | SELECT DATABASE()                | 2          | 1504589729 | 1504589859 | 607      | 193      | 414      |
-| 100       | information_schema | user0    | 0x226CD90D52A2BA0B | select @@version_comment limit ? | 8          | 1504582304 | 1504589886 | 0        | 0        | 0        |
-| 100       | test               | user0    | 0x52B8B04283B3A18D | set names utf8                   | 1          | 1504583162 | 1504583162 | 0        | 0        | 0        |
-| 100       | information_schema | user0    | 0x52B8B04283B3A18D | set names utf8                   | 1          | 1504582582 | 1504582582 | 0        | 0        | 0        |
-| 100       | test               | user0    | 0x226CD90D52A2BA0B | select @@version_comment limit ? | 6          | 1504583162 | 1504583299 | 0        | 0        | 0        |
-+-----------+--------------------+----------+--------------------+----------------------------------+------------+------------+------------+----------+----------+----------+
-12 rows in set (0.00 sec)
-MySQL [(none)] 13:55:46 &amp;gt; SELECT hostgroup hg, sum_time, count_star, digest_text FROM stats_mysql_query_digest ORDER BY sum_time DESC;
-+-----+----------+------------+----------------------------------+
-| hg  | sum_time | count_star | digest_text                      |
-+-----+----------+------------+----------------------------------+
-| 100 | 133826   | 1          | select * from tables limit ?     |
-| 100 | 13818    | 1          | show databases                   |
-| 100 | 13466    | 1          | select * from t1                 |
-| 101 | 7325     | 2          | select * from tables limit ?     |
-| 101 | 5959     | 2          | select * from neworders limit ?  |
-| 101 | 3386     | 3          | select * from t1                 |
-| 101 | 3095     | 2          | select * from tables limit ?     |
-| 101 | 607      | 2          | SELECT DATABASE()                |
-| 100 | 0        | 8          | select @@version_comment limit ? |
-| 100 | 0        | 1          | set names utf8                   |
-| 100 | 0        | 1          | set names utf8                   |
-| 100 | 0        | 6          | select @@version_comment limit ? |
-+-----+----------+------------+----------------------------------+
-12 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;查询路由规则：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;MySQL [(none)] 13:57:12 &amp;gt; SELECT rule_id, match_digest, match_pattern, replace_pattern, cache_ttl, apply FROM mysql_query_rules ORDER BY rule_id;
-+---------+--------------+-----------------------+-----------------+-----------+-------+
-| rule_id | match_digest | match_pattern         | replace_pattern | cache_ttl | apply |
-+---------+--------------+-----------------------+-----------------+-----------+-------+
-| 10      | NULL         | ^SELECT .* FOR UPDATE | NULL            | NULL      | 0     |
-| 11      | NULL         | ^SELECT .*            | NULL            | NULL      | 0     |
-+---------+--------------+-----------------------+-----------------+-----------+-------+
-2 rows in set (0.00 sec)
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;参考：&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/sysown/proxysql/wiki/ProxySQL-Configuration#p6033&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/sysown/proxysql/wiki/ProxySQL-Configuration#p6033&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://seanlook.com/2017/04/17/mysql-proxysql-route-rw_split/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://seanlook.com/2017/04/17/mysql-proxysql-route-rw_split/&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://severalnines.com/blog/how-proxysql-adds-failover-and-query-control-your-mysql-replication-setup&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://severalnines.com/blog/how-proxysql-adds-failover-and-query-control-your-mysql-replication-setup&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&quot;ProxySQL监控&quot;&gt;&lt;a href=&quot;#ProxySQL监控&quot; class=&quot;headerlink&quot; title=&quot;ProxySQL监控&quot;&gt;&lt;/a&gt;ProxySQL监控&lt;/h1&gt;&lt;p&gt;PMM是Percona推出的一款很好的监控MySQL和MongoDB的开源工具，安装方便，功能丰富，图表美观，同时也支持ProxySQL的监控，故选择PMM作为ProxySQL的监控软件。&lt;br&gt;这里以ProxySQL服务端(192.168.56.102)为例，作为PMM的客户端，PMM服务器为192.168.56.111,仅演示ProxySQL安装PMM客户端，服务器安装配置省略。&lt;/p&gt;
-&lt;h2 id=&quot;PMM-Client安装&quot;&gt;&lt;a href=&quot;#PMM-Client安装&quot; class=&quot;headerlink&quot; title=&quot;PMM Client安装&quot;&gt;&lt;/a&gt;PMM Client安装&lt;/h2&gt;&lt;pre&gt;&lt;code&gt;[root@mysql_slave ~]# yum localinstall -y /hwdata/duanwenjie/test/proxysql-1.4.1-1-centos67.x86_64.rpm 
-Loaded plugins: security
-Setting up Local Package Process
-Examining /hwdata/duanwenjie/test/proxysql-1.4.1-1-centos67.x86_64.rpm: proxysql-1.4.1-1.x86_64
-Marking /hwdata/duanwenjie/test/proxysql-1.4.1-1-centos67.x86_64.rpm to be installed
-Resolving Dependencies
-There are unfinished transactions remaining. You might consider running yum-complete-transaction first to finish them.
---&amp;gt; Running transaction check
----&amp;gt; Package proxysql.x86_64 0:1.4.1-1 will be installed
---&amp;gt; Finished Dependency Resolution
-Dependencies Resolved
-========================================================================================================================================================================
- Package                           Arch                            Version                             Repository                                                  Size
-========================================================================================================================================================================
-Installing:
- proxysql                          x86_64                          1.4.1-1                             /proxysql-1.4.1-1-centos67.x86_64                           19 M
-Transaction Summary
-========================================================================================================================================================================
-Install       1 Package(s)
-Total size: 19 M
-Installed size: 19 M
-Downloading Packages:
-Running rpm_check_debug
-Running Transaction Test
-Transaction Test Succeeded
-Running Transaction
-Warning: RPMDB altered outside of yum.
-** Found 1 pre-existing rpmdb problem(s), &amp;apos;yum check&amp;apos; output follows:
-mysql-community-libs-5.7.16-1.el6.x86_64 has missing requires of mysql-community-common(x86-64) &amp;gt;= (&amp;apos;0&amp;apos;, &amp;apos;5.7.9&amp;apos;, None)
-  Installing : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
-  Verifying  : proxysql-1.4.1-1.x86_64                                                                                                                              1/1 
-Installed:
-  proxysql.x86_64 0:1.4.1-1                                                                                                                                             
-Complete!
-[root@mysql_slave ~]#
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;PMM-Client配置&quot;&gt;&lt;a href=&quot;#PMM-Client配置&quot; class=&quot;headerlink&quot; title=&quot;PMM Client配置&quot;&gt;&lt;/a&gt;PMM Client配置&lt;/h2&gt;&lt;pre&gt;&lt;code&gt;[root@mysql_slave ~]# ifconfig  #查看IP地址
-eth0      Link encap:Ethernet  HWaddr 00:16:3E:00:DC:49  
-          inet addr:192.168.56.102  Bcast:192.168.15.255  Mask:255.255.240.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:1017660 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:1380639 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
-          RX bytes:273791594 (261.1 MiB)  TX bytes:116287303 (110.9 MiB)
-lo        Link encap:Local Loopback  
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:1297762 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:1297762 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0 
-          RX bytes:141606631 (135.0 MiB)  TX bytes:141606631 (135.0 MiB)
-[root@mysql_slave ~]# pmm-admin config --bind-address 192.168.56.102 --client-address 192.168.56.102 --server 192.168.56.111:8080 --client-name ProxySQL_Test   #添加config
-OK, PMM server is alive.
-PMM Server      | 192.168.56.111:8080 
-Client Name     | ProxySQL_Test
-Client Address  | 192.168.56.102 (192.168.56.102)
-[root@mysql_slave ~]# pmm-admin add linux:metrics --force ProxySQL_Test     #添加Linux监控
-OK, now monitoring this system.
-[root@mysql_slave ~]# 
-[root@mysql_slave ~]# pmm-admin add proxysql:metrics --dsn &amp;quot;admin:admin@tcp(127.0.0.1:6032)/&amp;quot; proxysql6032 #添加ProxySQL监控
-OK, now monitoring ProxySQL metrics using DSN admin:***@tcp(localhost:6032)
-[root@mysql_slave ~]# 
-[root@mysql_slave ~]# pmm-admin list    #查看状态
-pmm-admin 1.3.0
-PMM Server      | 192.168.56.111:8080 
-Client Name     | ProxySQL_Test
-Client Address  | 192.168.56.102 (192.168.56.102)
-Service Manager | unix-systemv
------------------ -------------- ----------- -------- ------------------------------ --------
-SERVICE TYPE      NAME           LOCAL PORT  RUNNING  DATA SOURCE                    OPTIONS 
------------------ -------------- ----------- -------- ------------------------------ --------
-linux:metrics     ProxySQL_Test  42000       YES      -                                      
-mysql:metrics     ProxySQL_Test  42002       YES      root:***@tcp(127.0.0.1:3306)           
-proxysql:metrics  proxysql6032   42004       YES      admin:***@tcp(127.0.0.1:6032)          
-[root@mysql_slave ~]#
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;PMM Server监控项包括：&lt;/p&gt;
-&lt;h1 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;&gt;&lt;/a&gt;总结&lt;/h1&gt;&lt;p&gt;ProxySQL是一款很出色的MySQL中间件，在稳定性上、易用性、高性能等方面表现很不错。由于发布的时间较短，功能可能还不太完善，需要多做测试，特别是查询路由和规则方面需要详情的了解，测试。可重点关注。&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;hr&gt;
-&lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;在MySQL的高可用集群环境中，中间件是不可缺少的一部分，它提供了读写分离、负载均衡等各种功能，满足集群的横向、纵向的可扩展。由于
-    
-    </summary>
-    
-      <category term="MySQL" scheme="http://idber.github.io/categories/MySQL/"/>
-    
-    
-      <category term="MySQL" scheme="http://idber.github.io/tags/MySQL/"/>
-    
-      <category term="读写分离" scheme="http://idber.github.io/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
     
   </entry>
   
