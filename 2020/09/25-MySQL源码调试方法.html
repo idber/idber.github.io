@@ -19,7 +19,7 @@
 <meta property="og:site_name" content="似水年华--沉浮">
 <meta property="og:description" content="实验如下:下载MySQL 5.6.26的源码 https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-5.7.26.tar.gz 安装依赖 yum -y install perl perl-devel libaio libaio-devel perl-Time-HiRes perl-DBD-MySQL perl-TermRea">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-09-25T12:41:51.716Z">
+<meta property="og:updated_time" content="2020-09-27T02:41:33.436Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL源码调试方法">
 <meta name="twitter:description" content="实验如下:下载MySQL 5.6.26的源码 https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-5.7.26.tar.gz 安装依赖 yum -y install perl perl-devel libaio libaio-devel perl-Time-HiRes perl-DBD-MySQL perl-TermRea">
@@ -101,7 +101,7 @@
 <p>实验如下:<br>下载MySQL 5.6.26的源码</p>
 <pre><code>https://downloads.mysql.com/archives/get/p/23/file/mysql-boost-5.7.26.tar.gz
 </code></pre><p>安装依赖</p>
-<pre><code>yum -y install perl perl-devel libaio libaio-devel perl-Time-HiRes perl-DBD-MySQL perl-TermReadKey.x86_64  zlib openssl sshpass bash-completion unzip make gcc-c++ cmake bison-devel  ncurses-devel gdb
+<pre><code>yum -y install perl perl-devel libaio libaio-devel perl-Time-HiRes perl-DBD-MySQL perl-TermReadKey.x86_64  zlib openssl sshpass bash-completion unzip make gcc gcc-c++ cmake bison-devel  ncurses-devel gdb
 </code></pre><p>编译,注意增加 DEBUG 选项。（cmake的版本要求在2.8.2以上）</p>
 <pre><code>cmake \
 -DCMAKE_INSTALL_PREFIX=/home/mysql/mysql \
@@ -134,7 +134,7 @@ mysql    15546  1587  0 18:14 pts/0    00:00:00 grep --color=auto mysqld
 <p>可以看到源码,并且单步执行,打印变量.</p>
 <p>看静态的代码一般比较枯燥,用这种方式感觉比较好入门.</p>
 <p>同样的方式,也适用于Redis</p>
-<p>参考文献：<br><a href="https://www.cnblogs.com/likui360/p/6082581.html" target="_blank" rel="noopener">MySQL 编译安装并且开启DEBUG模式</a></p>
+<p>相关阅读：</p>
 <p><a href="http://idber.github.io/2016/03/28-MySQL%E7%9A%84%E8%87%AA%E5%8A%A8%E5%8C%96%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2.html">MySQL自动化安装部署</a></p>
   
 	</div>
