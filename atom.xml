@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-09-27T13:01:21.665Z</updated>
+  <updated>2020-09-28T03:59:22.138Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -20,12 +20,41 @@
     <link href="http://idber.github.io/2020/09/27-gh-ost%20%E5%9C%A8%E7%BA%BFDDL%E5%8F%98%E6%9B%B4%E5%B7%A5%E5%85%B7%E2%80%8B.html"/>
     <id>http://idber.github.io/2020/09/27-gh-ost 在线DDL变更工具​.html</id>
     <published>2020-09-27T07:01:56.000Z</published>
-    <updated>2020-09-27T13:01:21.665Z</updated>
+    <updated>2020-09-28T03:59:22.138Z</updated>
     
     <content type="html">&lt;hr&gt;
-&lt;h1 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h1&gt;&lt;p&gt;  我们知道，MySQL 5.7以前的DLL采用的是：&lt;br&gt;新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表&lt;br&gt;MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥有众多特性，比如 轻量级，可暂停, 可动态控制, 可审计, 可测试, 等等 ，我们可以通过操作特定的文件对正在执行的gh-ost命令进行动态调整 。&lt;br&gt;开源地址：&lt;br&gt;&lt;a href=&quot;https://github.com/github/gh-ost&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/github/gh-ost
+&lt;h1 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h1&gt;&lt;p&gt;  我们知道，MySQL 5.7以前的DLL采用的是：&lt;br&gt;新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表&lt;br&gt;MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥有众多特性，比如 轻量级，可暂停, 可动态控制, 可审计, 可测试, 等等 ，我们可以通过操作特定的文件对正在执行的gh-ost命令进行动态调整 。&lt;br&gt;开源地址：&lt;br&gt;&lt;a href=&quot;https://github.com/github/gh-ost&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/github/gh-ost
 &lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;本文使用的gh-ost版本：v1.1.0&lt;/p&gt;
+&lt;p&gt;说明：&lt;br&gt;本文使用的gh-ost版本：v1.1.0&lt;/p&gt;
+&lt;h2 id=&quot;gh-ost-介绍&quot;&gt;&lt;a href=&quot;#gh-ost-介绍&quot; class=&quot;headerlink&quot; title=&quot;gh-ost 介绍&quot;&gt;&lt;/a&gt;gh-ost 介绍&lt;/h2&gt;&lt;p&gt;gh-ost 作为一个伪装的备库，可以从主库 / 备库上拉取 binlog，过滤之后重新应用到主库上去，相当于主库上的增量操作通过 binlog 又应用回主库本身，不过是应用在幽灵表上。&lt;/p&gt;
+&lt;p&gt;其大致的工作过程:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;1 gh-ost 首先连接到主库上，根据 alter 语句创建幽灵表，&lt;/p&gt;
+&lt;p&gt;2 然后作为一个备库连接到其中一个真正的备库或者主库上 (根据具体的参数来定)，一边在主库上拷贝已有的数据到幽灵表，一边从备库上拉取增量数据的 binlog，然后不断的把 binlog 应用回主库。&lt;/p&gt;
+&lt;p&gt;3 等待全部数据同步完成，进行 cut-over 幽灵表和原表切换。图中 cut-over 是最后一步，锁住主库的源表，等待 binlog 应用完毕，然后替换 gh-ost 表为源表。gh-ost 在执行中，会在原本的 binlog event 里面增加以下 hint 和心跳包，用来控制整个流程的进度，检测状态等。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;当然 gh-ost 也会做很多前置的校验检查，比如 binlog_format ，表的主键和唯一键，是否有外键等等&lt;/p&gt;
+&lt;p&gt;这种架构带来诸多好处，例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;整个流程异步执行，对于源表的增量数据操作没有额外的开销，高峰期变更业务对性能影响小。&lt;/li&gt;
+&lt;li&gt;降低写压力，触发器操作都在一个事务内，gh-ost 应用 binlog 是另外一个连接在做。&lt;/li&gt;
+&lt;li&gt;可停止，binlog 有位点记录，如果变更过程发现主库性能受影响，可以立刻停止拉binlog，停止应用 binlog，稳定之后继续应用。&lt;/li&gt;
+&lt;li&gt;可测试，gh-ost 提供了测试功能，可以连接到一个备库上直接做 Online DDL，在备库上观察变更结果是否正确，再对主库操作，心里更有底。&lt;/li&gt;
+&lt;li&gt;并行操作，对于 gh-ost 来说就是多个对主库的连接。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;gh-ost-操作模式&quot;&gt;&lt;a href=&quot;#gh-ost-操作模式&quot; class=&quot;headerlink&quot; title=&quot;gh-ost 操作模式&quot;&gt;&lt;/a&gt;gh-ost 操作模式&lt;/h2&gt;&lt;p&gt;a. 连接到从库，在主库做迁移这是 gh-ost 默认的工作方式。gh-ost 将会检查从库状态，找到集群结构中的主库并连接，接下来进行迁移操作:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;行数据在主库上读写&lt;/li&gt;
+&lt;li&gt;读取从库的二进制日志，将变更应用到主库&lt;/li&gt;
+&lt;li&gt;在从库收集表格式，字段&amp;amp;索引，行数等信息&lt;/li&gt;
+&lt;li&gt;在从库上读取内部的变更事件（如心跳事件）&lt;/li&gt;
+&lt;li&gt;在主库切换表&lt;br&gt;如果你的主库的日志格式是 SBR，工具也可以正常工作。但从库必须启用二级制日志 ( log_bin, log_slave_updates) 并且设置 binlog_format=ROW 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;b. 连接到主库&lt;/p&gt;
+&lt;p&gt;直接连接到主库构造 slave，在主库上进行 copy 数据和应用 binlog，通过指定 –allow-on-master 参数即可。当然主库的 binlog 模式必须是 row 模式。&lt;/p&gt;
+&lt;p&gt;c. 在从库迁移 / 测试该模式会在从库执行迁移操作。gh-ost 会简单的连接到主库，此后所有的操作都在从库执行，不会对主库进行任何的改动。整个操作过程中，gh-ost 将控制速度保证从库可以及时的进行数据同步&lt;/p&gt;
+&lt;p&gt;–migrate-on-replica 表示 gh-ost 会直接在从库上进行迁移操作。即使在复制运行阶段也可以进行表的切换操作。&lt;/p&gt;
+&lt;p&gt;–test-on-replica 表示 迁移操作只是为了测试在切换之前复制会停止，然后会进行切换操作，然后在切换回来，你的原始表最终还是原始表。两个表都会保存下来，复制操作是停止的。你可以对这两个表进行一致性检查等测试操作。&lt;/p&gt;
 &lt;h1 id=&quot;参数说明&quot;&gt;&lt;a href=&quot;#参数说明&quot; class=&quot;headerlink&quot; title=&quot;参数说明&quot;&gt;&lt;/a&gt;参数说明&lt;/h1&gt;&lt;pre&gt;&lt;code&gt;-allow-master-master: 是否允许gh-ost运行在双主复制架构中，一般与-assume-master-host参数一起使用
 -allow-nullable-unique-key: 允许gh-ost在数据迁移依赖的唯一键可以为NULL，默认为不允许为NULL的唯一键。如果数据迁移(migrate)依赖的唯一键允许NULL值，则可能造成数据不正确，请谨慎使用。
 -allow-on-master: 允许gh-ost直接运行在主库上。默认gh-ost连接的从库。
@@ -72,7 +101,9 @@
 &lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&quot;使用&quot;&gt;&lt;a href=&quot;#使用&quot; class=&quot;headerlink&quot; title=&quot;使用&quot;&gt;&lt;/a&gt;使用&lt;/h1&gt;&lt;h2 id=&quot;下载安装&quot;&gt;&lt;a href=&quot;#下载安装&quot; class=&quot;headerlink&quot; title=&quot;下载安装&quot;&gt;&lt;/a&gt;下载安装&lt;/h2&gt;&lt;p&gt;在github release页面下载&lt;br&gt;&lt;a href=&quot;https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm
 &lt;/a&gt;&lt;br&gt;上传到服务器,安装&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;yum install gh-ost-1.1.0-1.x86_64.rpm
-&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;执行变更&quot;&gt;&lt;a href=&quot;#执行变更&quot; class=&quot;headerlink&quot; title=&quot;执行变更&quot;&gt;&lt;/a&gt;执行变更&lt;/h2&gt;&lt;pre&gt;&lt;code&gt;gh-ost  --user=&amp;quot;xxxx&amp;quot; --password=&amp;quot;xxxx&amp;quot; --host=localhost --allow-on-master --database=&amp;quot;guo_test&amp;quot; --table=&amp;quot;a&amp;quot;  --alter=&amp;quot;ADD COLUMN bcbde INT&amp;quot;  --execute --assume-rbr --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;执行变更&quot;&gt;&lt;a href=&quot;#执行变更&quot; class=&quot;headerlink&quot; title=&quot;执行变更&quot;&gt;&lt;/a&gt;执行变更&lt;/h2&gt;&lt;p&gt;示例：&lt;br&gt;非RDS&lt;br&gt;    gh-ost  –user=”xxxx” –password=”xxxx” –host=localhost  –database=”guo_test” –table=”a”  –alter=”ADD COLUMN bcbde INT”  –execute –max-load=Threads_running=30 –critical-load=Threads_running=50 –critical-load-interval-millis=5000 –chunk-size=1000 –heartbeat-interval-millis=2000 –ok-to-drop-table –assume-rbr –allow-on-master 2&amp;gt;&amp;amp;1 | tee  /tmp/rebuild_t1.log &lt;/p&gt;
+&lt;p&gt;RDS&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;gh-ost  --user=&amp;quot;xxxx&amp;quot; --password=&amp;quot;xxxx&amp;quot; --aliyun-rds --host=&amp;apos;xxxx&amp;apos; --port=3306 --assume-master-host=&amp;quot;xxxx:3306&amp;quot;  --database=&amp;quot;guo_test&amp;quot; --table=&amp;quot;sbtest&amp;quot;  --alter=&amp;quot;add COLUMN aa int &amp;quot; --execute  --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table --throttle-additional-flag-file=/tmp/gh-ost.throttle --panic-flag-file=/tmp/ghost.panic.flag --assume-rbr --allow-on-master --aliyun-rds  --execute 2&amp;gt;&amp;amp;1 | tee  /tmp/rebuild_t1.log 
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;推荐使用参数：&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;--assume-rbr
 --max-load=Threads_running=30
@@ -80,8 +111,14 @@
 --critical-load-interval-millis=5000
 --chunk-size=1000
 --heartbeat-interval-millis=2000
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上面参数具体数值，根据服务器实际压力情况修改&lt;br&gt;阿里云RDS需添加如下参数：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;--aliyun-rds
+--throttle-additional-flag-file=/tmp/gh-ost.throttle
+--panic-flag-file=/tmp/ghost.panic.flag
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;测试限流可以使用,也可以通过删除/tmp/ghost.postpone.flag文件控制cut-over时机&lt;br&gt;    –postpone-cut-over-flag-file=/tmp/ghost.postpone.flag&lt;/p&gt;
+&lt;p&gt;上面参数具体数值，根据服务器实际压力情况修改&lt;br&gt;阿里云RDS需添加如下参数：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;–allow-on-master
+–assume-rbr
+–assume-master-host
+–aliyun-rds
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;特别说明:&lt;br&gt;针对几百G的大表做归档删除数据之后要重建表，以便减少表空间大小。重建完，进行cut-over切换幽灵表和原表时，默认不删除幽灵表。因为直接删除上百 G 会对磁盘 IO 有一定的影响.&lt;/p&gt;
 &lt;p&gt;根据自己的情况去调整合适的参数，注意以下两个参数。&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;--ok-to-drop-table:gh-ost操作结束后，删除旧表，默认状态是不删除旧表，会存在_tablename_del表。
@@ -98,30 +135,31 @@
 &lt;/blockquote&gt;
 &lt;p&gt;大意为：&lt;br&gt;这是来自连接到MySQL的基础库的错误消息；没有gh-ost错误，目前无法控制&lt;/p&gt;
 &lt;h2 id=&quot;暂停-恢复&quot;&gt;&lt;a href=&quot;#暂停-恢复&quot; class=&quot;headerlink&quot; title=&quot;暂停 / 恢复&quot;&gt;&lt;/a&gt;暂停 / 恢复&lt;/h2&gt;&lt;p&gt;我们可以通过创建 / 删除 throttle-additional-flag-file 指定的文件 /tmp/gh-ost.throttle 控制 gh-ost 对 binlog 应用.&lt;/p&gt;
-&lt;h2 id=&quot;限流&quot;&gt;&lt;a href=&quot;#限流&quot; class=&quot;headerlink&quot; title=&quot;限流&quot;&gt;&lt;/a&gt;限流&lt;/h2&gt;&lt;p&gt;gh-ost 可以通过 unix socket 文件或者 TCP 端口（可配置）的方式来监听请求，DBA 可以在命令运行后更改相应的参数，参考下面的例子：&lt;/p&gt;
-&lt;h3 id=&quot;打开限流&quot;&gt;&lt;a href=&quot;#打开限流&quot; class=&quot;headerlink&quot; title=&quot;打开限流&quot;&gt;&lt;/a&gt;打开限流&lt;/h3&gt;&lt;p&gt;echo throttle | socat - /tmp/gh-ost.test.b.sock&lt;/p&gt;
+&lt;h2 id=&quot;限流&quot;&gt;&lt;a href=&quot;#限流&quot; class=&quot;headerlink&quot; title=&quot;限流&quot;&gt;&lt;/a&gt;限流&lt;/h2&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/github/gh-ost/blob/master/doc/throttle.md&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;官方文档&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;gh-ost 可以通过 unix socket 文件或者 TCP 端口（可配置）的方式来监听请求，DBA 可以在命令运行后更改相应的参数，参考下面的例子：&lt;/p&gt;
+&lt;h3 id=&quot;打开限流&quot;&gt;&lt;a href=&quot;#打开限流&quot; class=&quot;headerlink&quot; title=&quot;打开限流&quot;&gt;&lt;/a&gt;打开限流&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;echo throttle | nc -U /tmp/gh-ost.guo_test.sbtest.sock
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果没有nc，需要先安装nc，gh-ost.guo_test.sbtest.sock格式为，gh-ost.db_name.table_name.sock。&lt;/p&gt;
 &lt;p&gt;_b_ghc 中会多一条记录&lt;/p&gt;
-&lt;p&gt;331 | 2019-08-31 23:23:00 | throttle at 1567264980930907070 | done throttling&lt;/p&gt;
-&lt;p&gt;关闭限流&lt;/p&gt;
-&lt;p&gt;no-throttle | socat - /tmp/gh-ost.test.b.sock&lt;/p&gt;
-&lt;p&gt;_b_ghc 中会多一条记录&lt;/p&gt;
-&lt;p&gt;347 | 2019-08-31 23:24:09 | throttle at 1567265049830789079 | commanded by user&lt;/p&gt;
-&lt;p&gt;改变执行参数: chunk-size= 1024, max-lag-millis=100, max-load=Thread_running=23 这些参数都可以在运行时动态调整。&lt;/p&gt;
-&lt;p&gt;echo chunk-size=1024 | socat - /tmp/gh-ost.test.b.sock&lt;br&gt;echo max-lag-millis=100 | socat - /tmp/gh-ost.test.b.sock&lt;br&gt;echo max-load=Thread_running=23 | socat - /tmp/gh-ost.test.b.sock&lt;br&gt;终止运行&lt;/p&gt;
-&lt;p&gt;我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin&lt;/p&gt;
-&lt;p&gt;创建文件 / tmp/ghost.panic.flag&lt;/p&gt;
-&lt;p&gt;gh-ost log 提示&lt;/p&gt;
-&lt;p&gt;2019-08-31 22:50:52.701 FATAL Found panic-file /tmp/ghost.panic.flag. Aborting without cleanup&lt;/p&gt;
-&lt;p&gt;注意停止 gh-ost 操作会有遗留表 xxx_ghc, xxx_gho 还有 socket 文件，管理 cut-over 的文件, 如果你需要执行两次请务必检查指定目录是否存在这些文件，并且清理掉文件和表&lt;/p&gt;
-&lt;p&gt;四 与 pt-osc 的对比&lt;br&gt;从功能，稳定性和性能上来看，两种工具各有千秋，虽然在高并发写的情况下，gh-ost 应用 binlog 会出现性能较低不如 pt-osc 的情况。不过 gh-ost 更灵活，支持我们根据实际情况动态调整。&lt;/p&gt;
-&lt;p&gt;推荐两个 blog 的文章吧，大家可以根据自己的实际场景去选择使用哪个工具。&lt;/p&gt;
-&lt;p&gt;推荐阅读：&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/zping/p/8876148.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;初试GH-OST&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000006158503&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;GitHub开源的MySQL在线更改Schema工具&lt;/a&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;287    2020-09-27 11:18:54    throttle at 1601263134871924413    commanded by user
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;关闭限流&quot;&gt;&lt;a href=&quot;#关闭限流&quot; class=&quot;headerlink&quot; title=&quot;关闭限流&quot;&gt;&lt;/a&gt;关闭限流&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;no-throttle | socat - /tmp/gh-ost.test.b.sock
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;_b_ghc 中会多一条记录&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;348    2020-09-27 11:22:06    throttle at 1601263326077186389    done throttling
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;改变执行参数: chunk-size=1024, max-lag-millis=100, echo max-load=”Threads_running=30” critical-load=”Threads_running=50” 这些参数都可以在运行时动态调整。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;echo chunk-size=1024 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;   echo max-lag-millis=100 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock&lt;br&gt;   echo max-load=”Threads_running=30” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock&lt;br&gt;   echo critical-load=”Threads_running=50” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock&lt;/p&gt;
+&lt;h3 id=&quot;终止运行&quot;&gt;&lt;a href=&quot;#终止运行&quot; class=&quot;headerlink&quot; title=&quot;终止运行&quot;&gt;&lt;/a&gt;终止运行&lt;/h3&gt;&lt;p&gt;我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin&lt;/p&gt;
+&lt;p&gt;创建文件 /tmp/ghost.panic.flag&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;touch /tmp/ghost.panic.flag
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;gh-ost log 提示&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;2019-08-31 22:50:52.701 FATAL Found panic-file /tmp/ghost.panic.flag. Aborting without cleanup
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;四 与 pt-osc 的对比&lt;br&gt;从功能，稳定性和性能上来看，两种工具各有千秋，虽然在高并发写的情况下，gh-ost 应用 binlog 会出现性能较低不如 pt-osc 的情况。不过 gh-ost 更灵活，支持我们根据实际情况动态调整。&lt;/p&gt;
+&lt;p&gt;推荐阅读：&lt;br&gt;&lt;a href=&quot;https://www.cnblogs.com/zping/p/8876148.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;初试GH-OST&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000006158503&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;GitHub开源的MySQL在线更改Schema工具&lt;/a&gt;&lt;br&gt;&lt;a href=&quot;http://mysql.taobao.org/monthly/2018/05/02/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;MySQL · 社区动态 · Online DDL 工具 gh-ost 支持阿里云 RDS&lt;/a&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
     
       &lt;hr&gt;
-&lt;h1 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h1&gt;&lt;p&gt;  我们知道，MySQL 5.7以前的DLL采用的是：&lt;br&gt;新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;d
+&lt;h1 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h1&gt;&lt;p&gt;  我们知道，MySQL 5.7以前的DLL采用的是：&lt;br&gt;新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;d
     
     </summary>
     

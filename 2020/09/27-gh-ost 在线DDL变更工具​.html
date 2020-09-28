@@ -11,18 +11,18 @@
     
 
     
-    <meta name="description" content="简介  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
+    <meta name="description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
 <meta name="keywords" content="MySQL,DDL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Gh-Ost 在线DDL变更工具​">
 <meta property="og:url" content="http://idber.github.io/2020/09/27-gh-ost 在线DDL变更工具​.html">
 <meta property="og:site_name" content="似水年华--沉浮">
-<meta property="og:description" content="简介  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
+<meta property="og:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-09-27T13:01:21.665Z">
+<meta property="og:updated_time" content="2020-09-28T03:59:22.138Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gh-Ost 在线DDL变更工具​">
-<meta name="twitter:description" content="简介  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
+<meta name="twitter:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
 
     
     <link rel="alternative" href="/atom.xml" title="似水年华--沉浮" type="application/atom+xml">
@@ -93,14 +93,43 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参数说明"><span class="toc-number">2.</span> <span class="toc-text">参数说明</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用"><span class="toc-number">3.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载安装"><span class="toc-number">3.1.</span> <span class="toc-text">下载安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行变更"><span class="toc-number">3.2.</span> <span class="toc-text">执行变更</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#错误忽略"><span class="toc-number">3.3.</span> <span class="toc-text">错误忽略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#暂停-恢复"><span class="toc-number">3.4.</span> <span class="toc-text">暂停 / 恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#限流"><span class="toc-number">3.5.</span> <span class="toc-text">限流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#打开限流"><span class="toc-number">3.5.1.</span> <span class="toc-text">打开限流</span></a></li></ol></li></ol></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#gh-ost-介绍"><span class="toc-number">1.1.</span> <span class="toc-text">gh-ost 介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gh-ost-操作模式"><span class="toc-number">1.2.</span> <span class="toc-text">gh-ost 操作模式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参数说明"><span class="toc-number">2.</span> <span class="toc-text">参数说明</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用"><span class="toc-number">3.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载安装"><span class="toc-number">3.1.</span> <span class="toc-text">下载安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行变更"><span class="toc-number">3.2.</span> <span class="toc-text">执行变更</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#错误忽略"><span class="toc-number">3.3.</span> <span class="toc-text">错误忽略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#暂停-恢复"><span class="toc-number">3.4.</span> <span class="toc-text">暂停 / 恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#限流"><span class="toc-number">3.5.</span> <span class="toc-text">限流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#打开限流"><span class="toc-number">3.5.1.</span> <span class="toc-text">打开限流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关闭限流"><span class="toc-number">3.5.2.</span> <span class="toc-text">关闭限流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#终止运行"><span class="toc-number">3.5.3.</span> <span class="toc-text">终止运行</span></a></li></ol></li></ol></li></ol>
 		
 		</div>
 		
 		<hr>
-<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>  我们知道，MySQL 5.7以前的DLL采用的是：<br>新建临时表–&gt;修改临时表结构–&gt;然后导入数据–&gt;drop原表–&gt;重命名临时表为原表<br>MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥有众多特性，比如 轻量级，可暂停, 可动态控制, 可审计, 可测试, 等等 ，我们可以通过操作特定的文件对正在执行的gh-ost命令进行动态调整 。<br>开源地址：<br><a href="https://github.com/github/gh-ost" target="_blank" rel="noopener">https://github.com/github/gh-ost
+<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>  我们知道，MySQL 5.7以前的DLL采用的是：<br>新建临时表–&gt;修改临时表结构–&gt;然后导入数据–&gt;drop原表–&gt;重命名临时表为原表<br>MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥有众多特性，比如 轻量级，可暂停, 可动态控制, 可审计, 可测试, 等等 ，我们可以通过操作特定的文件对正在执行的gh-ost命令进行动态调整 。<br>开源地址：<br><a href="https://github.com/github/gh-ost" target="_blank" rel="noopener">https://github.com/github/gh-ost
 </a></p>
-<p>本文使用的gh-ost版本：v1.1.0</p>
+<p>说明：<br>本文使用的gh-ost版本：v1.1.0</p>
+<h2 id="gh-ost-介绍"><a href="#gh-ost-介绍" class="headerlink" title="gh-ost 介绍"></a>gh-ost 介绍</h2><p>gh-ost 作为一个伪装的备库，可以从主库 / 备库上拉取 binlog，过滤之后重新应用到主库上去，相当于主库上的增量操作通过 binlog 又应用回主库本身，不过是应用在幽灵表上。</p>
+<p>其大致的工作过程:</p>
+<blockquote>
+<p>1 gh-ost 首先连接到主库上，根据 alter 语句创建幽灵表，</p>
+<p>2 然后作为一个备库连接到其中一个真正的备库或者主库上 (根据具体的参数来定)，一边在主库上拷贝已有的数据到幽灵表，一边从备库上拉取增量数据的 binlog，然后不断的把 binlog 应用回主库。</p>
+<p>3 等待全部数据同步完成，进行 cut-over 幽灵表和原表切换。图中 cut-over 是最后一步，锁住主库的源表，等待 binlog 应用完毕，然后替换 gh-ost 表为源表。gh-ost 在执行中，会在原本的 binlog event 里面增加以下 hint 和心跳包，用来控制整个流程的进度，检测状态等。</p>
+</blockquote>
+<p>当然 gh-ost 也会做很多前置的校验检查，比如 binlog_format ，表的主键和唯一键，是否有外键等等</p>
+<p>这种架构带来诸多好处，例如：</p>
+<ul>
+<li>整个流程异步执行，对于源表的增量数据操作没有额外的开销，高峰期变更业务对性能影响小。</li>
+<li>降低写压力，触发器操作都在一个事务内，gh-ost 应用 binlog 是另外一个连接在做。</li>
+<li>可停止，binlog 有位点记录，如果变更过程发现主库性能受影响，可以立刻停止拉binlog，停止应用 binlog，稳定之后继续应用。</li>
+<li>可测试，gh-ost 提供了测试功能，可以连接到一个备库上直接做 Online DDL，在备库上观察变更结果是否正确，再对主库操作，心里更有底。</li>
+<li>并行操作，对于 gh-ost 来说就是多个对主库的连接。</li>
+</ul>
+<h2 id="gh-ost-操作模式"><a href="#gh-ost-操作模式" class="headerlink" title="gh-ost 操作模式"></a>gh-ost 操作模式</h2><p>a. 连接到从库，在主库做迁移这是 gh-ost 默认的工作方式。gh-ost 将会检查从库状态，找到集群结构中的主库并连接，接下来进行迁移操作:</p>
+<ul>
+<li>行数据在主库上读写</li>
+<li>读取从库的二进制日志，将变更应用到主库</li>
+<li>在从库收集表格式，字段&amp;索引，行数等信息</li>
+<li>在从库上读取内部的变更事件（如心跳事件）</li>
+<li>在主库切换表<br>如果你的主库的日志格式是 SBR，工具也可以正常工作。但从库必须启用二级制日志 ( log_bin, log_slave_updates) 并且设置 binlog_format=ROW 。</li>
+</ul>
+<p>b. 连接到主库</p>
+<p>直接连接到主库构造 slave，在主库上进行 copy 数据和应用 binlog，通过指定 –allow-on-master 参数即可。当然主库的 binlog 模式必须是 row 模式。</p>
+<p>c. 在从库迁移 / 测试该模式会在从库执行迁移操作。gh-ost 会简单的连接到主库，此后所有的操作都在从库执行，不会对主库进行任何的改动。整个操作过程中，gh-ost 将控制速度保证从库可以及时的进行数据同步</p>
+<p>–migrate-on-replica 表示 gh-ost 会直接在从库上进行迁移操作。即使在复制运行阶段也可以进行表的切换操作。</p>
+<p>–test-on-replica 表示 迁移操作只是为了测试在切换之前复制会停止，然后会进行切换操作，然后在切换回来，你的原始表最终还是原始表。两个表都会保存下来，复制操作是停止的。你可以对这两个表进行一致性检查等测试操作。</p>
 <h1 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h1><pre><code>-allow-master-master: 是否允许gh-ost运行在双主复制架构中，一般与-assume-master-host参数一起使用
 -allow-nullable-unique-key: 允许gh-ost在数据迁移依赖的唯一键可以为NULL，默认为不允许为NULL的唯一键。如果数据迁移(migrate)依赖的唯一键允许NULL值，则可能造成数据不正确，请谨慎使用。
 -allow-on-master: 允许gh-ost直接运行在主库上。默认gh-ost连接的从库。
@@ -147,7 +176,9 @@
 </code></pre><h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><h2 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h2><p>在github release页面下载<br><a href="https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm" target="_blank" rel="noopener">https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm
 </a><br>上传到服务器,安装</p>
 <pre><code>yum install gh-ost-1.1.0-1.x86_64.rpm
-</code></pre><h2 id="执行变更"><a href="#执行变更" class="headerlink" title="执行变更"></a>执行变更</h2><pre><code>gh-ost  --user=&quot;xxxx&quot; --password=&quot;xxxx&quot; --host=localhost --allow-on-master --database=&quot;guo_test&quot; --table=&quot;a&quot;  --alter=&quot;ADD COLUMN bcbde INT&quot;  --execute --assume-rbr --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table
+</code></pre><h2 id="执行变更"><a href="#执行变更" class="headerlink" title="执行变更"></a>执行变更</h2><p>示例：<br>非RDS<br>    gh-ost  –user=”xxxx” –password=”xxxx” –host=localhost  –database=”guo_test” –table=”a”  –alter=”ADD COLUMN bcbde INT”  –execute –max-load=Threads_running=30 –critical-load=Threads_running=50 –critical-load-interval-millis=5000 –chunk-size=1000 –heartbeat-interval-millis=2000 –ok-to-drop-table –assume-rbr –allow-on-master 2&gt;&amp;1 | tee  /tmp/rebuild_t1.log </p>
+<p>RDS</p>
+<pre><code>gh-ost  --user=&quot;xxxx&quot; --password=&quot;xxxx&quot; --aliyun-rds --host=&apos;xxxx&apos; --port=3306 --assume-master-host=&quot;xxxx:3306&quot;  --database=&quot;guo_test&quot; --table=&quot;sbtest&quot;  --alter=&quot;add COLUMN aa int &quot; --execute  --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table --throttle-additional-flag-file=/tmp/gh-ost.throttle --panic-flag-file=/tmp/ghost.panic.flag --assume-rbr --allow-on-master --aliyun-rds  --execute 2&gt;&amp;1 | tee  /tmp/rebuild_t1.log 
 </code></pre><p>推荐使用参数：</p>
 <pre><code>--assume-rbr
 --max-load=Threads_running=30
@@ -155,8 +186,14 @@
 --critical-load-interval-millis=5000
 --chunk-size=1000
 --heartbeat-interval-millis=2000
-</code></pre><p>上面参数具体数值，根据服务器实际压力情况修改<br>阿里云RDS需添加如下参数：</p>
-<pre><code>--aliyun-rds
+--throttle-additional-flag-file=/tmp/gh-ost.throttle
+--panic-flag-file=/tmp/ghost.panic.flag
+</code></pre><p>测试限流可以使用,也可以通过删除/tmp/ghost.postpone.flag文件控制cut-over时机<br>    –postpone-cut-over-flag-file=/tmp/ghost.postpone.flag</p>
+<p>上面参数具体数值，根据服务器实际压力情况修改<br>阿里云RDS需添加如下参数：</p>
+<pre><code>–allow-on-master
+–assume-rbr
+–assume-master-host
+–aliyun-rds
 </code></pre><p>特别说明:<br>针对几百G的大表做归档删除数据之后要重建表，以便减少表空间大小。重建完，进行cut-over切换幽灵表和原表时，默认不删除幽灵表。因为直接删除上百 G 会对磁盘 IO 有一定的影响.</p>
 <p>根据自己的情况去调整合适的参数，注意以下两个参数。</p>
 <pre><code>--ok-to-drop-table:gh-ost操作结束后，删除旧表，默认状态是不删除旧表，会存在_tablename_del表。
@@ -173,24 +210,25 @@
 </blockquote>
 <p>大意为：<br>这是来自连接到MySQL的基础库的错误消息；没有gh-ost错误，目前无法控制</p>
 <h2 id="暂停-恢复"><a href="#暂停-恢复" class="headerlink" title="暂停 / 恢复"></a>暂停 / 恢复</h2><p>我们可以通过创建 / 删除 throttle-additional-flag-file 指定的文件 /tmp/gh-ost.throttle 控制 gh-ost 对 binlog 应用.</p>
-<h2 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h2><p>gh-ost 可以通过 unix socket 文件或者 TCP 端口（可配置）的方式来监听请求，DBA 可以在命令运行后更改相应的参数，参考下面的例子：</p>
-<h3 id="打开限流"><a href="#打开限流" class="headerlink" title="打开限流"></a>打开限流</h3><p>echo throttle | socat - /tmp/gh-ost.test.b.sock</p>
+<h2 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h2><p><a href="https://github.com/github/gh-ost/blob/master/doc/throttle.md" target="_blank" rel="noopener">官方文档</a></p>
+<p>gh-ost 可以通过 unix socket 文件或者 TCP 端口（可配置）的方式来监听请求，DBA 可以在命令运行后更改相应的参数，参考下面的例子：</p>
+<h3 id="打开限流"><a href="#打开限流" class="headerlink" title="打开限流"></a>打开限流</h3><pre><code>echo throttle | nc -U /tmp/gh-ost.guo_test.sbtest.sock
+</code></pre><p>如果没有nc，需要先安装nc，gh-ost.guo_test.sbtest.sock格式为，gh-ost.db_name.table_name.sock。</p>
 <p>_b_ghc 中会多一条记录</p>
-<p>331 | 2019-08-31 23:23:00 | throttle at 1567264980930907070 | done throttling</p>
-<p>关闭限流</p>
-<p>no-throttle | socat - /tmp/gh-ost.test.b.sock</p>
-<p>_b_ghc 中会多一条记录</p>
-<p>347 | 2019-08-31 23:24:09 | throttle at 1567265049830789079 | commanded by user</p>
-<p>改变执行参数: chunk-size= 1024, max-lag-millis=100, max-load=Thread_running=23 这些参数都可以在运行时动态调整。</p>
-<p>echo chunk-size=1024 | socat - /tmp/gh-ost.test.b.sock<br>echo max-lag-millis=100 | socat - /tmp/gh-ost.test.b.sock<br>echo max-load=Thread_running=23 | socat - /tmp/gh-ost.test.b.sock<br>终止运行</p>
-<p>我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin</p>
-<p>创建文件 / tmp/ghost.panic.flag</p>
-<p>gh-ost log 提示</p>
-<p>2019-08-31 22:50:52.701 FATAL Found panic-file /tmp/ghost.panic.flag. Aborting without cleanup</p>
-<p>注意停止 gh-ost 操作会有遗留表 xxx_ghc, xxx_gho 还有 socket 文件，管理 cut-over 的文件, 如果你需要执行两次请务必检查指定目录是否存在这些文件，并且清理掉文件和表</p>
-<p>四 与 pt-osc 的对比<br>从功能，稳定性和性能上来看，两种工具各有千秋，虽然在高并发写的情况下，gh-ost 应用 binlog 会出现性能较低不如 pt-osc 的情况。不过 gh-ost 更灵活，支持我们根据实际情况动态调整。</p>
-<p>推荐两个 blog 的文章吧，大家可以根据自己的实际场景去选择使用哪个工具。</p>
-<p>推荐阅读：<br><a href="https://www.cnblogs.com/zping/p/8876148.html" target="_blank" rel="noopener">初试GH-OST</a><br><a href="https://segmentfault.com/a/1190000006158503" target="_blank" rel="noopener">GitHub开源的MySQL在线更改Schema工具</a></p>
+<pre><code>287    2020-09-27 11:18:54    throttle at 1601263134871924413    commanded by user
+</code></pre><h3 id="关闭限流"><a href="#关闭限流" class="headerlink" title="关闭限流"></a>关闭限流</h3><pre><code>no-throttle | socat - /tmp/gh-ost.test.b.sock
+</code></pre><p>_b_ghc 中会多一条记录</p>
+<pre><code>348    2020-09-27 11:22:06    throttle at 1601263326077186389    done throttling
+</code></pre><p>改变执行参数: chunk-size=1024, max-lag-millis=100, echo max-load=”Threads_running=30” critical-load=”Threads_running=50” 这些参数都可以在运行时动态调整。</p>
+<pre><code>echo chunk-size=1024 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+</code></pre><p>   echo max-lag-millis=100 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock<br>   echo max-load=”Threads_running=30” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock<br>   echo critical-load=”Threads_running=50” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock</p>
+<h3 id="终止运行"><a href="#终止运行" class="headerlink" title="终止运行"></a>终止运行</h3><p>我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin</p>
+<p>创建文件 /tmp/ghost.panic.flag</p>
+<pre><code>touch /tmp/ghost.panic.flag
+</code></pre><p>gh-ost log 提示</p>
+<pre><code>2019-08-31 22:50:52.701 FATAL Found panic-file /tmp/ghost.panic.flag. Aborting without cleanup
+</code></pre><p>四 与 pt-osc 的对比<br>从功能，稳定性和性能上来看，两种工具各有千秋，虽然在高并发写的情况下，gh-ost 应用 binlog 会出现性能较低不如 pt-osc 的情况。不过 gh-ost 更灵活，支持我们根据实际情况动态调整。</p>
+<p>推荐阅读：<br><a href="https://www.cnblogs.com/zping/p/8876148.html" target="_blank" rel="noopener">初试GH-OST</a><br><a href="https://segmentfault.com/a/1190000006158503" target="_blank" rel="noopener">GitHub开源的MySQL在线更改Schema工具</a><br><a href="http://mysql.taobao.org/monthly/2018/05/02/" target="_blank" rel="noopener">MySQL · 社区动态 · Online DDL 工具 gh-ost 支持阿里云 RDS</a></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -253,7 +291,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参数说明"><span class="toc-number">2.</span> <span class="toc-text">参数说明</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用"><span class="toc-number">3.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载安装"><span class="toc-number">3.1.</span> <span class="toc-text">下载安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行变更"><span class="toc-number">3.2.</span> <span class="toc-text">执行变更</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#错误忽略"><span class="toc-number">3.3.</span> <span class="toc-text">错误忽略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#暂停-恢复"><span class="toc-number">3.4.</span> <span class="toc-text">暂停 / 恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#限流"><span class="toc-number">3.5.</span> <span class="toc-text">限流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#打开限流"><span class="toc-number">3.5.1.</span> <span class="toc-text">打开限流</span></a></li></ol></li></ol></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#gh-ost-介绍"><span class="toc-number">1.1.</span> <span class="toc-text">gh-ost 介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gh-ost-操作模式"><span class="toc-number">1.2.</span> <span class="toc-text">gh-ost 操作模式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参数说明"><span class="toc-number">2.</span> <span class="toc-text">参数说明</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用"><span class="toc-number">3.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#下载安装"><span class="toc-number">3.1.</span> <span class="toc-text">下载安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行变更"><span class="toc-number">3.2.</span> <span class="toc-text">执行变更</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#错误忽略"><span class="toc-number">3.3.</span> <span class="toc-text">错误忽略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#暂停-恢复"><span class="toc-number">3.4.</span> <span class="toc-text">暂停 / 恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#限流"><span class="toc-number">3.5.</span> <span class="toc-text">限流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#打开限流"><span class="toc-number">3.5.1.</span> <span class="toc-text">打开限流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关闭限流"><span class="toc-number">3.5.2.</span> <span class="toc-text">关闭限流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#终止运行"><span class="toc-number">3.5.3.</span> <span class="toc-text">终止运行</span></a></li></ol></li></ol></li></ol>
  
   </div>
 
