@@ -19,7 +19,7 @@
 <meta property="og:site_name" content="似水年华--沉浮">
 <meta property="og:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-09-28T03:59:22.138Z">
+<meta property="og:updated_time" content="2020-09-28T04:02:11.720Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gh-Ost 在线DDL变更工具​">
 <meta name="twitter:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
@@ -176,8 +176,9 @@
 </code></pre><h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><h2 id="下载安装"><a href="#下载安装" class="headerlink" title="下载安装"></a>下载安装</h2><p>在github release页面下载<br><a href="https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm" target="_blank" rel="noopener">https://github.com/github/gh-ost/releases/download/v1.1.0/gh-ost-1.1.0-1.x86_64.rpm
 </a><br>上传到服务器,安装</p>
 <pre><code>yum install gh-ost-1.1.0-1.x86_64.rpm
-</code></pre><h2 id="执行变更"><a href="#执行变更" class="headerlink" title="执行变更"></a>执行变更</h2><p>示例：<br>非RDS<br>    gh-ost  –user=”xxxx” –password=”xxxx” –host=localhost  –database=”guo_test” –table=”a”  –alter=”ADD COLUMN bcbde INT”  –execute –max-load=Threads_running=30 –critical-load=Threads_running=50 –critical-load-interval-millis=5000 –chunk-size=1000 –heartbeat-interval-millis=2000 –ok-to-drop-table –assume-rbr –allow-on-master 2&gt;&amp;1 | tee  /tmp/rebuild_t1.log </p>
-<p>RDS</p>
+</code></pre><h2 id="执行变更"><a href="#执行变更" class="headerlink" title="执行变更"></a>执行变更</h2><p>示例：<br>自建MySQL</p>
+<pre><code>gh-ost  --user=&quot;xxxx&quot; --password=&quot;xxxx&quot; --host=localhost  --database=&quot;guo_test&quot; --table=&quot;a&quot;  --alter=&quot;ADD COLUMN bcbde INT&quot;  --execute --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table --assume-rbr --allow-on-master 2&gt;&amp;1 | tee  /tmp/rebuild_t1.log 
+</code></pre><p>阿里云RDS</p>
 <pre><code>gh-ost  --user=&quot;xxxx&quot; --password=&quot;xxxx&quot; --aliyun-rds --host=&apos;xxxx&apos; --port=3306 --assume-master-host=&quot;xxxx:3306&quot;  --database=&quot;guo_test&quot; --table=&quot;sbtest&quot;  --alter=&quot;add COLUMN aa int &quot; --execute  --max-load=Threads_running=30 --critical-load=Threads_running=50 --critical-load-interval-millis=5000 --chunk-size=1000 --heartbeat-interval-millis=2000 --ok-to-drop-table --throttle-additional-flag-file=/tmp/gh-ost.throttle --panic-flag-file=/tmp/ghost.panic.flag --assume-rbr --allow-on-master --aliyun-rds  --execute 2&gt;&amp;1 | tee  /tmp/rebuild_t1.log 
 </code></pre><p>推荐使用参数：</p>
 <pre><code>--assume-rbr
