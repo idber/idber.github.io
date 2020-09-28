@@ -19,7 +19,7 @@
 <meta property="og:site_name" content="似水年华--沉浮">
 <meta property="og:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-09-28T04:07:34.376Z">
+<meta property="og:updated_time" content="2020-09-28T04:44:09.746Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gh-Ost 在线DDL变更工具​">
 <meta name="twitter:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
@@ -189,8 +189,9 @@
 --heartbeat-interval-millis=2000
 --throttle-additional-flag-file=/tmp/gh-ost.throttle
 --panic-flag-file=/tmp/ghost.panic.flag
-</code></pre><p>测试限流可以使用,也可以通过删除/tmp/ghost.postpone.flag文件控制cut-over时机<br>    –postpone-cut-over-flag-file=/tmp/ghost.postpone.flag</p>
-<p>上面参数具体数值，根据服务器实际压力情况修改<br>阿里云RDS需添加如下参数：</p>
+</code></pre><p>测试限流可以使用,也可以通过删除/tmp/ghost.postpone.flag文件控制cut-over时机</p>
+<pre><code>--postpone-cut-over-flag-file=/tmp/ghost.postpone.flag
+</code></pre><p>上面参数具体数值，根据服务器实际压力情况修改<br>阿里云RDS需添加如下参数：</p>
 <pre><code>–allow-on-master
 –assume-rbr
 –assume-master-host
