@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://idber.github.io/"/>
-  <updated>2020-09-28T04:02:11.720Z</updated>
+  <updated>2020-09-28T04:07:34.376Z</updated>
   <id>http://idber.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://idber.github.io/2020/09/27-gh-ost%20%E5%9C%A8%E7%BA%BFDDL%E5%8F%98%E6%9B%B4%E5%B7%A5%E5%85%B7%E2%80%8B.html"/>
     <id>http://idber.github.io/2020/09/27-gh-ost 在线DDL变更工具​.html</id>
     <published>2020-09-27T07:01:56.000Z</published>
-    <updated>2020-09-28T04:02:11.720Z</updated>
+    <updated>2020-09-28T04:07:34.376Z</updated>
     
     <content type="html">&lt;hr&gt;
 &lt;h1 id=&quot;背景&quot;&gt;&lt;a href=&quot;#背景&quot; class=&quot;headerlink&quot; title=&quot;背景&quot;&gt;&lt;/a&gt;背景&lt;/h1&gt;&lt;p&gt;  我们知道，MySQL 5.7以前的DLL采用的是：&lt;br&gt;新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表&lt;br&gt;MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥有众多特性，比如 轻量级，可暂停, 可动态控制, 可审计, 可测试, 等等 ，我们可以通过操作特定的文件对正在执行的gh-ost命令进行动态调整 。&lt;br&gt;开源地址：&lt;br&gt;&lt;a href=&quot;https://github.com/github/gh-ost&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://github.com/github/gh-ost
@@ -140,15 +140,17 @@
 &lt;p&gt;gh-ost 可以通过 unix socket 文件或者 TCP 端口（可配置）的方式来监听请求，DBA 可以在命令运行后更改相应的参数，参考下面的例子：&lt;/p&gt;
 &lt;h3 id=&quot;打开限流&quot;&gt;&lt;a href=&quot;#打开限流&quot; class=&quot;headerlink&quot; title=&quot;打开限流&quot;&gt;&lt;/a&gt;打开限流&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;echo throttle | nc -U /tmp/gh-ost.guo_test.sbtest.sock
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;如果没有nc，需要先安装nc，gh-ost.guo_test.sbtest.sock格式为，gh-ost.db_name.table_name.sock。&lt;/p&gt;
-&lt;p&gt;_b_ghc 中会多一条记录&lt;/p&gt;
+&lt;p&gt;_tablename_ghc 中会多一条记录&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;287    2020-09-27 11:18:54    throttle at 1601263134871924413    commanded by user
 &lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;关闭限流&quot;&gt;&lt;a href=&quot;#关闭限流&quot; class=&quot;headerlink&quot; title=&quot;关闭限流&quot;&gt;&lt;/a&gt;关闭限流&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;no-throttle | socat - /tmp/gh-ost.test.b.sock
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;_b_ghc 中会多一条记录&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;_tablename_ghc 中会多一条记录&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;348    2020-09-27 11:22:06    throttle at 1601263326077186389    done throttling
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;改变执行参数: chunk-size=1024, max-lag-millis=100, echo max-load=”Threads_running=30” critical-load=”Threads_running=50” 这些参数都可以在运行时动态调整。&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;echo chunk-size=1024 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;   echo max-lag-millis=100 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock&lt;br&gt;   echo max-load=”Threads_running=30” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock&lt;br&gt;   echo critical-load=”Threads_running=50” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock&lt;/p&gt;
-&lt;h3 id=&quot;终止运行&quot;&gt;&lt;a href=&quot;#终止运行&quot; class=&quot;headerlink&quot; title=&quot;终止运行&quot;&gt;&lt;/a&gt;终止运行&lt;/h3&gt;&lt;p&gt;我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin&lt;/p&gt;
+echo max-lag-millis=100 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+echo max-load=&amp;quot;Threads_running=30&amp;quot; | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+echo critical-load=&amp;quot;Threads_running=50&amp;quot; | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;终止运行&quot;&gt;&lt;a href=&quot;#终止运行&quot; class=&quot;headerlink&quot; title=&quot;终止运行&quot;&gt;&lt;/a&gt;终止运行&lt;/h3&gt;&lt;p&gt;我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin&lt;/p&gt;
 &lt;p&gt;创建文件 /tmp/ghost.panic.flag&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;touch /tmp/ghost.panic.flag
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;gh-ost log 提示&lt;/p&gt;

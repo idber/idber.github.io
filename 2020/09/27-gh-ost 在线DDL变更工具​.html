@@ -19,7 +19,7 @@
 <meta property="og:site_name" content="似水年华--沉浮">
 <meta property="og:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-09-28T04:02:11.720Z">
+<meta property="og:updated_time" content="2020-09-28T04:07:34.376Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gh-Ost 在线DDL变更工具​">
 <meta name="twitter:description" content="背景  我们知道，MySQL 5.7以前的DLL采用的是：新建临时表–&amp;gt;修改临时表结构–&amp;gt;然后导入数据–&amp;gt;drop原表–&amp;gt;重命名临时表为原表MySQL 8.0仅支持加字段秒级完成，其他变更如添加索引，修改字段等仍是上述方式。比较经典的通用方案是Percona 公司开源的pt-osc 工具解决导致锁表的操作，还有一款github基于go语言开发的gh-ost。gh-ost拥">
@@ -215,15 +215,17 @@
 <p>gh-ost 可以通过 unix socket 文件或者 TCP 端口（可配置）的方式来监听请求，DBA 可以在命令运行后更改相应的参数，参考下面的例子：</p>
 <h3 id="打开限流"><a href="#打开限流" class="headerlink" title="打开限流"></a>打开限流</h3><pre><code>echo throttle | nc -U /tmp/gh-ost.guo_test.sbtest.sock
 </code></pre><p>如果没有nc，需要先安装nc，gh-ost.guo_test.sbtest.sock格式为，gh-ost.db_name.table_name.sock。</p>
-<p>_b_ghc 中会多一条记录</p>
+<p>_tablename_ghc 中会多一条记录</p>
 <pre><code>287    2020-09-27 11:18:54    throttle at 1601263134871924413    commanded by user
 </code></pre><h3 id="关闭限流"><a href="#关闭限流" class="headerlink" title="关闭限流"></a>关闭限流</h3><pre><code>no-throttle | socat - /tmp/gh-ost.test.b.sock
-</code></pre><p>_b_ghc 中会多一条记录</p>
+</code></pre><p>_tablename_ghc 中会多一条记录</p>
 <pre><code>348    2020-09-27 11:22:06    throttle at 1601263326077186389    done throttling
 </code></pre><p>改变执行参数: chunk-size=1024, max-lag-millis=100, echo max-load=”Threads_running=30” critical-load=”Threads_running=50” 这些参数都可以在运行时动态调整。</p>
 <pre><code>echo chunk-size=1024 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
-</code></pre><p>   echo max-lag-millis=100 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock<br>   echo max-load=”Threads_running=30” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock<br>   echo critical-load=”Threads_running=50” | nc -U  /tmp/gh-ost.guo_test.sbtest.sock</p>
-<h3 id="终止运行"><a href="#终止运行" class="headerlink" title="终止运行"></a>终止运行</h3><p>我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin</p>
+echo max-lag-millis=100 | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+echo max-load=&quot;Threads_running=30&quot; | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+echo critical-load=&quot;Threads_running=50&quot; | nc -U  /tmp/gh-ost.guo_test.sbtest.sock
+</code></pre><h3 id="终止运行"><a href="#终止运行" class="headerlink" title="终止运行"></a>终止运行</h3><p>我们通过来过创建 panic-flag-file 指定的文件，立即终止正在执行的 gh-ostmin</p>
 <p>创建文件 /tmp/ghost.panic.flag</p>
 <pre><code>touch /tmp/ghost.panic.flag
 </code></pre><p>gh-ost log 提示</p>
